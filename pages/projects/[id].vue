@@ -1,610 +1,466 @@
 <template>
-	<div
-		class="min-h-screen bg-background-light dark:bg-background-dark transition-colors duration-300"
-	>
-		<!-- Sidebar -->
-		<aside
-			class="fixed w-20 lg:w-24 h-screen flex flex-col items-center py-6 bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 z-10"
+	<!-- Main Content -->
+	<main class="min-h-screen">
+		<!-- Header -->
+		<header
+			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-gray-800"
 		>
-			<div class="mb-8">
-				<div
-					class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30"
+			<div>
+				<h1
+					class="text-2xl font-semibold text-text-main-light dark:text-text-main-dark"
 				>
-					<CpuChipIcon class="w-6 h-6" />
-				</div>
+					{{ project?.name || "Detalles del Proyecto" }}
+				</h1>
+				<p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">
+					{{ project?.description || "Proyecto sin descripción" }}
+				</p>
 			</div>
-
-			<nav class="flex-1 w-full flex flex-col items-center gap-4 px-2">
-				<NuxtLink
-					to="/"
-					class="w-12 h-12 text-text-muted-light dark:text-text-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transition-colors"
-				>
-					<Squares2X2Icon class="w-6 h-6" />
-				</NuxtLink>
-				<NuxtLink
-					to="/inventory"
-					class="w-12 h-12 text-text-muted-light dark:text-text-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transition-colors"
-				>
-					<CubeIcon class="w-6 h-6" />
-				</NuxtLink>
-				<NuxtLink
-					to="/projects"
-					class="w-12 h-12 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl flex items-center justify-center shadow-lg transition-transform hover:scale-105"
-				>
-					<RectangleStackIcon class="w-6 h-6" />
-				</NuxtLink>
-			</nav>
-
-			<div class="mt-auto flex flex-col items-center gap-4">
+			<div class="flex items-center gap-4">
 				<button
-					class="w-12 h-12 text-text-muted-light dark:text-text-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transition-colors"
+					@click="calculateProjectCostMethod"
+					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
 				>
-					<Cog6ToothIcon class="w-6 h-6" />
+					<CalculatorIcon class="w-5 h-5" />
+					<span>Calcular Costos</span>
 				</button>
-				<div
-					class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 overflow-hidden border-2 border-white dark:border-gray-700"
+				<button
+					@click="exportProject"
+					class="flex items-center gap-2 bg-gray-900 dark:bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
 				>
-					<div
-						class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600"
-					>
-						<UserIcon class="w-6 h-6" />
-					</div>
-				</div>
+					<DocumentArrowDownIcon class="w-5 h-5" />
+					<span>Exportar</span>
+				</button>
+				<button
+					@click="goBack"
+					class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-text-main-light dark:text-text-main-dark px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+				>
+					<ArrowLeftIcon class="w-5 h-5" />
+					<span>Volver</span>
+				</button>
 			</div>
-		</aside>
+		</header>
 
-		<!-- Main Content -->
-		<main class="ml-20 lg:ml-24 min-h-screen">
-			<!-- Header -->
-			<header
-				class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-gray-800"
-			>
-				<div>
-					<h1
-						class="text-2xl font-semibold text-text-main-light dark:text-text-main-dark"
-					>
-						{{ project?.name || "Detalles del Proyecto" }}
-					</h1>
-					<p
-						class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1"
-					>
-						{{ project?.description || "Proyecto sin descripción" }}
-					</p>
-				</div>
-				<div class="flex items-center gap-4">
-					<button
-						@click="calculateProjectCostMethod"
-						class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
-					>
-						<CalculatorIcon class="w-5 h-5" />
-						<span>Calcular Costos</span>
-					</button>
-					<button
-						@click="exportProject"
-						class="flex items-center gap-2 bg-gray-900 dark:bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
-					>
-						<DocumentArrowDownIcon class="w-5 h-5" />
-						<span>Exportar</span>
-					</button>
-					<button
-						@click="goBack"
-						class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-text-main-light dark:text-text-main-dark px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-					>
-						<ArrowLeftIcon class="w-5 h-5" />
-						<span>Volver</span>
-					</button>
-				</div>
-			</header>
-
-			<!-- Project Content -->
-			<div class="p-8 pt-4">
-				<!-- Project Stats -->
-				<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-					<div
-						class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm"
-					>
-						<div class="flex items-center gap-4">
-							<div
-								class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
-							>
-								<CubeIcon class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-							</div>
-							<div>
-								<p
-									class="text-xs text-text-muted-light dark:text-text-muted-dark"
-								>
-									Total Items
-								</p>
-								<p
-									class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-								>
-									{{ projectItems.length }}
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<div
-						class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm"
-					>
-						<div class="flex items-center gap-4">
-							<div
-								class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
-							>
-								<CheckCircleIcon
-									class="w-6 h-6 text-green-600 dark:text-green-400"
-								/>
-							</div>
-							<div>
-								<p
-									class="text-xs text-text-muted-light dark:text-text-muted-dark"
-								>
-									Stock OK
-								</p>
-								<p
-									class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-								>
-									{{ stockOK }}
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<div
-						class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-amber-200 dark:border-amber-900/50"
-					>
-						<div class="flex items-center gap-4">
-							<div
-								class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center"
-							>
-								<ExclamationTriangleIcon
-									class="w-6 h-6 text-amber-600 dark:text-amber-400"
-								/>
-							</div>
-							<div>
-								<p
-									class="text-xs text-text-muted-light dark:text-text-muted-dark"
-								>
-									Stock Bajo
-								</p>
-								<p
-									class="text-3xl font-bold text-amber-600 dark:text-amber-400"
-								>
-									{{ lowStockCount }}
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<div
-						class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm"
-					>
-						<div class="flex items-center gap-4">
-							<div
-								class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
-							>
-								<CurrencyDollarIcon
-									class="w-6 h-6 text-purple-600 dark:text-purple-400"
-								/>
-							</div>
-							<div>
-								<p
-									class="text-xs text-text-muted-light dark:text-text-muted-dark"
-								>
-									Valor Total
-								</p>
-								<p
-									class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-								>
-									${{ totalValue }}
-								</p>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Project Items Table -->
-				<div
-					class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm overflow-hidden mb-6"
-				>
-					<div
-						class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
-					>
-						<h2
-							class="text-lg font-semibold text-text-main-light dark:text-text-main-dark"
+		<!-- Project Content -->
+		<div class="p-8 pt-4">
+			<!-- Project Stats -->
+			<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+					<div class="flex items-center gap-4">
+						<div
+							class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
 						>
-							Items del Proyecto
-						</h2>
-						<div class="flex items-center gap-3">
-							<div class="relative">
-								<MagnifyingGlassIcon
-									class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-								/>
-								<input
-									v-model="searchQuery"
-									type="text"
-									placeholder="Buscar items..."
-									class="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
-								/>
-							</div>
-							<button
-								@click="showAddItemModal = true"
-								class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors"
-							>
-								<PlusIcon class="w-4 h-4" />
-								<span>Agregar Item</span>
-							</button>
+							<CubeIcon class="w-6 h-6 text-blue-600 dark:text-blue-400" />
 						</div>
-					</div>
-
-					<div class="overflow-x-auto">
-						<table class="w-full">
-							<thead class="bg-gray-50 dark:bg-gray-800">
-								<tr>
-									<th
-										class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Componente
-									</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Categoría
-									</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Cantidad
-									</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Stock
-									</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Precio
-									</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Total
-									</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Acciones
-									</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-								<tr v-if="filteredItems.length === 0">
-									<td colspan="7" class="px-6 py-12 text-center">
-										<CubeIcon
-											class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600"
-										/>
-										<p class="text-text-muted-light dark:text-text-muted-dark">
-											No hay items en este proyecto
-										</p>
-										<button
-											@click="showAddItemModal = true"
-											class="mt-4 text-primary hover:underline text-sm font-medium"
-										>
-											Agregar primer item
-										</button>
-									</td>
-								</tr>
-								<tr
-									v-for="item in paginatedItems"
-									:key="item.id"
-									class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-								>
-									<td class="px-6 py-4">
-										<div>
-											<p
-												class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
-											>
-												{{ item.name }}
-											</p>
-											<p
-												class="text-xs text-text-muted-light dark:text-text-muted-dark"
-											>
-												{{ item.part_number || "N/A" }}
-											</p>
-										</div>
-									</td>
-									<td class="px-6 py-4">
-										<span
-											class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded text-xs font-medium"
-										>
-											{{ item.category || "Sin categoría" }}
-										</span>
-									</td>
-									<td class="px-6 py-4">
-										<div class="flex items-center gap-2">
-											<input
-												v-model.number="item.quantity"
-												type="number"
-												min="1"
-												step="1"
-												@change="updateItemQuantity(item.id, item.quantity)"
-												class="w-20 px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark text-sm"
-											/>
-										</div>
-									</td>
-									<td class="px-6 py-4">
-										<div class="flex items-center gap-2">
-											<div
-												class="w-2 h-2 rounded-full"
-												:class="
-													item.in_stock < (item.min_stock || 0)
-														? 'bg-amber-500'
-														: 'bg-green-500'
-												"
-											></div>
-											<span
-												class="text-sm text-text-main-light dark:text-text-main-dark"
-											>
-												{{ item.in_stock }} {{ item.unit }}
-											</span>
-										</div>
-									</td>
-									<td
-										class="px-6 py-4 text-sm font-medium text-text-main-light dark:text-text-main-dark"
-									>
-										${{ (item.price || 0).toFixed(2) }}
-									</td>
-									<td
-										class="px-6 py-4 text-sm font-medium text-text-main-light dark:text-text-main-dark"
-									>
-										${{ calculateItemTotal(item).toFixed(2) }}
-									</td>
-									<td class="px-6 py-4">
-										<div class="flex items-center gap-2">
-											<button
-												@click="removeItemFromProject(item.id)"
-												class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-											>
-												<TrashIcon
-													class="w-4 h-4 text-red-600 dark:text-red-400"
-												/>
-											</button>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-
-					<!-- Pagination -->
-					<div
-						v-if="totalPages > 1"
-						class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"
-					>
-						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
-							Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
-							{{
-								Math.min(currentPage * itemsPerPage, filteredItems.length)
-							}}
-							de {{ filteredItems.length }} items
-						</p>
-						<div class="flex gap-2">
-							<button
-								@click="currentPage--"
-								:disabled="currentPage === 1"
-								class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+						<div>
+							<p
+								class="text-xs text-text-muted-light dark:text-text-muted-dark"
 							>
-								Anterior
-							</button>
-							<button
-								@click="currentPage++"
-								:disabled="currentPage === totalPages"
-								class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+								Total Items
+							</p>
+							<p
+								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
 							>
-								Siguiente
-							</button>
+								{{ projectItems.length }}
+							</p>
 						</div>
 					</div>
 				</div>
 
-				<!-- Cost Breakdown -->
-				<div
-					v-if="costBreakdown"
-					class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm"
-				>
-					<h2
-						class="text-lg font-semibold text-text-main-light dark:text-text-main-dark mb-4"
-					>
-						Desglose de Costos
-					</h2>
-
-					<div
-						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-					>
-						<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-							<p
-								class="text-sm text-text-muted-light dark:text-text-muted-dark"
-							>
-								Subtotal
-							</p>
-							<p
-								class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
-								{{ formatCurrency(costBreakdown.summary.subtotal) }}
-							</p>
+				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+					<div class="flex items-center gap-4">
+						<div
+							class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
+						>
+							<CheckCircleIcon
+								class="w-6 h-6 text-green-600 dark:text-green-400"
+							/>
 						</div>
-						<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+						<div>
 							<p
-								class="text-sm text-text-muted-light dark:text-text-muted-dark"
+								class="text-xs text-text-muted-light dark:text-text-muted-dark"
 							>
-								Impuestos ({{ (taxRate * 100).toFixed(0) }}%)
+								Stock OK
 							</p>
 							<p
-								class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
+								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
 							>
-								{{ formatCurrency(costBreakdown.summary.tax) }}
-							</p>
-						</div>
-						<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-							<p
-								class="text-sm text-text-muted-light dark:text-text-muted-dark"
-							>
-								Envío
-							</p>
-							<p
-								class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
-								{{ formatCurrency(costBreakdown.summary.shipping) }}
-							</p>
-						</div>
-						<div class="bg-primary/10 dark:bg-primary/20 rounded-xl p-4">
-							<p
-								class="text-sm text-text-muted-light dark:text-text-muted-dark"
-							>
-								Total
-							</p>
-							<p class="text-xl font-bold text-primary">
-								{{ formatCurrency(costBreakdown.summary.total) }}
+								{{ stockOK }}
 							</p>
 						</div>
 					</div>
+				</div>
 
-					<div class="overflow-x-auto">
-						<table class="w-full">
-							<thead class="bg-gray-50 dark:bg-gray-800">
-								<tr>
-									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Componente
-									</th>
-									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Cantidad
-									</th>
-									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Costo Unitario
-									</th>
-									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
-									>
-										Total
-									</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-								<tr
-									v-for="itemCost in costBreakdown.items"
-									:key="itemCost.item.id"
-								>
-									<td
-										class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-									>
-										{{ itemCost.item.name }}
-									</td>
-									<td
-										class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-									>
-										{{ itemCost.quantity }}
-									</td>
-									<td
-										class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-									>
-										{{ formatCurrency(itemCost.unitCost) }}
-									</td>
-									<td
-										class="px-4 py-3 text-sm font-medium text-text-main-light dark:text-text-main-dark"
-									>
-										{{ formatCurrency(itemCost.totalCost) }}
-									</td>
-								</tr>
-							</tbody>
-						</table>
+				<div
+					class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-amber-200 dark:border-amber-900/50"
+				>
+					<div class="flex items-center gap-4">
+						<div
+							class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center"
+						>
+							<ExclamationTriangleIcon
+								class="w-6 h-6 text-amber-600 dark:text-amber-400"
+							/>
+						</div>
+						<div>
+							<p
+								class="text-xs text-text-muted-light dark:text-text-muted-dark"
+							>
+								Stock Bajo
+							</p>
+							<p class="text-3xl font-bold text-amber-600 dark:text-amber-400">
+								{{ lowStockCount }}
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+					<div class="flex items-center gap-4">
+						<div
+							class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
+						>
+							<CurrencyDollarIcon
+								class="w-6 h-6 text-purple-600 dark:text-purple-400"
+							/>
+						</div>
+						<div>
+							<p
+								class="text-xs text-text-muted-light dark:text-text-muted-dark"
+							>
+								Valor Total
+							</p>
+							<p
+								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
+							>
+								${{ totalValue }}
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
-		</main>
 
-		<!-- Add Item to Project Modal -->
-		<div
-			v-if="showAddItemModal"
-			class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-		>
+			<!-- Project Items Table -->
 			<div
-				class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+				class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm overflow-hidden mb-6"
 			>
-				<div class="flex items-center justify-between mb-6 p-6 pb-4">
+				<div
+					class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
+				>
 					<h2
-						class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
+						class="text-lg font-semibold text-text-main-light dark:text-text-main-dark"
 					>
-						Agregar Item al Proyecto
+						Items del Proyecto
 					</h2>
-					<button
-						@click="closeAddItemModal"
-						class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-					>
-						<XMarkIcon
-							class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-						/>
-					</button>
-				</div>
-
-				<div class="px-6 pb-6">
-					<div class="mb-6">
+					<div class="flex items-center gap-3">
 						<div class="relative">
 							<MagnifyingGlassIcon
 								class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
 							/>
 							<input
-								v-model="addItemSearchQuery"
+								v-model="searchQuery"
 								type="text"
-								placeholder="Buscar componentes disponibles..."
-								class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+								placeholder="Buscar items..."
+								class="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
 							/>
 						</div>
-					</div>
-
-					<div class="space-y-3 max-h-96 overflow-y-auto">
-						<div
-							v-for="item in availableItems"
-							:key="item.id"
-							class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+						<button
+							@click="showAddItemModal = true"
+							class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors"
 						>
-							<div>
-								<p
-									class="font-medium text-text-main-light dark:text-text-main-dark"
+							<PlusIcon class="w-4 h-4" />
+							<span>Agregar Item</span>
+						</button>
+					</div>
+				</div>
+
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead class="bg-gray-50 dark:bg-gray-800">
+							<tr>
+								<th
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
 								>
-									{{ item.name }}
-								</p>
-								<p
-									class="text-sm text-text-muted-light dark:text-text-muted-dark"
+									Componente
+								</th>
+								<th
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
 								>
-									{{ item.category || "Sin categoría" }}
-								</p>
-							</div>
-							<div class="flex items-center gap-3">
-								<span
-									class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
+									Categoría
+								</th>
+								<th
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Cantidad
+								</th>
+								<th
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Stock
+								</th>
+								<th
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Precio
+								</th>
+								<th
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Total
+								</th>
+								<th
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Acciones
+								</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+							<tr v-if="filteredItems.length === 0">
+								<td colspan="7" class="px-6 py-12 text-center">
+									<CubeIcon
+										class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600"
+									/>
+									<p class="text-text-muted-light dark:text-text-muted-dark">
+										No hay items en este proyecto
+									</p>
+									<button
+										@click="showAddItemModal = true"
+										class="mt-4 text-primary hover:underline text-sm font-medium"
+									>
+										Agregar primer item
+									</button>
+								</td>
+							</tr>
+							<tr
+								v-for="item in paginatedItems"
+								:key="item.id"
+								class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+							>
+								<td class="px-6 py-4">
+									<div>
+										<p
+											class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
+										>
+											{{ item.name }}
+										</p>
+										<p
+											class="text-xs text-text-muted-light dark:text-text-muted-dark"
+										>
+											{{ item.part_number || "N/A" }}
+										</p>
+									</div>
+								</td>
+								<td class="px-6 py-4">
+									<span
+										class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded text-xs font-medium"
+									>
+										{{ item.category || "Sin categoría" }}
+									</span>
+								</td>
+								<td class="px-6 py-4">
+									<div class="flex items-center gap-2">
+										<input
+											v-model.number="item.quantity"
+											type="number"
+											min="1"
+											step="1"
+											@change="updateItemQuantity(item.id, item.quantity)"
+											class="w-20 px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark text-sm"
+										/>
+									</div>
+								</td>
+								<td class="px-6 py-4">
+									<div class="flex items-center gap-2">
+										<div
+											class="w-2 h-2 rounded-full"
+											:class="
+												item.in_stock < (item.min_stock || 0)
+													? 'bg-amber-500'
+													: 'bg-green-500'
+											"
+										></div>
+										<span
+											class="text-sm text-text-main-light dark:text-text-main-dark"
+										>
+											{{ item.in_stock }} {{ item.unit }}
+										</span>
+									</div>
+								</td>
+								<td
+									class="px-6 py-4 text-sm font-medium text-text-main-light dark:text-text-main-dark"
 								>
 									${{ (item.price || 0).toFixed(2) }}
-								</span>
-								<button
-									@click="addItemToProject(item)"
-									class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+								</td>
+								<td
+									class="px-6 py-4 text-sm font-medium text-text-main-light dark:text-text-main-dark"
 								>
-									Agregar
-								</button>
-							</div>
-						</div>
+									${{ calculateItemTotal(item).toFixed(2) }}
+								</td>
+								<td class="px-6 py-4">
+									<div class="flex items-center gap-2">
+										<button
+											@click="removeItemFromProject(item.id)"
+											class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+										>
+											<TrashIcon
+												class="w-4 h-4 text-red-600 dark:text-red-400"
+											/>
+										</button>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<!-- Pagination -->
+				<div
+					v-if="totalPages > 1"
+					class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"
+				>
+					<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+						Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
+						{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
+						de {{ filteredItems.length }} items
+					</p>
+					<div class="flex gap-2">
+						<button
+							@click="currentPage--"
+							:disabled="currentPage === 1"
+							class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+						>
+							Anterior
+						</button>
+						<button
+							@click="currentPage++"
+							:disabled="currentPage === totalPages"
+							class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+						>
+							Siguiente
+						</button>
 					</div>
 				</div>
 			</div>
+
+			<!-- Cost Breakdown -->
+			<div
+				v-if="costBreakdown"
+				class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm"
+			>
+				<h2
+					class="text-lg font-semibold text-text-main-light dark:text-text-main-dark mb-4"
+				>
+					Desglose de Costos
+				</h2>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+					<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+							Subtotal
+						</p>
+						<p
+							class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
+						>
+							{{ formatCurrency(costBreakdown.summary.subtotal) }}
+						</p>
+					</div>
+					<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+							Impuestos ({{ (taxRate * 100).toFixed(0) }}%)
+						</p>
+						<p
+							class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
+						>
+							{{ formatCurrency(costBreakdown.summary.tax) }}
+						</p>
+					</div>
+					<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+							Envío
+						</p>
+						<p
+							class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
+						>
+							{{ formatCurrency(costBreakdown.summary.shipping) }}
+						</p>
+					</div>
+					<div class="bg-primary/10 dark:bg-primary/20 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+							Total
+						</p>
+						<p class="text-xl font-bold text-primary">
+							{{ formatCurrency(costBreakdown.summary.total) }}
+						</p>
+					</div>
+				</div>
+
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead class="bg-gray-50 dark:bg-gray-800">
+							<tr>
+								<th
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Componente
+								</th>
+								<th
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Cantidad
+								</th>
+								<th
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Costo Unitario
+								</th>
+								<th
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+								>
+									Total
+								</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+							<tr
+								v-for="itemCost in costBreakdown.items"
+								:key="itemCost.item.id"
+							>
+								<td
+									class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
+								>
+									{{ itemCost.item.name }}
+								</td>
+								<td
+									class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
+								>
+									{{ itemCost.quantity }}
+								</td>
+								<td
+									class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
+								>
+									{{ formatCurrency(itemCost.unitCost) }}
+								</td>
+								<td
+									class="px-4 py-3 text-sm font-medium text-text-main-light dark:text-text-main-dark"
+								>
+									{{ formatCurrency(itemCost.totalCost) }}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
-	</div>
+	</main>
+
+	<!-- Add Item to Project Modal -->
+	<AddItemToProjectModal
+		:show="showAddItemModal"
+		:items="availableItems"
+		@close="closeAddItemModal"
+		@add="addItemToProject"
+		@search="handleAddItemSearch"
+	/>
 </template>
 
 <script setup lang="ts">
@@ -631,6 +487,7 @@ import { useDatabase } from "../../composables/useDatabase";
 import { useCostCalculator } from "../../composables/useCostCalculator";
 import { useRouter } from "vue-router";
 import type { BOMItem, BOMProject } from "../../types/bom";
+import AddItemToProjectModal from "../../components/AddItemToProjectModal.vue";
 
 const router = useRouter();
 const db = useDatabase();
@@ -791,6 +648,11 @@ const goBack = () => {
 	router.push("/projects");
 };
 
+const handleAddItemSearch = (query: string) => {
+	// Lógica para manejar la búsqueda en el modal de agregar item
+	console.log("Búsqueda de items:", query);
+};
+
 // Lifecycle
 onMounted(async () => {
 	await loadProject();
@@ -799,43 +661,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.bg-background-light {
-	background-color: #f3f4f6;
-}
-
-.dark .bg-background-dark {
-	background-color: #111827;
-}
-
-.bg-card-light {
-	background-color: #ffffff;
-}
-
-.dark .bg-card-dark {
-	background-color: #1f2937;
-}
-
-.text-text-main-light {
-	color: #1f2937;
-}
-
-.dark .text-text-main-dark {
-	color: #f9fafb;
-}
-
-.text-text-muted-light {
-	color: #6b7280;
-}
-
-.dark .text-text-muted-dark {
-	color: #9ca3af;
-}
-
-.bg-primary {
-	background-color: #10b981;
-}
-
-.shadow-primary\/30 {
-	box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
-}
+/* Estilos movidos a assets/css/app.css */
 </style>
