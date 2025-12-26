@@ -3,51 +3,41 @@
 		v-if="show"
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
-		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-lg w-full p-6"
-		>
+		<div class="bg-card-light rounded-2xl shadow-xl max-w-lg w-full p-6">
 			<div class="flex items-center justify-between mb-6">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					{{ editingProject ? "Editar Proyecto" : "Nuevo Proyecto" }}
 				</h2>
 				<button
 					@click="closeModal"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
-					<XMarkIcon
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-					/>
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
 			<form @submit.prevent="saveProject" class="space-y-4">
 				<div>
-					<label
-						class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-					>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
 						Nombre del Proyecto *
 					</label>
 					<input
 						v-model="projectForm.name"
 						type="text"
 						required
-						class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 						placeholder="ej. PCB Main Controller v2.4"
 					/>
 				</div>
 
 				<div>
-					<label
-						class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-					>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
 						Descripción
 					</label>
 					<textarea
 						v-model="projectForm.description"
 						rows="4"
-						class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark resize-none"
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light resize-none"
 						placeholder="Describe el proyecto..."
 					></textarea>
 				</div>
@@ -56,7 +46,7 @@
 					<button
 						type="button"
 						@click="closeModal"
-						class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
 					>
 						Cancelar
 					</button>

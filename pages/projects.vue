@@ -3,12 +3,10 @@
 	<main class="min-h-screen">
 		<!-- Header -->
 		<header
-			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200"
+			class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200"
 		>
 			<div>
-				<h1
-					class="text-2xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h1 class="text-2xl font-semibold text-text-main-light">
 					Gestión de Proyectos
 				</h1>
 			</div>
@@ -27,83 +25,55 @@
 		<div class="p-8 pt-4">
 			<!-- Stats Row -->
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
 						<div
-							class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
+							class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center"
 						>
-							<RectangleStackIcon
-								class="w-6 h-6 text-purple-600 dark:text-purple-400"
-							/>
+							<RectangleStackIcon class="w-6 h-6 text-purple-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Total Proyectos
-							</p>
-							<p
-								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Total Proyectos</p>
+							<p class="text-3xl font-bold text-text-main-light">
 								{{ projects.length }}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
 						<div
-							class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
+							class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center"
 						>
-							<CheckCircleIcon
-								class="w-6 h-6 text-green-600 dark:text-green-400"
-							/>
+							<CheckCircleIcon class="w-6 h-6 text-green-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Proyectos Activos
-							</p>
-							<p
-								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Proyectos Activos</p>
+							<p class="text-3xl font-bold text-text-main-light">
 								{{ projects.length }}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
 						<div
-							class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
+							class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"
 						>
-							<CurrencyDollarIcon
-								class="w-6 h-6 text-blue-600 dark:text-blue-400"
-							/>
+							<CurrencyDollarIcon class="w-6 h-6 text-blue-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Valor Total
-							</p>
-							<p
-								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
-								$0.00
-							</p>
+							<p class="text-xs text-text-muted-light">Valor Total</p>
+							<p class="text-3xl font-bold text-text-main-light">$0.00</p>
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<!-- Search Bar -->
-			<div
-				class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm mb-6"
-			>
+			<div class="bg-card-light rounded-2xl p-6 shadow-sm mb-6">
 				<div class="relative">
 					<MagnifyingGlassIcon
 						class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -112,7 +82,7 @@
 						v-model="searchQuery"
 						type="text"
 						placeholder="Buscar proyectos..."
-						class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+						class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 					/>
 				</div>
 			</div>
@@ -120,17 +90,13 @@
 			<!-- Projects Grid -->
 			<div
 				v-if="filteredProjects.length === 0"
-				class="bg-card-light dark:bg-card-dark rounded-2xl p-12 shadow-sm text-center"
+				class="bg-card-light rounded-2xl p-12 shadow-sm text-center"
 			>
-				<RectangleStackIcon
-					class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600"
-				/>
-				<h3
-					class="text-lg font-semibold text-text-main-light dark:text-text-main-dark mb-2"
-				>
+				<RectangleStackIcon class="w-16 h-16 mx-auto mb-4 text-gray-300" />
+				<h3 class="text-lg font-semibold text-text-main-light mb-2">
 					No hay proyectos
 				</h3>
-				<p class="text-text-muted-light dark:text-text-muted-dark mb-6">
+				<p class="text-text-muted-light mb-6">
 					Comienza creando tu primer proyecto
 				</p>
 				<button
@@ -146,7 +112,7 @@
 				<div
 					v-for="project in filteredProjects"
 					:key="project.id"
-					class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/50"
+					class="bg-card-light rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/50"
 					@click="viewProject(project.id)"
 				>
 					<div class="flex items-start justify-between mb-4">
@@ -158,32 +124,28 @@
 						<div class="flex gap-2">
 							<button
 								@click.stop="editProject(project)"
-								class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+								class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
 							>
-								<PencilIcon class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+								<PencilIcon class="w-4 h-4 text-blue-600" />
 							</button>
 							<button
 								@click.stop="deleteProjectConfirm(project.id)"
-								class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+								class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
 							>
-								<TrashIcon class="w-4 h-4 text-red-600 dark:text-red-400" />
+								<TrashIcon class="w-4 h-4 text-red-600" />
 							</button>
 						</div>
 					</div>
 
-					<h3
-						class="text-lg font-semibold text-text-main-light dark:text-text-main-dark mb-2"
-					>
+					<h3 class="text-lg font-semibold text-text-main-light mb-2">
 						{{ project.name }}
 					</h3>
-					<p
-						class="text-sm text-text-muted-light dark:text-text-muted-dark mb-4 line-clamp-2"
-					>
+					<p class="text-sm text-text-muted-light mb-4 line-clamp-2">
 						{{ project.description || "Sin descripción" }}
 					</p>
 
 					<div
-						class="flex items-center justify-between text-xs text-text-muted-light dark:text-text-muted-dark"
+						class="flex items-center justify-between text-xs text-text-muted-light"
 					>
 						<span>{{ formatDate(project.created_at) }}</span>
 						<div class="flex items-center gap-1">

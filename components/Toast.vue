@@ -5,7 +5,7 @@
 				v-for="notification in notifications"
 				:key="notification.id"
 				:class="[
-					'bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden',
+					'bg-white rounded-xl shadow-lg border overflow-hidden',
 					'transform transition-all duration-300',
 					getNotificationClasses(notification.type),
 				]"
@@ -32,13 +32,10 @@
 
 					<!-- Content -->
 					<div class="flex-1 min-w-0">
-						<p class="text-sm font-semibold text-gray-900 dark:text-white">
+						<p class="text-sm font-semibold text-gray-900">
 							{{ notification.title }}
 						</p>
-						<p
-							v-if="notification.message"
-							class="mt-1 text-xs text-gray-600 dark:text-gray-400"
-						>
+						<p v-if="notification.message" class="mt-1 text-xs text-gray-600">
 							{{ notification.message }}
 						</p>
 					</div>
@@ -46,7 +43,7 @@
 					<!-- Close Button -->
 					<button
 						@click="removeNotification(notification.id)"
-						class="flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+						class="flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 transition-colors"
 					>
 						<XMarkIcon class="w-4 h-4 text-gray-400" />
 					</button>
@@ -55,7 +52,7 @@
 				<!-- Progress Bar -->
 				<div
 					v-if="notification.duration && notification.duration > 0"
-					class="h-1 bg-gray-200 dark:bg-gray-700"
+					class="h-1 bg-gray-200"
 				>
 					<div
 						:class="[
@@ -88,30 +85,30 @@ const { notifications, removeNotification } = useNotifications();
 const getNotificationClasses = (type: string) => {
 	switch (type) {
 		case "success":
-			return "border-green-200 dark:border-green-900/50";
+			return "border-green-200";
 		case "error":
-			return "border-red-200 dark:border-red-900/50";
+			return "border-red-200";
 		case "warning":
-			return "border-amber-200 dark:border-amber-900/50";
+			return "border-amber-200";
 		case "info":
-			return "border-blue-200 dark:border-blue-900/50";
+			return "border-blue-200";
 		default:
-			return "border-gray-200 dark:border-gray-700";
+			return "border-gray-200";
 	}
 };
 
 const getIconColor = (type: string) => {
 	switch (type) {
 		case "success":
-			return "text-green-600 dark:text-green-400";
+			return "text-green-600";
 		case "error":
-			return "text-red-600 dark:text-red-400";
+			return "text-red-600";
 		case "warning":
-			return "text-amber-600 dark:text-amber-400";
+			return "text-amber-600";
 		case "info":
-			return "text-blue-600 dark:text-blue-400";
+			return "text-blue-600";
 		default:
-			return "text-gray-600 dark:text-gray-400";
+			return "text-gray-600";
 	}
 };
 

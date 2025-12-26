@@ -4,116 +4,98 @@
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
 		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-card-light rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
 		>
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					{{ editingItem ? "Editar Componente" : "Agregar Componente" }}
 				</h2>
 				<button
 					@click="closeModal"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
-					<XMarkIcon
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-					/>
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
 			<form @submit.prevent="saveItem" class="px-6 pb-6 space-y-4">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Nombre del Componente *
 						</label>
 						<input
 							v-model="itemForm.name"
 							type="text"
 							required
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="ej. Resistor 10k Ohm"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Unidad *
 						</label>
 						<input
 							v-model="itemForm.unit"
 							type="text"
 							required
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="ej. pcs, sets, reels"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Categoría
 						</label>
 						<input
 							v-model="itemForm.category"
 							type="text"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="ej. Resistores, Capacitores"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Proveedor
 						</label>
 						<input
 							v-model="itemForm.supplier"
 							type="text"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="ej. LCSC, Mouser, Digikey"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Número de Parte
 						</label>
 						<input
 							v-model="itemForm.partNumber"
 							type="text"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="ej. RC0805FR-0710KL"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Parte LCSC
 						</label>
 						<input
 							v-model="itemForm.lcscPart"
 							type="text"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="ej. C12345"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Cantidad
 						</label>
 						<input
@@ -121,15 +103,13 @@
 							type="number"
 							min="0"
 							step="0.1"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="0"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Precio ($)
 						</label>
 						<input
@@ -137,15 +117,13 @@
 							type="number"
 							min="0"
 							step="0.01"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="0.00"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Stock Actual
 						</label>
 						<input
@@ -153,15 +131,13 @@
 							type="number"
 							min="0"
 							step="0.1"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="0"
 						/>
 					</div>
 
 					<div>
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Stock Mínimo
 						</label>
 						<input
@@ -169,36 +145,32 @@
 							type="number"
 							min="0"
 							step="0.1"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="0"
 						/>
 					</div>
 				</div>
 
 				<div>
-					<label
-						class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-					>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
 						Descripción
 					</label>
 					<textarea
 						v-model="itemForm.description"
 						rows="3"
-						class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark resize-none"
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light resize-none"
 						placeholder="Descripción del componente..."
 					></textarea>
 				</div>
 
 				<div>
-					<label
-						class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-					>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
 						Notas
 					</label>
 					<textarea
 						v-model="itemForm.notes"
 						rows="2"
-						class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark resize-none"
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light resize-none"
 						placeholder="Notas adicionales..."
 					></textarea>
 				</div>
@@ -207,7 +179,7 @@
 					<button
 						type="button"
 						@click="closeModal"
-						class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
 					>
 						Cancelar
 					</button>

@@ -3,15 +3,13 @@
 	<main class="min-h-screen">
 		<!-- Header -->
 		<header
-			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200"
+			class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200"
 		>
 			<div>
-				<h1
-					class="text-2xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h1 class="text-2xl font-semibold text-text-main-light">
 					{{ project?.name || "Detalles del Proyecto" }}
 				</h1>
-				<p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">
+				<p class="text-sm text-text-muted-light mt-1">
 					{{ project?.description || "Proyecto sin descripción" }}
 				</p>
 			</div>
@@ -25,14 +23,14 @@
 				</button>
 				<button
 					@click="exportProject"
-					class="flex items-center gap-2 bg-gray-900 dark:bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
 				>
 					<DocumentArrowDownIcon class="w-5 h-5" />
 					<span>Exportar</span>
 				</button>
 				<button
 					@click="goBack"
-					class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-text-main-light dark:text-text-main-dark px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+					class="flex items-center gap-2 bg-gray-100 text-text-main-light px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
 				>
 					<ArrowLeftIcon class="w-5 h-5" />
 					<span>Volver</span>
@@ -44,46 +42,32 @@
 		<div class="p-8 pt-4">
 			<!-- Project Stats -->
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
 						<div
-							class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
+							class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"
 						>
-							<CubeIcon class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+							<CubeIcon class="w-6 h-6 text-blue-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Total Items
-							</p>
-							<p
-								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Total Items</p>
+							<p class="text-3xl font-bold text-text-main-light">
 								{{ projectItems.length }}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
 						<div
-							class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
+							class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center"
 						>
-							<CheckCircleIcon
-								class="w-6 h-6 text-green-600 dark:text-green-400"
-							/>
+							<CheckCircleIcon class="w-6 h-6 text-green-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Stock OK
-							</p>
-							<p
-								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Stock OK</p>
+							<p class="text-3xl font-bold text-text-main-light">
 								{{ stockOK }}
 							</p>
 						</div>
@@ -91,47 +75,33 @@
 				</div>
 
 				<div
-					class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-amber-200 dark:border-amber-900/50"
+					class="bg-card-light rounded-2xl p-6 shadow-sm border border-amber-200"
 				>
 					<div class="flex items-center gap-4">
 						<div
-							class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center"
+							class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center"
 						>
-							<ExclamationTriangleIcon
-								class="w-6 h-6 text-amber-600 dark:text-amber-400"
-							/>
+							<ExclamationTriangleIcon class="w-6 h-6 text-amber-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Stock Bajo
-							</p>
-							<p class="text-3xl font-bold text-amber-600 dark:text-amber-400">
+							<p class="text-xs text-text-muted-light">Stock Bajo</p>
+							<p class="text-3xl font-bold text-amber-600">
 								{{ lowStockCount }}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
 						<div
-							class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
+							class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center"
 						>
-							<CurrencyDollarIcon
-								class="w-6 h-6 text-purple-600 dark:text-purple-400"
-							/>
+							<CurrencyDollarIcon class="w-6 h-6 text-purple-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Valor Total
-							</p>
-							<p
-								class="text-3xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Valor Total</p>
+							<p class="text-3xl font-bold text-text-main-light">
 								${{ totalValue }}
 							</p>
 						</div>
@@ -140,15 +110,11 @@
 			</div>
 
 			<!-- Project Items Table -->
-			<div
-				class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm overflow-hidden mb-6"
-			>
+			<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden mb-6">
 				<div
-					class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
+					class="p-6 border-b border-gray-200 flex items-center justify-between"
 				>
-					<h2
-						class="text-lg font-semibold text-text-main-light dark:text-text-main-dark"
-					>
+					<h2 class="text-lg font-semibold text-text-main-light">
 						Items del Proyecto
 					</h2>
 					<div class="flex items-center gap-3">
@@ -160,7 +126,7 @@
 								v-model="searchQuery"
 								type="text"
 								placeholder="Buscar items..."
-								class="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+								class="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							/>
 						</div>
 						<button
@@ -175,52 +141,50 @@
 
 				<div class="overflow-x-auto">
 					<table class="w-full">
-						<thead class="bg-gray-50 dark:bg-gray-800">
+						<thead class="bg-gray-50">
 							<tr>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Componente
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Categoría
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Cantidad
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Stock
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Precio
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Total
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Acciones
 								</th>
 							</tr>
 						</thead>
-						<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+						<tbody class="divide-y divide-gray-200">
 							<tr v-if="filteredItems.length === 0">
 								<td colspan="7" class="px-6 py-12 text-center">
-									<CubeIcon
-										class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600"
-									/>
-									<p class="text-text-muted-light dark:text-text-muted-dark">
+									<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
+									<p class="text-text-muted-light">
 										No hay items en este proyecto
 									</p>
 									<button
@@ -234,25 +198,21 @@
 							<tr
 								v-for="item in paginatedItems"
 								:key="item.id"
-								class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+								class="hover:bg-gray-50 transition-colors"
 							>
 								<td class="px-6 py-4">
 									<div>
-										<p
-											class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
-										>
+										<p class="text-sm font-semibold text-text-main-light">
 											{{ item.name }}
 										</p>
-										<p
-											class="text-xs text-text-muted-light dark:text-text-muted-dark"
-										>
+										<p class="text-xs text-text-muted-light">
 											{{ item.part_number || "N/A" }}
 										</p>
 									</div>
 								</td>
 								<td class="px-6 py-4">
 									<span
-										class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded text-xs font-medium"
+										class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium"
 									>
 										{{ item.category || "Sin categoría" }}
 									</span>
@@ -265,7 +225,7 @@
 											min="1"
 											step="1"
 											@change="updateItemQuantity(item.id, item.quantity)"
-											class="w-20 px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark text-sm"
+											class="w-20 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light text-sm"
 										/>
 									</div>
 								</td>
@@ -279,32 +239,24 @@
 													: 'bg-green-500'
 											"
 										></div>
-										<span
-											class="text-sm text-text-main-light dark:text-text-main-dark"
-										>
+										<span class="text-sm text-text-main-light">
 											{{ item.in_stock }} {{ item.unit }}
 										</span>
 									</div>
 								</td>
-								<td
-									class="px-6 py-4 text-sm font-medium text-text-main-light dark:text-text-main-dark"
-								>
+								<td class="px-6 py-4 text-sm font-medium text-text-main-light">
 									${{ (item.price || 0).toFixed(2) }}
 								</td>
-								<td
-									class="px-6 py-4 text-sm font-medium text-text-main-light dark:text-text-main-dark"
-								>
+								<td class="px-6 py-4 text-sm font-medium text-text-main-light">
 									${{ calculateItemTotal(item).toFixed(2) }}
 								</td>
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-2">
 										<button
 											@click="removeItemFromProject(item.id)"
-											class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
 										>
-											<TrashIcon
-												class="w-4 h-4 text-red-600 dark:text-red-400"
-											/>
+											<TrashIcon class="w-4 h-4 text-red-600" />
 										</button>
 									</div>
 								</td>
@@ -316,9 +268,9 @@
 				<!-- Pagination -->
 				<div
 					v-if="totalPages > 1"
-					class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"
+					class="px-6 py-4 border-t border-gray-200 flex items-center justify-between"
 				>
-					<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+					<p class="text-sm text-text-muted-light">
 						Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
 						{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
 						de {{ filteredItems.length }} items
@@ -327,14 +279,14 @@
 						<button
 							@click="currentPage--"
 							:disabled="currentPage === 1"
-							class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
 						>
 							Anterior
 						</button>
 						<button
 							@click="currentPage++"
 							:disabled="currentPage === totalPages"
-							class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
 						>
 							Siguiente
 						</button>
@@ -343,51 +295,34 @@
 			</div>
 
 			<!-- Cost Breakdown -->
-			<div
-				v-if="costBreakdown"
-				class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm"
-			>
-				<h2
-					class="text-lg font-semibold text-text-main-light dark:text-text-main-dark mb-4"
-				>
+			<div v-if="costBreakdown" class="bg-card-light rounded-2xl p-6 shadow-sm">
+				<h2 class="text-lg font-semibold text-text-main-light mb-4">
 					Desglose de Costos
 				</h2>
 
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-					<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
-							Subtotal
-						</p>
-						<p
-							class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
-						>
+					<div class="bg-gray-50 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light">Subtotal</p>
+						<p class="text-xl font-bold text-text-main-light">
 							{{ formatCurrency(costBreakdown.summary.subtotal) }}
 						</p>
 					</div>
-					<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+					<div class="bg-gray-50 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light">
 							Impuestos ({{ (taxRate * 100).toFixed(0) }}%)
 						</p>
-						<p
-							class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
-						>
+						<p class="text-xl font-bold text-text-main-light">
 							{{ formatCurrency(costBreakdown.summary.tax) }}
 						</p>
 					</div>
-					<div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
-							Envío
-						</p>
-						<p
-							class="text-xl font-bold text-text-main-light dark:text-text-main-dark"
-						>
+					<div class="bg-gray-50 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light">Envío</p>
+						<p class="text-xl font-bold text-text-main-light">
 							{{ formatCurrency(costBreakdown.summary.shipping) }}
 						</p>
 					</div>
-					<div class="bg-primary/10 dark:bg-primary/20 rounded-xl p-4">
-						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
-							Total
-						</p>
+					<div class="bg-primary/10 rounded-xl p-4">
+						<p class="text-sm text-text-muted-light">Total</p>
 						<p class="text-xl font-bold text-primary">
 							{{ formatCurrency(costBreakdown.summary.total) }}
 						</p>
@@ -396,53 +331,45 @@
 
 				<div class="overflow-x-auto">
 					<table class="w-full">
-						<thead class="bg-gray-50 dark:bg-gray-800">
+						<thead class="bg-gray-50">
 							<tr>
 								<th
-									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Componente
 								</th>
 								<th
-									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Cantidad
 								</th>
 								<th
-									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Costo Unitario
 								</th>
 								<th
-									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Total
 								</th>
 							</tr>
 						</thead>
-						<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+						<tbody class="divide-y divide-gray-200">
 							<tr
 								v-for="itemCost in costBreakdown.items"
 								:key="itemCost.item.id"
 							>
-								<td
-									class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-								>
+								<td class="px-4 py-3 text-sm text-text-main-light">
 									{{ itemCost.item.name }}
 								</td>
-								<td
-									class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-								>
+								<td class="px-4 py-3 text-sm text-text-main-light">
 									{{ itemCost.quantity }}
 								</td>
-								<td
-									class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-								>
+								<td class="px-4 py-3 text-sm text-text-main-light">
 									{{ formatCurrency(itemCost.unitCost) }}
 								</td>
-								<td
-									class="px-4 py-3 text-sm font-medium text-text-main-light dark:text-text-main-dark"
-								>
+								<td class="px-4 py-3 text-sm font-medium text-text-main-light">
 									{{ formatCurrency(itemCost.totalCost) }}
 								</td>
 							</tr>

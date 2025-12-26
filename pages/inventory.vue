@@ -3,12 +3,10 @@
 	<main class="min-h-screen">
 		<!-- Header -->
 		<header
-			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200"
+			class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200"
 		>
 			<div>
-				<h1
-					class="text-2xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h1 class="text-2xl font-semibold text-text-main-light">
 					Inventario de Componentes
 				</h1>
 			</div>
@@ -29,7 +27,7 @@
 				</button>
 				<button
 					@click="exportInventory"
-					class="flex items-center gap-2 bg-gray-900 dark:bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
 				>
 					<DocumentArrowDownIcon class="w-5 h-5" />
 					<span>Exportar</span>
@@ -48,46 +46,32 @@
 		<div class="p-8 pt-4">
 			<!-- Stats Row -->
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-4 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-4 shadow-sm">
 					<div class="flex items-center gap-3">
 						<div
-							class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
+							class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center"
 						>
-							<CubeIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+							<CubeIcon class="w-5 h-5 text-blue-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Total Items
-							</p>
-							<p
-								class="text-2xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Total Items</p>
+							<p class="text-2xl font-bold text-text-main-light">
 								{{ filteredItems.length }}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-4 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-4 shadow-sm">
 					<div class="flex items-center gap-3">
 						<div
-							class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
+							class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center"
 						>
-							<CheckCircleIcon
-								class="w-5 h-5 text-green-600 dark:text-green-400"
-							/>
+							<CheckCircleIcon class="w-5 h-5 text-green-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Stock OK
-							</p>
-							<p
-								class="text-2xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Stock OK</p>
+							<p class="text-2xl font-bold text-text-main-light">
 								{{ stockOK }}
 							</p>
 						</div>
@@ -95,47 +79,33 @@
 				</div>
 
 				<div
-					class="bg-card-light dark:bg-card-dark rounded-2xl p-4 shadow-sm border border-amber-200 dark:border-amber-900/50"
+					class="bg-card-light rounded-2xl p-4 shadow-sm border border-amber-200"
 				>
 					<div class="flex items-center gap-3">
 						<div
-							class="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center"
+							class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center"
 						>
-							<ExclamationTriangleIcon
-								class="w-5 h-5 text-amber-600 dark:text-amber-400"
-							/>
+							<ExclamationTriangleIcon class="w-5 h-5 text-amber-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Stock Bajo
-							</p>
-							<p class="text-2xl font-bold text-amber-600 dark:text-amber-400">
+							<p class="text-xs text-text-muted-light">Stock Bajo</p>
+							<p class="text-2xl font-bold text-amber-600">
 								{{ lowStockCount }}
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div class="bg-card-light dark:bg-card-dark rounded-2xl p-4 shadow-sm">
+				<div class="bg-card-light rounded-2xl p-4 shadow-sm">
 					<div class="flex items-center gap-3">
 						<div
-							class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
+							class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center"
 						>
-							<CurrencyDollarIcon
-								class="w-5 h-5 text-purple-600 dark:text-purple-400"
-							/>
+							<CurrencyDollarIcon class="w-5 h-5 text-purple-600" />
 						</div>
 						<div>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
-								Valor Total
-							</p>
-							<p
-								class="text-2xl font-bold text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-xs text-text-muted-light">Valor Total</p>
+							<p class="text-2xl font-bold text-text-main-light">
 								${{ totalValue }}
 							</p>
 						</div>
@@ -144,13 +114,9 @@
 			</div>
 
 			<!-- List Management Section -->
-			<div
-				class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm mb-6"
-			>
+			<div class="bg-card-light rounded-2xl p-6 shadow-sm mb-6">
 				<div class="flex justify-between items-center mb-4">
-					<h3
-						class="text-lg font-semibold text-text-main-light dark:text-text-main-dark"
-					>
+					<h3 class="text-lg font-semibold text-text-main-light">
 						Gestión de Listas
 					</h3>
 					<button
@@ -160,15 +126,13 @@
 						Gestionar Listas
 					</button>
 				</div>
-				<p class="text-text-muted-light dark:text-text-muted-dark text-sm">
+				<p class="text-text-muted-light text-sm">
 					Tienes {{ lists.listCount }} listas guardadas
 				</p>
 			</div>
 
 			<!-- Search and Filters -->
-			<div
-				class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm mb-6"
-			>
+			<div class="bg-card-light rounded-2xl p-6 shadow-sm mb-6">
 				<div class="flex flex-col md:flex-row gap-4">
 					<div class="flex-1 relative">
 						<MagnifyingGlassIcon
@@ -178,12 +142,12 @@
 							v-model="searchQuery"
 							type="text"
 							placeholder="Buscar por nombre, categoría, proveedor..."
-							class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 						/>
 					</div>
 					<select
 						v-model="filterCategory"
-						class="px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 					>
 						<option value="">Todas las categorías</option>
 						<option v-for="cat in categories" :key="cat" :value="cat">
@@ -192,7 +156,7 @@
 					</select>
 					<select
 						v-model="filterStock"
-						class="px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 					>
 						<option value="all">Todos</option>
 						<option value="ok">Stock OK</option>
@@ -202,57 +166,53 @@
 			</div>
 
 			<!-- Items Table -->
-			<div
-				class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm overflow-hidden"
-			>
+			<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
 				<div class="overflow-x-auto">
 					<table class="w-full">
-						<thead class="bg-gray-50 dark:bg-gray-800">
+						<thead class="bg-gray-50">
 							<tr>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Componente
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Categoría
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Stock
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Proveedor
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Precio
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									LCSC
 								</th>
 								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
 								>
 									Acciones
 								</th>
 							</tr>
 						</thead>
-						<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+						<tbody class="divide-y divide-gray-200">
 							<tr v-if="filteredItems.length === 0">
 								<td colspan="6" class="px-6 py-12 text-center">
-									<CubeIcon
-										class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600"
-									/>
-									<p class="text-text-muted-light dark:text-text-muted-dark">
+									<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
+									<p class="text-text-muted-light">
 										No hay componentes en el inventario
 									</p>
 									<button
@@ -266,25 +226,21 @@
 							<tr
 								v-for="item in paginatedItems"
 								:key="item.id"
-								class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+								class="hover:bg-gray-50 transition-colors"
 							>
 								<td class="px-6 py-4">
 									<div>
-										<p
-											class="text-sm font-semibold text-text-main-light dark:text-text-main-dark"
-										>
+										<p class="text-sm font-semibold text-text-main-light">
 											{{ item.name }}
 										</p>
-										<p
-											class="text-xs text-text-muted-light dark:text-text-muted-dark"
-										>
+										<p class="text-xs text-text-muted-light">
 											{{ item.part_number || "N/A" }}
 										</p>
 									</div>
 								</td>
 								<td class="px-6 py-4">
 									<span
-										class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded text-xs font-medium"
+										class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium"
 									>
 										{{ item.category || "Sin categoría" }}
 									</span>
@@ -299,55 +255,42 @@
 													: 'bg-green-500'
 											"
 										></div>
-										<span
-											class="text-sm text-text-main-light dark:text-text-main-dark"
-										>
+										<span class="text-sm text-text-main-light">
 											{{ item.in_stock }} {{ item.unit }}
 										</span>
 									</div>
 								</td>
-								<td
-									class="px-6 py-4 text-sm text-text-muted-light dark:text-text-muted-dark"
-								>
+								<td class="px-6 py-4 text-sm text-text-muted-light">
 									{{ item.supplier || "N/A" }}
 								</td>
-								<td
-									class="px-6 py-4 text-sm font-medium text-text-main-light dark:text-text-main-dark"
-								>
+								<td class="px-6 py-4 text-sm font-medium text-text-main-light">
 									${{ (item.price || 0).toFixed(2) }}
 								</td>
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-2">
 										<span
 											v-if="item.lcsc_part"
-											class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded text-xs font-medium"
+											class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium"
 										>
 											{{ item.lcsc_part }}
 										</span>
 										<button
 											v-if="item.lcsc_part"
 											@click="openLcscPreview(item.lcsc_part)"
-											class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
 											title="Ver en LCSC"
 										>
-											<GlobeAltIcon
-												class="w-4 h-4 text-blue-600 dark:text-blue-400"
-											/>
+											<GlobeAltIcon class="w-4 h-4 text-blue-600" />
 										</button>
 										<button
 											v-if="item.lcsc_part"
 											@click="openLcscPurchase(item.lcsc_part)"
-											class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
 											title="Comprar en LCSC"
 										>
-											<ShoppingCartIcon
-												class="w-4 h-4 text-green-600 dark:text-green-400"
-											/>
+											<ShoppingCartIcon class="w-4 h-4 text-green-600" />
 										</button>
-										<span
-											v-else
-											class="text-xs text-text-muted-light dark:text-text-muted-dark"
-										>
+										<span v-else class="text-xs text-text-muted-light">
 											N/A
 										</span>
 									</div>
@@ -356,19 +299,15 @@
 									<div class="flex items-center gap-2">
 										<button
 											@click="editItem(item)"
-											class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
 										>
-											<PencilIcon
-												class="w-4 h-4 text-blue-600 dark:text-blue-400"
-											/>
+											<PencilIcon class="w-4 h-4 text-blue-600" />
 										</button>
 										<button
 											@click="deleteItemConfirm(item.id)"
-											class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
 										>
-											<TrashIcon
-												class="w-4 h-4 text-red-600 dark:text-red-400"
-											/>
+											<TrashIcon class="w-4 h-4 text-red-600" />
 										</button>
 									</div>
 								</td>
@@ -380,9 +319,9 @@
 				<!-- Pagination -->
 				<div
 					v-if="totalPages > 1"
-					class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"
+					class="px-6 py-4 border-t border-gray-200 flex items-center justify-between"
 				>
-					<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+					<p class="text-sm text-text-muted-light">
 						Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
 						{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
 						de {{ filteredItems.length }} items
@@ -391,14 +330,14 @@
 						<button
 							@click="currentPage--"
 							:disabled="currentPage === 1"
-							class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
 						>
 							Anterior
 						</button>
 						<button
 							@click="currentPage++"
 							:disabled="currentPage === totalPages"
-							class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
 						>
 							Siguiente
 						</button>
@@ -428,22 +367,16 @@
 		v-if="showImportModal"
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
-		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-lg w-full p-6"
-		>
+		<div class="bg-card-light rounded-2xl shadow-xl max-w-lg w-full p-6">
 			<div class="flex items-center justify-between mb-6">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					Importar Archivo BOM
 				</h2>
 				<button
 					@click="showImportModal = false"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
-					<XMarkIcon
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-					/>
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
@@ -456,7 +389,7 @@
 				<div class="flex gap-3 pt-4">
 					<button
 						@click="showImportModal = false"
-						class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
 					>
 						Cancelar
 					</button>
@@ -479,30 +412,24 @@
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
 		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-card-light rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
 		>
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					Gestión de Listas
 				</h2>
 				<button
 					@click="showListsManagement = false"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
-					<XMarkIcon
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-					/>
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
 			<div class="px-6 pb-6">
 				<!-- Merge Lists Section -->
 				<div class="mb-6">
-					<h3
-						class="text-lg font-medium text-text-main-light dark:text-text-main-dark mb-4"
-					>
+					<h3 class="text-lg font-medium text-text-main-light mb-4">
 						Mezclar Listas
 					</h3>
 					<div class="space-y-4">
@@ -520,14 +447,10 @@
 							/>
 							<label :for="`list-${list.id}`" class="flex-1">
 								<div>
-									<p
-										class="font-medium text-text-main-light dark:text-text-main-dark"
-									>
+									<p class="font-medium text-text-main-light">
 										{{ list.name }}
 									</p>
-									<p
-										class="text-sm text-text-muted-light dark:text-text-muted-dark"
-									>
+									<p class="text-sm text-text-muted-light">
 										{{ list.items.length }} componentes
 									</p>
 								</div>
@@ -535,7 +458,7 @@
 						</div>
 						<div
 							v-if="lists.lists.value.length === 0"
-							class="text-center py-4 text-text-muted-light dark:text-text-muted-dark"
+							class="text-center py-4 text-text-muted-light"
 						>
 							No hay listas para mezclar
 						</div>
@@ -545,7 +468,7 @@
 							v-model="mergeListName"
 							type="text"
 							placeholder="Nombre de la lista combinada"
-							class="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 						/>
 						<button
 							@click="mergeSelectedLists"
