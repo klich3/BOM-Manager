@@ -3,7 +3,7 @@
 	<main class="min-h-screen">
 		<!-- Header -->
 		<header
-			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-gray-800"
+			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200"
 		>
 			<div>
 				<h1
@@ -483,11 +483,11 @@ import {
 	TrashIcon,
 	XMarkIcon,
 } from "@heroicons/vue/24/outline";
-import { useDatabase } from "../../composables/useDatabase";
-import { useCostCalculator } from "../../composables/useCostCalculator";
+import { useDatabase } from "@/composables/useDatabase";
+import { useCostCalculator } from "@/composables/useCostCalculator";
 import { useRouter } from "vue-router";
-import type { BOMItem, BOMProject } from "../../types/bom";
-import AddItemToProjectModal from "../../components/AddItemToProjectModal.vue";
+import type { BOMItem, BOMProject } from "@/types/bom";
+import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
 
 const router = useRouter();
 const db = useDatabase();

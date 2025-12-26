@@ -4,7 +4,7 @@
 	>
 		<!-- Sidebar -->
 		<aside
-			class="fixed w-20 lg:w-24 h-screen flex flex-col items-center py-6 bg-card-light dark:bg-card-dark border-r border-gray-200 dark:border-gray-800 z-10"
+			class="fixed w-20 lg:w-24 h-screen flex flex-col items-center py-6 bg-card-light dark:bg-card-dark border-r border-gray-200 z-10"
 		>
 			<div class="mb-8">
 				<div
@@ -42,7 +42,7 @@
 					<Cog6ToothIcon class="w-6 h-6" />
 				</button>
 				<div
-					class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 overflow-hidden border-2 border-white dark:border-gray-700"
+					class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 overflow-hidden border-2 border-white"
 				>
 					<div
 						class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600"

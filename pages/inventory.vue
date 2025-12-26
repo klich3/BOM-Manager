@@ -3,7 +3,7 @@
 	<main class="min-h-screen">
 		<!-- Header -->
 		<header
-			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-gray-800"
+			class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark border-b border-gray-200"
 		>
 			<div>
 				<h1
@@ -584,15 +584,15 @@ import {
 	GlobeAltIcon,
 	ShoppingCartIcon,
 } from "@heroicons/vue/24/outline";
-import { useDatabase } from "../composables/useDatabase";
-import { useExport } from "../composables/useExport";
-import { useFileParser } from "../composables/useFileParser";
-import { useLists } from "../composables/useLists";
-import { useLCSC } from "../composables/useLCSC";
-import FileUpload from "../components/FileUpload.vue";
-import ListManager from "../components/ListManager.vue";
-import LCSCPreview from "../components/LCSCPreview.vue";
-import AddItemToInventoryModal from "../components/AddItemToInventoryModal.vue";
+import { useDatabase } from "@/composables/useDatabase";
+import { useExport } from "@/composables/useExport";
+import { useFileParser } from "@/composables/useFileParser";
+import { useLists } from "@/composables/useLists";
+import { useLCSC } from "@/composables/useLCSC";
+import FileUpload from "@/components/FileUpload.vue";
+import ListManager from "@/components/ListManager.vue";
+import LCSCPreview from "@/components/LCSCPreview.vue";
+import AddItemToInventoryModal from "@/components/AddItemToInventoryModal.vue";
 
 const db = useDatabase();
 const { exportAllInventory } = useExport();
