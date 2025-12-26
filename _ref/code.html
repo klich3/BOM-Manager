@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BOM &amp; SMD Components Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#22c55e", // Using the green from the screenshot
+                        secondary: "#1f2937",
+                        "background-light": "#f3f4f6", // Light gray background
+                        "background-dark": "#111827", // Dark mode background
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1f2937",
+                        "text-light": "#374151",
+                        "text-dark": "#e5e7eb",
+                        "muted-light": "#9ca3af",
+                        "muted-dark": "#6b7280",
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem", // Consistent rounded corners
+                        'xl': "1rem",
+                        '2xl': "1.5rem",
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans h-screen flex overflow-hidden selection:bg-primary selection:text-white transition-colors duration-300">
+<aside class="w-20 lg:w-24 flex flex-col items-center py-8 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-gray-800 flex-shrink-0 z-20 shadow-soft">
+<div class="mb-10">
+<div class="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
+<span class="material-icons-outlined text-3xl">memory</span>
+</div>
+</div>
+<nav class="flex-1 w-full flex flex-col items-center space-y-6">
+<a class="w-12 h-12 flex items-center justify-center rounded-xl bg-gray-900 text-white shadow-lg" href="#">
+<span class="material-icons-outlined">dashboard</span>
+</a>
+<a class="w-12 h-12 flex items-center justify-center rounded-xl text-muted-light dark:text-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" href="#">
+<span class="material-icons-outlined">inventory_2</span>
+</a>
+<a class="w-12 h-12 flex items-center justify-center rounded-xl text-muted-light dark:text-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" href="#">
+<span class="material-icons-outlined">fact_check</span>
+</a>
+<a class="w-12 h-12 flex items-center justify-center rounded-xl text-muted-light dark:text-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" href="#">
+<span class="material-icons-outlined">analytics</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col items-center space-y-6">
+<a class="w-12 h-12 flex items-center justify-center rounded-xl text-muted-light dark:text-muted-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" href="#">
+<span class="material-icons-outlined">settings</span>
+</a>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiYvs5pBr9Mj8IP5xOdHiNAGcCHHj9nxEevvdgNob8bgd-H9ERNw8TU3Pa1mF9DFE9cYnBFABYQyiSaf7Gp8LUdcAGqa2Izx2xLnb8UAkvXQgHOeeqAA6P9QmzmddLdeufjtoeKLvxuqfHsDOnqf1QXaau2VM38UaoE1kCjjYUkrP7ep-5OMuXm3GsBCsfkG2hypHDOSXZzMyfZyPU7EfJciH38Bo7y3RJZDESJfe4P8qsSp93CzMquhCeUeJYSu3hd_0hGqvbZPY"/>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col overflow-hidden relative">
+<header class="h-20 px-8 flex items-center justify-between bg-background-light dark:bg-background-dark z-10">
+<h1 class="text-2xl font-semibold text-gray-800 dark:text-white">Component Management</h1>
+<div class="flex items-center space-x-4">
+<div class="hidden md:flex bg-white dark:bg-surface-dark rounded-full px-4 py-2 items-center border border-gray-200 dark:border-gray-700 shadow-sm">
+<span class="material-icons-outlined text-gray-400 mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 dark:text-gray-200 placeholder-gray-400" placeholder="Search components..." type="text"/>
+</div>
+<button class="flex items-center space-x-2 bg-gray-900 dark:bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+<span class="material-icons-outlined text-lg">notifications</span>
+<span>3 Alerts</span>
+</button>
+<div class="flex items-center space-x-2 bg-white dark:bg-surface-dark px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span>Project: PCB-Main-V4</span>
+<span class="material-icons-outlined text-base">expand_more</span>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-8 pt-2">
+<div class="grid grid-cols-12 gap-6 h-full auto-rows-min">
+<div class="col-span-12 lg:col-span-8 grid grid-cols-12 gap-6">
+<div class="col-span-12 bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-soft relative overflow-hidden h-80 group">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<pattern height="40" id="pcb-pattern" patternUnits="userSpaceOnUse" width="40" x="0" y="0">
+<path d="M10 10h20v20h-20z" fill="none" stroke="currentColor" stroke-width="1"></path>
+<circle cx="10" cy="10" fill="currentColor" r="2"></circle>
+<circle cx="30" cy="30" fill="currentColor" r="2"></circle>
+<path d="M10 10l20 20" stroke="currentColor" stroke-width="1"></path>
+</pattern>
+<rect fill="url(#pcb-pattern)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<div class="flex justify-between items-start relative z-10">
+<div>
+<div class="flex items-center space-x-2 text-gray-500 dark:text-gray-400 text-sm mb-1">
+<span class="material-icons-outlined text-base">location_on</span>
+<span>Assembly Line A, Shenzhen</span>
+</div>
+<div class="text-5xl font-bold text-gray-800 dark:text-white mt-2">98.2%</div>
+<div class="flex items-center mt-2 space-x-2">
+<span class="material-icons-outlined text-yellow-500">wb_sunny</span>
+<span class="text-sm font-medium text-gray-600 dark:text-gray-300">Optimal Conditions</span>
+</div>
+<div class="text-xs text-gray-400 mt-1">Temp: 24°C | Humidity: 45%</div>
+</div>
+<div class="text-right text-gray-400 text-sm">
+<div>Mon, 14 Oct 2024</div>
+<div>10:42 AM</div>
+</div>
+</div>
+<div class="absolute bottom-6 right-6 flex space-x-4">
+<div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-3 rounded-xl border border-gray-200 dark:border-gray-600 shadow-lg w-48 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+<div class="flex justify-between items-center mb-1">
+<span class="text-xs font-bold text-gray-700 dark:text-gray-200">STM32 MCU</span>
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+</div>
+<div class="text-[10px] text-gray-500">Stock: 4,500 units</div>
+<div class="text-[10px] text-gray-500">Ref: U14</div>
+</div>
+<div class="bg-gray-900 text-white p-3 rounded-xl shadow-lg w-40 flex flex-col justify-center items-center transform -translate-y-8 border border-gray-700">
+<div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mb-2">
+<span class="material-icons-outlined text-sm">sensors</span>
+</div>
+<span class="text-xs font-bold">Main Sensor</span>
+<span class="text-[10px] text-gray-400">Active Monitoring</span>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-primary text-white rounded-3xl p-6 relative overflow-hidden shadow-lg shadow-primary/20">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+<span class="material-icons-outlined text-xl">inventory</span>
+</div>
+<span class="material-icons-outlined text-white/70 cursor-pointer">north_east</span>
+</div>
+<h3 class="text-lg font-medium opacity-90">Stock Health</h3>
+<div class="mt-4 flex items-end space-x-2">
+<span class="text-4xl font-bold">94%</span>
+<span class="bg-white/20 px-2 py-0.5 rounded text-xs mb-1.5 backdrop-blur-md">Good</span>
+</div>
+<p class="text-xs mt-3 opacity-80 leading-relaxed">Inventory levels optimal for current production run.</p>
+<div class="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+</div>
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-soft border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+<span class="material-icons-outlined text-xl">speed</span>
+</div>
+<span class="material-icons-outlined text-gray-400 cursor-pointer">north_east</span>
+</div>
+<h3 class="text-lg font-medium text-gray-700 dark:text-gray-200">Throughput</h3>
+<div class="mt-4">
+<span class="text-4xl font-bold text-gray-800 dark:text-white">2.4k</span>
+<span class="text-sm text-gray-400">/ hr</span>
+</div>
+<p class="text-xs mt-3 text-gray-500 dark:text-gray-400">Components placed. Efficiency +12%.</p>
+</div>
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-soft border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg">
+<span class="material-icons-outlined text-xl">thermostat</span>
+</div>
+<span class="material-icons-outlined text-gray-400 cursor-pointer">north_east</span>
+</div>
+<h3 class="text-lg font-medium text-gray-700 dark:text-gray-200">Reflow Temp</h3>
+<div class="mt-4">
+<span class="text-4xl font-bold text-gray-800 dark:text-white">245°C</span>
+</div>
+<p class="text-xs mt-3 text-gray-500 dark:text-gray-400">Zone 4 peak. Within tolerance.</p>
+</div>
+<div class="col-span-6 md:col-span-4 bg-surface-light dark:bg-surface-dark rounded-3xl p-5 shadow-soft hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start">
+<span class="material-icons-outlined text-gray-400 text-lg">science</span>
+<span class="material-icons-outlined text-gray-300 text-sm">north_east</span>
+</div>
+<div class="mt-3">
+<p class="text-sm text-gray-500 dark:text-gray-400">Solder pH</p>
+<p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">7.2</p>
+<p class="text-[10px] text-gray-400 mt-2 leading-tight">Neutral paste active</p>
+</div>
+</div>
+<div class="col-span-6 md:col-span-4 bg-surface-light dark:bg-surface-dark rounded-3xl p-5 shadow-soft hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start">
+<span class="material-icons-outlined text-gray-400 text-lg">water_drop</span>
+<span class="material-icons-outlined text-gray-300 text-sm">north_east</span>
+</div>
+<div class="mt-3">
+<p class="text-sm text-gray-500 dark:text-gray-400">Humidity</p>
+<p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">42%</p>
+<p class="text-[10px] text-gray-400 mt-2 leading-tight">Dry box secure</p>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-light dark:bg-surface-dark rounded-3xl p-5 shadow-soft hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start">
+<span class="material-icons-outlined text-gray-400 text-lg">bug_report</span>
+<span class="material-icons-outlined text-gray-300 text-sm">north_east</span>
+</div>
+<div class="mt-3">
+<p class="text-sm text-gray-500 dark:text-gray-400">Defect Rate</p>
+<p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">0.03%</p>
+<p class="text-[10px] text-gray-400 mt-2 leading-tight">Below target threshold</p>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 flex flex-col space-y-6">
+<div class="flex-1 bg-transparent flex flex-col space-y-4">
+<div class="flex justify-between items-center mb-1">
+<h2 class="text-lg font-semibold text-gray-800 dark:text-white">Active Components</h2>
+<span class="material-icons-outlined text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-200">north_east</span>
+</div>
+<div class="grid grid-cols-2 gap-4 text-xs text-gray-500 dark:text-gray-400 mb-2">
+<div>Sensors: <span class="text-gray-800 dark:text-gray-200 font-medium">12</span></div>
+<div>Actuators: <span class="text-gray-800 dark:text-gray-200 font-medium">5</span></div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-soft flex items-start space-x-3 cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors group border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
+<div class="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">ATMEGA328P-PU</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Microcontroller • DIP-28</p>
+<p class="text-[10px] text-gray-400 mt-1">#IC-2044 • Stock: 204</p>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-soft flex items-start space-x-3 cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors group border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
+<div class="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">Murata 10uF Cap</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">MLCC • 0603 Package</p>
+<p class="text-[10px] text-gray-400 mt-1">#CAP-0402 • Stock: 15,000</p>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-soft flex items-start space-x-3 cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors group border border-transparent hover:border-gray-200 dark:hover:border-gray-600 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-yellow-100 dark:bg-yellow-900/50"></div>
+<div class="w-2 h-2 rounded-full bg-yellow-500 mt-2 flex-shrink-0 ml-1"></div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">ESP32-WROOM</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">WiFi Module</p>
+<div class="mt-2 inline-flex items-center px-2 py-0.5 rounded bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-[10px] font-medium">
+<span class="material-icons-outlined text-[10px] mr-1">warning</span> Low Stock Alert
+                                </div>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-soft flex items-start space-x-3 cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors group border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
+<div class="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary transition-colors">Linear Reg 3.3V</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">LDO • SOT-223</p>
+<p class="text-[10px] text-gray-400 mt-1">#REG-110 • Stock: 890</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-3xl p-6 shadow-soft flex flex-col h-full max-h-[420px]">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-lg font-semibold text-gray-800 dark:text-white">Production Tasks</h2>
+<span class="material-icons-outlined text-gray-400 cursor-pointer">north_east</span>
+</div>
+<div class="mb-6">
+<div class="flex justify-between text-xs font-medium mb-2">
+<span class="text-primary">75% Complete</span>
+<span class="text-gray-400">3/4 Stages</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pr-2 space-y-6">
+<div class="relative pl-6 border-l-2 border-gray-200 dark:border-gray-700 pb-2">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 flex items-center justify-center">
+<span class="material-icons-outlined text-[10px] text-white">check</span>
+</div>
+<h4 class="text-sm font-semibold text-gray-800 dark:text-white">Solder Paste Printing</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Stencil alignment and paste deposition completed.</p>
+<span class="text-[10px] text-gray-400 mt-1 block">08:00 AM - 09:30 AM</span>
+</div>
+<div class="relative pl-6 border-l-2 border-gray-200 dark:border-gray-700 pb-2">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 flex items-center justify-center">
+<span class="material-icons-outlined text-[10px] text-white">check</span>
+</div>
+<h4 class="text-sm font-semibold text-gray-800 dark:text-white">Pick &amp; Place</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">SMD components mounting phase.</p>
+<span class="text-[10px] text-gray-400 mt-1 block">09:45 AM - 11:15 AM</span>
+</div>
+<div class="relative pl-6 border-l-2 border-gray-200 dark:border-gray-700 pb-2">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white dark:bg-gray-800 border-2 border-primary flex items-center justify-center">
+<div class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+</div>
+<h4 class="text-sm font-semibold text-gray-800 dark:text-white">Reflow Soldering</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Oven profile running. Zone 3 active.</p>
+<span class="text-[10px] text-primary mt-1 block font-medium">In Progress...</span>
+</div>
+<div class="relative pl-6 border-l-2 border-transparent pb-2 opacity-50">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-800"></div>
+<h4 class="text-sm font-semibold text-gray-800 dark:text-white">AOI Inspection</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Automated Optical Inspection for defects.</p>
+<span class="text-[10px] text-gray-400 mt-1 block">Scheduled: 02:00 PM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

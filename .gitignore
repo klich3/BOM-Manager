@@ -1,0 +1,39 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Nuxt
+.nuxt/
+.output/
+.env
+dist/
+
+# Tauri
+src-tauri/target/
+src-tauri/WixTools/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build
+*.log
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Temp
+tmp/
+temp/
