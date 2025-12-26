@@ -13,7 +13,13 @@ export default defineNuxtConfig({
     clearScreen: false,
     envPrefix: ['VITE_', 'TAURI_'],
     server: {
-      strictPort: true
+      strictPort: true,
+      hmr: {
+        overlay: false
+      }
+    },
+    optimizeDeps: {
+      include: ['@tauri-apps/plugin-sql']
     }
   }
 })

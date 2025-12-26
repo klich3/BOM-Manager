@@ -1,3 +1,6 @@
+import { defineNuxtPlugin } from '#imports';
+import { useDatabase } from '~/composables/useDatabase';
+
 export default defineNuxtPlugin(async () => {
   // Inicializar la base de datos cuando la app arranca
   if (process.client) {
