@@ -75,6 +75,13 @@
 						<span>Importar</span>
 					</button>
 					<button
+						@click="createListFromSelection"
+						class="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-700 transition-colors"
+					>
+						<ClipboardDocumentListIcon class="w-5 h-5" />
+						<span>Crear Lista</span>
+					</button>
+					<button
 						@click="exportInventory"
 						class="flex items-center gap-2 bg-gray-900 dark:bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
 					>
@@ -196,6 +203,28 @@
 							</div>
 						</div>
 					</div>
+				</div>
+
+				<!-- List Management Section -->
+				<div
+					class="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm mb-6"
+				>
+					<div class="flex justify-between items-center mb-4">
+						<h3
+							class="text-lg font-semibold text-text-main-light dark:text-text-main-dark"
+						>
+							Gestión de Listas
+						</h3>
+						<button
+							@click="showListsManagement = true"
+							class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+						>
+							Gestionar Listas
+						</button>
+					</div>
+					<p class="text-text-muted-light dark:text-text-muted-dark text-sm">
+						Tienes {{ lists.listCount }} listas guardadas
+					</p>
 				</div>
 
 				<!-- Search and Filters -->
@@ -367,6 +396,16 @@
 													class="w-4 h-4 text-blue-600 dark:text-blue-400"
 												/>
 											</button>
+											<button
+												v-if="item.lcsc_part"
+												@click="openLcscPurchase(item.lcsc_part)"
+												class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+												title="Comprar en LCSC"
+											>
+												<ShoppingCartIcon
+													class="w-4 h-4 text-green-600 dark:text-green-400"
+												/>
+											</button>
 											<span
 												v-else
 												class="text-xs text-text-muted-light dark:text-text-muted-dark"
@@ -407,9 +446,7 @@
 					>
 						<p class="text-sm text-text-muted-light dark:text-text-muted-dark">
 							Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
-							{{
-								Math.min(currentPage * itemsPerPage, filteredItems.length)
-							}}
+							{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
 							de {{ filteredItems.length }} items
 						</p>
 						<div class="flex gap-2">
@@ -432,6 +469,13 @@
 				</div>
 			</div>
 		</main>
+
+		<!-- LCSC Preview Modal -->
+		<LCSCPreview
+			:show="showLCSCPreview"
+			:part-number="lcscPartNumber"
+			@close="showLCSCPreview = false"
+		/>
 
 		<!-- Add/Edit Item Modal -->
 		<div
@@ -698,6 +742,101 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- List Manager Modal -->
+		<ListManager
+			v-if="showListManager"
+			v-model="showListManager"
+			:items="[]"
+			@saved="saveList"
+		/>
+
+		<!-- Lists Management Modal -->
+		<div
+			v-if="showListsManagement"
+			class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+		>
+			<div
+				class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+			>
+				<div class="flex items-center justify-between mb-6 p-6 pb-4">
+					<h2
+						class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
+					>
+						Gestión de Listas
+					</h2>
+					<button
+						@click="showListsManagement = false"
+						class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					>
+						<XMarkIcon
+							class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
+						/>
+					</button>
+				</div>
+
+				<div class="px-6 pb-6">
+					<!-- Merge Lists Section -->
+					<div class="mb-6">
+						<h3
+							class="text-lg font-medium text-text-main-light dark:text-text-main-dark mb-4"
+						>
+							Mezclar Listas
+						</h3>
+						<div class="space-y-4">
+							<div
+								v-for="list in lists.lists.value"
+								:key="list.id"
+								class="flex items-center"
+							>
+								<input
+									v-model="selectedListsForMerge"
+									:value="list.id"
+									type="checkbox"
+									:id="`list-${list.id}`"
+									class="mr-3 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+								/>
+								<label :for="`list-${list.id}`" class="flex-1">
+									<div>
+										<p
+											class="font-medium text-text-main-light dark:text-text-main-dark"
+										>
+											{{ list.name }}
+										</p>
+										<p
+											class="text-sm text-text-muted-light dark:text-text-muted-dark"
+										>
+											{{ list.items.length }} componentes
+										</p>
+									</div>
+								</label>
+							</div>
+							<div
+								v-if="lists.lists.value.length === 0"
+								class="text-center py-4 text-text-muted-light dark:text-text-muted-dark"
+							>
+								No hay listas para mezclar
+							</div>
+						</div>
+						<div class="mt-4 flex gap-3">
+							<input
+								v-model="mergeListName"
+								type="text"
+								placeholder="Nombre de la lista combinada"
+								class="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							/>
+							<button
+								@click="mergeSelectedLists"
+								:disabled="selectedListsForMerge.length < 2"
+								class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								Mezclar Listas
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -720,16 +859,23 @@ import {
 	PencilIcon,
 	TrashIcon,
 	XMarkIcon,
+	ClipboardDocumentListIcon,
 	GlobeAltIcon,
+	ShoppingCartIcon,
 } from "@heroicons/vue/24/outline";
 import { useDatabase } from "../composables/useDatabase";
 import { useExport } from "../composables/useExport";
 import { useFileParser } from "../composables/useFileParser";
+import { useLists } from "../composables/useLists";
+import { useLCSC } from "../composables/useLCSC";
 import FileUpload from "../components/FileUpload.vue";
+import ListManager from "../components/ListManager.vue";
+import LCSCPreview from "../components/LCSCPreview.vue";
 
 const db = useDatabase();
 const { exportAllInventory } = useExport();
 const { parseFile } = useFileParser();
+const lists = useLists();
 
 // State
 const items = ref<any[]>([]);
@@ -740,6 +886,10 @@ const currentPage = ref(1);
 const itemsPerPage = 10;
 const showAddModal = ref(false);
 const showImportModal = ref(false);
+const showListManager = ref(false);
+const showListsManagement = ref(false);
+const selectedListsForMerge = ref<string[]>([]);
+const mergeListName = ref("");
 const editingItem = ref<any>(null);
 const itemForm = ref({
 	name: "",
@@ -755,6 +905,10 @@ const itemForm = ref({
 	minStock: 0,
 	notes: "",
 });
+
+// LCSC Preview State
+const showLCSCPreview = ref(false);
+const lcscPartNumber = ref("");
 
 // Computed
 const categories = computed(() => {
@@ -924,8 +1078,72 @@ const handleImportError = (message: string) => {
 	console.error("Error de importación:", message);
 };
 
+const createListFromSelection = () => {
+	// Crear una nueva lista con los items filtrados
+	const selectedItems = filteredItems.value.map((item) => ({
+		id: item.id,
+		name: item.name,
+		part_number: item.part_number,
+		lcsc_part: item.lcsc_part,
+		unit: item.unit,
+		quantity: item.quantity || 1,
+	}));
+
+	if (selectedItems.length === 0) {
+		alert("No hay items para agregar a la lista");
+		return;
+	}
+
+	showListManager.value = true;
+	// Usar nextTick para asegurar que el componente esté montado
+	setTimeout(() => {
+		const listManager = document.querySelector("list-manager");
+		if (listManager && (listManager as any).addItems) {
+			(listManager as any).addItems(selectedItems);
+		}
+	}, 100);
+};
+
+const saveList = (list: any) => {
+	lists.createList({
+		name: list.name,
+		description: list.description,
+		items: list.items,
+	});
+	showListManager.value = false;
+	alert(`Lista "${list.name}" guardada exitosamente`);
+};
+
 const openLcscPreview = (lcscPart: string) => {
-	window.open(`https://lcsc.com/${lcscPart}.html`);
+	lcscPartNumber.value = lcscPart;
+	showLCSCPreview.value = true;
+};
+
+const openLcscPurchase = (lcscPart: string) => {
+	window.open(`https://lcsc.com/product-detail/${lcscPart}.html`, "_blank");
+};
+
+const mergeSelectedLists = () => {
+	if (selectedListsForMerge.value.length < 2) {
+		alert("Selecciona al menos 2 listas para mezclar");
+		return;
+	}
+
+	if (!mergeListName.value.trim()) {
+		alert("Ingresa un nombre para la lista combinada");
+		return;
+	}
+
+	try {
+		lists.mergeLists(selectedListsForMerge.value, mergeListName.value);
+		showListsManagement.value = false;
+		selectedListsForMerge.value = [];
+		mergeListName.value = "";
+		alert("Listas combinadas exitosamente");
+	} catch (error: any) {
+		console.error("Error al mezclar listas:", error);
+		alert("Error al mezclar las listas: " + error.message);
+	}
 };
 
 // Lifecycle
