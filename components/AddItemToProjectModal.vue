@@ -4,21 +4,17 @@
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
 		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-card-light rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
 		>
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					Agregar Item al Proyecto
 				</h2>
 				<button
 					@click="closeModal"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
-					<XMarkIcon
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-					/>
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
@@ -32,7 +28,7 @@
 							v-model="searchQuery"
 							type="text"
 							placeholder="Buscar componentes disponibles..."
-							class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 						/>
 					</div>
 				</div>
@@ -41,24 +37,18 @@
 					<div
 						v-for="item in items"
 						:key="item.id"
-						class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+						class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
 					>
 						<div>
-							<p
-								class="font-medium text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="font-medium text-text-main-light">
 								{{ item.name }}
 							</p>
-							<p
-								class="text-sm text-text-muted-light dark:text-text-muted-dark"
-							>
+							<p class="text-sm text-text-muted-light">
 								{{ item.category || "Sin categoría" }}
 							</p>
 						</div>
 						<div class="flex items-center gap-3">
-							<span
-								class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-							>
+							<span class="text-sm font-medium text-text-main-light">
 								${{ (item.price || 0).toFixed(2) }}
 							</span>
 							<button

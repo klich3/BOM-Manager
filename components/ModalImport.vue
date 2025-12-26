@@ -8,19 +8,19 @@
 
 		<!-- Modal Content -->
 		<div
-			class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+			class="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
 			@click.stop
 		>
 			<!-- Header -->
 			<div
-				class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700"
+				class="flex items-center justify-between p-6 border-b border-gray-200"
 			>
-				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+				<h2 class="text-xl font-semibold text-gray-900">
 					Importar archivo BOM
 				</h2>
 				<button
 					@click="closeModal"
-					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
 				>
 					<XMarkIcon class="w-5 h-5 text-gray-500" />
 				</button>
@@ -31,7 +31,7 @@
 				<div v-if="step === 1">
 					<!-- Step 1: File Upload -->
 					<div class="mb-6">
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+						<h3 class="text-lg font-medium text-gray-900 mb-4">
 							Selecciona tu archivo
 						</h3>
 						<FileUpload
@@ -40,16 +40,13 @@
 						/>
 					</div>
 
-					<div
-						v-if="selectedFile"
-						class="mt-6 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl"
-					>
+					<div v-if="selectedFile" class="mt-6 p-4 bg-gray-50 rounded-xl">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="font-medium text-gray-900 dark:text-white">
+								<p class="font-medium text-gray-900">
 									{{ selectedFile.name }}
 								</p>
-								<p class="text-sm text-gray-500 dark:text-gray-400">
+								<p class="text-sm text-gray-500">
 									{{ formatFileSize(selectedFile.size) }} •
 									{{ selectedFile.type || "Archivo" }}
 								</p>
@@ -67,10 +64,10 @@
 				<div v-if="step === 2">
 					<!-- Step 2: Column Mapping -->
 					<div class="mb-6">
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+						<h3 class="text-lg font-medium text-gray-900 mb-4">
 							Mapeo de columnas
 						</h3>
-						<p class="text-gray-600 dark:text-gray-400 mb-4">
+						<p class="text-gray-600 mb-4">
 							Selecciona las columnas correspondientes a cada campo del BOM:
 						</p>
 
@@ -86,16 +83,14 @@
 							<div
 								v-for="requiredField in requiredFields"
 								:key="requiredField.key"
-								class="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+								class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
 							>
-								<label
-									class="w-32 font-medium text-gray-700 dark:text-gray-300"
-								>
+								<label class="w-32 font-medium text-gray-700">
 									{{ requiredField.label }} <span class="text-red-500">*</span>
 								</label>
 								<select
 									v-model="columnMapping[requiredField.key]"
-									class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+									class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
 								>
 									<option value="">Seleccionar columna...</option>
 									<option
@@ -112,16 +107,14 @@
 							<div
 								v-for="optionalField in optionalFields"
 								:key="optionalField.key"
-								class="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+								class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
 							>
-								<label
-									class="w-32 font-medium text-gray-700 dark:text-gray-300"
-								>
+								<label class="w-32 font-medium text-gray-700">
 									{{ optionalField.label }}
 								</label>
 								<select
 									v-model="columnMapping[optionalField.key]"
-									class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+									class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
 								>
 									<option value="">Seleccionar columna...</option>
 									<option
@@ -140,19 +133,17 @@
 					<div
 						v-if="sampleData && sampleData.rows && sampleData.rows.length > 0"
 					>
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+						<h3 class="text-lg font-medium text-gray-900 mb-4">
 							Vista previa de datos
 						</h3>
 						<div class="overflow-x-auto">
-							<table
-								class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-							>
-								<thead class="bg-gray-50 dark:bg-gray-700">
+							<table class="min-w-full divide-y divide-gray-200">
+								<thead class="bg-gray-50">
 									<tr>
 										<th
 											v-for="header in sampleData.headers"
 											:key="header"
-											class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 										>
 											{{ header }}
 											<span
@@ -164,9 +155,7 @@
 										</th>
 									</tr>
 								</thead>
-								<tbody
-									class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-								>
+								<tbody class="bg-white divide-y divide-gray-200">
 									<tr
 										v-for="(row, index) in sampleData.rows.slice(0, 5)"
 										:key="index"
@@ -174,7 +163,7 @@
 										<td
 											v-for="(cell, cellIndex) in row"
 											:key="cellIndex"
-											class="px-4 py-3 text-sm text-gray-900 dark:text-gray-300 whitespace-nowrap"
+											class="px-4 py-3 text-sm text-gray-900 whitespace-nowrap"
 										>
 											{{ cell }}
 										</td>
@@ -182,7 +171,7 @@
 									<tr v-if="sampleData.rows.length > 5">
 										<td
 											:colspan="sampleData.headers.length"
-											class="px-4 py-3 text-sm text-center text-gray-500 dark:text-gray-400"
+											class="px-4 py-3 text-sm text-center text-gray-500"
 										>
 											+ {{ sampleData.rows.length - 5 }} filas más...
 										</td>
@@ -196,20 +185,16 @@
 				<div v-if="step === 3">
 					<!-- Step 3: Import Preview -->
 					<div class="mb-6">
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+						<h3 class="text-lg font-medium text-gray-900 mb-4">
 							Revisión de importación
 						</h3>
-						<p class="text-gray-600 dark:text-gray-400 mb-4">
+						<p class="text-gray-600 mb-4">
 							Se importarán {{ parsedItems.length }} items a tu inventario.
 						</p>
 
 						<div v-if="parseResult.errors.length > 0" class="mb-4">
-							<h4 class="font-medium text-red-600 dark:text-red-400 mb-2">
-								Errores detectados:
-							</h4>
-							<ul
-								class="list-disc list-inside text-red-600 dark:text-red-400 text-sm space-y-1"
-							>
+							<h4 class="font-medium text-red-600 mb-2">Errores detectados:</h4>
+							<ul class="list-disc list-inside text-red-600 text-sm space-y-1">
 								<li v-for="(error, index) in parseResult.errors" :key="index">
 									{{ error }}
 								</li>
@@ -217,11 +202,9 @@
 						</div>
 
 						<div v-if="parseResult.warnings.length > 0" class="mb-4">
-							<h4 class="font-medium text-amber-600 dark:text-amber-400 mb-2">
-								Advertencias:
-							</h4>
+							<h4 class="font-medium text-amber-600 mb-2">Advertencias:</h4>
 							<ul
-								class="list-disc list-inside text-amber-600 dark:text-amber-400 text-sm space-y-1"
+								class="list-disc list-inside text-amber-600 text-sm space-y-1"
 							>
 								<li
 									v-for="(warning, index) in parseResult.warnings"
@@ -233,75 +216,61 @@
 						</div>
 
 						<div v-if="parsedItems.length > 0" class="overflow-x-auto">
-							<table
-								class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-							>
-								<thead class="bg-gray-50 dark:bg-gray-700">
+							<table class="min-w-full divide-y divide-gray-200">
+								<thead class="bg-gray-50">
 									<tr>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 										>
 											Nombre
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 										>
 											Cantidad
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 										>
 											Unidad
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 										>
 											Proveedor
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 										>
 											Precio
 										</th>
 									</tr>
 								</thead>
-								<tbody
-									class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-								>
+								<tbody class="bg-white divide-y divide-gray-200">
 									<tr
 										v-for="(item, index) in parsedItems.slice(0, 10)"
 										:key="index"
 									>
-										<td
-											class="px-4 py-3 text-sm text-gray-900 dark:text-gray-300"
-										>
+										<td class="px-4 py-3 text-sm text-gray-900">
 											{{ item.name }}
 										</td>
-										<td
-											class="px-4 py-3 text-sm text-gray-900 dark:text-gray-300"
-										>
+										<td class="px-4 py-3 text-sm text-gray-900">
 											{{ item.quantity }}
 										</td>
-										<td
-											class="px-4 py-3 text-sm text-gray-900 dark:text-gray-300"
-										>
+										<td class="px-4 py-3 text-sm text-gray-900">
 											{{ item.unit }}
 										</td>
-										<td
-											class="px-4 py-3 text-sm text-gray-900 dark:text-gray-300"
-										>
+										<td class="px-4 py-3 text-sm text-gray-900">
 											{{ item.supplier || "-" }}
 										</td>
-										<td
-											class="px-4 py-3 text-sm text-gray-900 dark:text-gray-300"
-										>
+										<td class="px-4 py-3 text-sm text-gray-900">
 											{{ item.price ? `$${item.price}` : "-" }}
 										</td>
 									</tr>
 									<tr v-if="parsedItems.length > 10">
 										<td
 											:colspan="5"
-											class="px-4 py-3 text-sm text-center text-gray-500 dark:text-gray-400"
+											class="px-4 py-3 text-sm text-center text-gray-500"
 										>
 											+ {{ parsedItems.length - 10 }} items más...
 										</td>
@@ -315,16 +284,14 @@
 
 			<!-- Footer -->
 			<div
-				class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700"
+				class="flex items-center justify-between p-6 border-t border-gray-200"
 			>
-				<div class="text-sm text-gray-500 dark:text-gray-400">
-					Paso {{ step }} de 3
-				</div>
+				<div class="text-sm text-gray-500">Paso {{ step }} de 3</div>
 				<div class="flex gap-3">
 					<button
 						v-if="step > 1"
 						@click="previousStep"
-						class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+						class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
 					>
 						Anterior
 					</button>
@@ -347,7 +314,7 @@
 						<div
 							class="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin mr-2"
 						></div>
-						<span class="text-gray-600 dark:text-gray-400">Procesando...</span>
+						<span class="text-gray-600">Procesando...</span>
 					</div>
 				</div>
 			</div>
@@ -358,11 +325,11 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
-import FileUpload from "./FileUpload.vue";
-import { useFileParser, type ParseResult } from "../composables/useFileParser";
-import type { BOMItem } from "../types/bom";
-import { useDatabase } from "../composables/useDatabase";
-import { useNotifications } from "../composables/useNotifications";
+import FileUpload from "@/components/FileUpload.vue";
+import { useFileParser, type ParseResult } from "@/composables/useFileParser";
+import type { BOMItem } from "@/types/bom";
+import { useDatabase } from "@/composables/useDatabase";
+import { useNotifications } from "@/composables/useNotifications";
 
 // Props
 interface Props {

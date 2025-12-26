@@ -3,23 +3,19 @@
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
 		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-card-light rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
 		>
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					{{
 						editingList ? "Editar Lista de Componentes" : "Crear Nueva Lista"
 					}}
 				</h2>
 				<button
 					@click="closeModal"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
-					<XMarkIcon
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-					/>
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
@@ -27,29 +23,25 @@
 				<!-- Formulario para crear/editar lista -->
 				<div class="mb-6">
 					<div class="mb-4">
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Nombre de la Lista
 						</label>
 						<input
 							v-model="listForm.name"
 							type="text"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 							placeholder="Nombre de la lista..."
 						/>
 					</div>
 
 					<div class="mb-4">
-						<label
-							class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-						>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
 							Descripción
 						</label>
 						<textarea
 							v-model="listForm.description"
 							rows="3"
-							class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark resize-none"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light resize-none"
 							placeholder="Descripción de la lista..."
 						></textarea>
 					</div>
@@ -58,48 +50,40 @@
 				<!-- Componentes seleccionados -->
 				<div class="mb-6">
 					<div class="flex justify-between items-center mb-4">
-						<h3
-							class="text-lg font-medium text-text-main-light dark:text-text-main-dark"
-						>
+						<h3 class="text-lg font-medium text-text-main-light">
 							Componentes en la Lista
 						</h3>
-						<span
-							class="text-sm text-text-muted-light dark:text-text-muted-dark"
-						>
+						<span class="text-sm text-text-muted-light">
 							{{ listForm.items.length }} componentes
 						</span>
 					</div>
 
 					<div
 						v-if="listForm.items.length === 0"
-						class="text-center py-8 text-text-muted-light dark:text-text-muted-dark"
+						class="text-center py-8 text-text-muted-light"
 					>
 						No hay componentes en esta lista
 					</div>
 
 					<div class="flex justify-between items-center mb-4">
 						<div>
-							<h4
-								class="text-md font-medium text-text-main-light dark:text-text-main-dark"
-							>
+							<h4 class="text-md font-medium text-text-main-light">
 								Componentes en la Lista
 							</h4>
-							<p
-								class="text-sm text-text-muted-light dark:text-text-muted-dark"
-							>
+							<p class="text-sm text-text-muted-light">
 								{{ listForm.items.length }} componentes
 							</p>
 						</div>
 						<div class="flex gap-2">
 							<button
 								@click="sortItemsByName"
-								class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-text-main-light dark:text-text-main-dark rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+								class="px-3 py-1 bg-gray-200 text-text-main-light rounded-lg text-sm hover:bg-gray-300 transition-colors"
 							>
 								Ordenar A-Z
 							</button>
 							<button
 								@click="sortItemsByQuantity"
-								class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-text-main-light dark:text-text-main-dark rounded-lg text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+								class="px-3 py-1 bg-gray-200 text-text-main-light rounded-lg text-sm hover:bg-gray-300 transition-colors"
 							>
 								Ordenar Cantidad
 							</button>
@@ -108,49 +92,45 @@
 
 					<div
 						v-if="listForm.items.length === 0"
-						class="text-center py-8 text-text-muted-light dark:text-text-muted-dark"
+						class="text-center py-8 text-text-muted-light"
 					>
 						No hay componentes en esta lista
 					</div>
 
 					<div v-else class="overflow-x-auto">
 						<table class="w-full">
-							<thead class="bg-gray-50 dark:bg-gray-800">
+							<thead class="bg-gray-50">
 								<tr>
 									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 									>
 										Componente
 									</th>
 									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 									>
 										Cantidad
 									</th>
 									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 									>
 										Unidad
 									</th>
 									<th
-										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+										class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 									>
 										Acciones
 									</th>
 								</tr>
 							</thead>
-							<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+							<tbody class="divide-y divide-gray-200">
 								<tr v-for="(item, index) in listForm.items" :key="index">
 									<td class="px-4 py-3">
 										<div>
-											<p
-												class="font-medium text-text-main-light dark:text-text-main-dark"
-											>
+											<p class="font-medium text-text-main-light">
 												{{ item.name }}
 											</p>
-											<p
-												class="text-sm text-text-muted-light dark:text-text-muted-dark"
-											>
+											<p class="text-sm text-text-muted-light">
 												{{ item.lcsc_part || item.part_number || "N/A" }}
 											</p>
 										</div>
@@ -160,22 +140,18 @@
 											v-model.number="item.quantity"
 											type="number"
 											min="1"
-											class="w-20 px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light dark:text-text-main-dark"
+											class="w-20 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
 										/>
 									</td>
-									<td
-										class="px-4 py-3 text-text-main-light dark:text-text-main-dark"
-									>
+									<td class="px-4 py-3 text-text-main-light">
 										{{ item.unit }}
 									</td>
 									<td class="px-4 py-3">
 										<button
 											@click="removeItem(index)"
-											class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
 										>
-											<TrashIcon
-												class="w-4 h-4 text-red-600 dark:text-red-400"
-											/>
+											<TrashIcon class="w-4 h-4 text-red-600" />
 										</button>
 									</td>
 								</tr>
@@ -188,7 +164,7 @@
 				<div class="flex gap-3">
 					<button
 						@click="closeModal"
-						class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
 					>
 						Cancelar
 					</button>

@@ -7,7 +7,7 @@
 			'relative border-2 border-dashed rounded-2xl p-8 transition-all duration-200',
 			isDragging
 				? 'border-primary bg-primary/5 scale-[1.02]'
-				: 'border-gray-300 dark:border-gray-700 hover:border-primary/50',
+				: 'border-gray-300 hover:border-primary/50',
 		]"
 	>
 		<!-- Upload Icon and Text -->
@@ -15,40 +15,38 @@
 			<div
 				:class="[
 					'w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors',
-					isDragging ? 'bg-primary/20' : 'bg-gray-100 dark:bg-gray-800',
+					isDragging ? 'bg-primary/20' : 'bg-gray-100',
 				]"
 			>
 				<DocumentArrowUpIcon
 					:class="[
 						'w-8 h-8 transition-colors',
-						isDragging ? 'text-primary' : 'text-gray-400 dark:text-gray-500',
+						isDragging ? 'text-primary' : 'text-gray-400',
 					]"
 				/>
 			</div>
 
-			<h3
-				class="text-lg font-semibold text-text-main-light dark:text-text-main-dark mb-2"
-			>
+			<h3 class="text-lg font-semibold text-text-main-light mb-2">
 				{{ isDragging ? "Suelta el archivo aquí" : "Importar archivo BOM" }}
 			</h3>
 
-			<p class="text-sm text-text-muted-light dark:text-text-muted-dark mb-4">
+			<p class="text-sm text-text-muted-light mb-4">
 				Arrastra y suelta o haz clic para seleccionar
 			</p>
 
 			<div class="flex items-center gap-2 mb-4">
 				<span
-					class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium"
+					class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium"
 				>
 					CSV
 				</span>
 				<span
-					class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-xs font-medium"
+					class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium"
 				>
 					XLSX
 				</span>
 				<span
-					class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full text-xs font-medium"
+					class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-medium"
 				>
 					XLS
 				</span>
@@ -74,7 +72,7 @@
 			<!-- File Info -->
 			<div v-if="selectedFile" class="mt-6 w-full">
 				<div
-					class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 flex items-center justify-between"
+					class="bg-gray-50 rounded-xl p-4 flex items-center justify-between"
 				>
 					<div class="flex items-center gap-3">
 						<div
@@ -83,21 +81,17 @@
 							<DocumentTextIcon class="w-5 h-5 text-primary" />
 						</div>
 						<div class="text-left">
-							<p
-								class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-							>
+							<p class="text-sm font-medium text-text-main-light">
 								{{ selectedFile.name }}
 							</p>
-							<p
-								class="text-xs text-text-muted-light dark:text-text-muted-dark"
-							>
+							<p class="text-xs text-text-muted-light">
 								{{ formatFileSize(selectedFile.size) }}
 							</p>
 						</div>
 					</div>
 					<button
 						@click="clearFile"
-						class="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+						class="p-2 hover:bg-gray-200 rounded-lg transition-colors"
 					>
 						<XMarkIcon class="w-5 h-5 text-gray-500" />
 					</button>
@@ -107,16 +101,14 @@
 			<!-- Error Message -->
 			<div v-if="error" class="mt-4 w-full">
 				<div
-					class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-xl p-4 flex items-start gap-3"
+					class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
 				>
 					<ExclamationTriangleIcon
-						class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
+						class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
 					/>
 					<div class="text-left">
-						<p class="text-sm font-medium text-red-600 dark:text-red-400">
-							Error
-						</p>
-						<p class="text-xs text-red-600/80 dark:text-red-400/80 mt-1">
+						<p class="text-sm font-medium text-red-600">Error</p>
+						<p class="text-xs text-red-600/80 mt-1">
 							{{ error }}
 						</p>
 					</div>
@@ -127,15 +119,13 @@
 		<!-- Processing State -->
 		<div
 			v-if="isProcessing"
-			class="absolute inset-0 bg-white/90 dark:bg-gray-900/90 rounded-2xl flex items-center justify-center backdrop-blur-sm"
+			class="absolute inset-0 bg-white/90 rounded-2xl flex items-center justify-center backdrop-blur-sm"
 		>
 			<div class="text-center">
 				<div
 					class="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"
 				></div>
-				<p
-					class="text-sm font-medium text-text-main-light dark:text-text-main-dark"
-				>
+				<p class="text-sm font-medium text-text-main-light">
 					Procesando archivo...
 				</p>
 			</div>

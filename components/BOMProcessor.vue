@@ -3,30 +3,24 @@
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
 		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-card-light rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
 		>
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					Procesar BOM y Actualizar Stock
 				</h2>
 				<button
 					@click="closeModal"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
-					<XMarkIcon
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
-					/>
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
 			<div class="px-6 pb-6 space-y-6">
 				<!-- Sección de carga de BOM -->
 				<div>
-					<h3
-						class="text-lg font-medium text-text-main-light dark:text-text-main-dark mb-4"
-					>
+					<h3 class="text-lg font-medium text-text-main-light mb-4">
 						Cargar Archivo BOM
 					</h3>
 					<FileUpload
@@ -36,81 +30,67 @@
 
 					<div
 						v-if="bomData && bomData.length > 0"
-						class="mt-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl"
+						class="mt-4 p-4 bg-gray-50 rounded-xl"
 					>
 						<div class="flex justify-between items-center mb-2">
-							<h4
-								class="font-medium text-text-main-light dark:text-text-main-dark"
-							>
+							<h4 class="font-medium text-text-main-light">
 								Vista Previa del BOM
 							</h4>
-							<span
-								class="text-sm text-text-muted-light dark:text-text-muted-dark"
-							>
+							<span class="text-sm text-text-muted-light">
 								{{ bomData.length }} componentes
 							</span>
 						</div>
 
 						<div class="overflow-x-auto">
-							<table
-								class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-							>
-								<thead class="bg-gray-100 dark:bg-gray-700">
+							<table class="min-w-full divide-y divide-gray-200">
+								<thead class="bg-gray-100">
 									<tr>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
 										>
 											Componente
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
 										>
 											Cantidad Requerida
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
 										>
 											Stock Actual
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
 										>
 											Disponible
 										</th>
 									</tr>
 								</thead>
-								<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+								<tbody class="divide-y divide-gray-200">
 									<tr v-for="(item, index) in bomData" :key="index">
 										<td class="px-4 py-3">
 											<div>
-												<p
-													class="font-medium text-text-main-light dark:text-text-main-dark"
-												>
+												<p class="font-medium text-text-main-light">
 													{{ item.name }}
 												</p>
-												<p
-													class="text-xs text-text-muted-light dark:text-text-muted-dark"
-												>
+												<p class="text-xs text-text-muted-light">
 													{{ item.partNumber || "N/A" }}
 												</p>
 											</div>
 										</td>
-										<td
-											class="px-4 py-3 text-text-main-light dark:text-text-main-dark"
-										>
+										<td class="px-4 py-3 text-text-main-light">
 											{{ item.quantity }}
 										</td>
-										<td
-											class="px-4 py-3 text-text-main-light dark:text-text-main-dark"
-										>
+										<td class="px-4 py-3 text-text-main-light">
 											{{ item.currentStock }}
 										</td>
 										<td class="px-4 py-3">
 											<span
 												:class="[
 													item.currentStock >= item.quantity
-														? 'text-green-600 dark:text-green-400'
-														: 'text-red-600 dark:text-red-400',
+														? 'text-green-600'
+														: 'text-red-600',
 												]"
 											>
 												{{
@@ -129,62 +109,44 @@
 
 				<!-- Sección de resumen y confirmación -->
 				<div v-if="bomData && bomData.length > 0">
-					<h3
-						class="text-lg font-medium text-text-main-light dark:text-text-main-dark mb-4"
-					>
+					<h3 class="text-lg font-medium text-text-main-light mb-4">
 						Resumen de Operación
 					</h3>
 
-					<div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl mb-4">
+					<div class="p-4 bg-gray-50 rounded-xl mb-4">
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div class="text-center">
 								<p class="text-2xl font-bold text-primary">
 									{{ totalComponents }}
 								</p>
-								<p
-									class="text-sm text-text-muted-light dark:text-text-muted-dark"
-								>
-									Componentes
-								</p>
+								<p class="text-sm text-text-muted-light">Componentes</p>
 							</div>
 							<div class="text-center">
-								<p
-									class="text-2xl font-bold text-green-600 dark:text-green-400"
-								>
+								<p class="text-2xl font-bold text-green-600">
 									{{ sufficientStockCount }}
 								</p>
-								<p
-									class="text-sm text-text-muted-light dark:text-text-muted-dark"
-								>
-									Stock Suficiente
-								</p>
+								<p class="text-sm text-text-muted-light">Stock Suficiente</p>
 							</div>
 							<div class="text-center">
-								<p class="text-2xl font-bold text-red-600 dark:text-red-400">
+								<p class="text-2xl font-bold text-red-600">
 									{{ insufficientStockCount }}
 								</p>
-								<p
-									class="text-sm text-text-muted-light dark:text-text-muted-dark"
-								>
-									Stock Insuficiente
-								</p>
+								<p class="text-sm text-text-muted-light">Stock Insuficiente</p>
 							</div>
 						</div>
 					</div>
 
 					<div
 						v-if="insufficientStockCount > 0"
-						class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-xl"
+						class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl"
 					>
 						<div class="flex items-start gap-3">
 							<ExclamationTriangleIcon
-								class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
+								class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
 							/>
 							<div>
-								<p class="text-sm font-medium text-red-600 dark:text-red-400">
-									Advertencia
-								</p>
-								<p class="text-sm text-red-600/80 dark:text-red-400/80 mt-1">
+								<p class="text-sm font-medium text-red-600">Advertencia</p>
+								<p class="text-sm text-red-600/80 mt-1">
 									Hay {{ insufficientStockCount }} componente(s) con stock
 									insuficiente. La operación no se podrá completar hasta que se
 									resuelva este problema.
@@ -196,7 +158,7 @@
 					<div class="flex gap-3">
 						<button
 							@click="closeModal"
-							class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+							class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
 						>
 							Cancelar
 						</button>
@@ -217,9 +179,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { XMarkIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
-import FileUpload from "./FileUpload.vue";
-import { useFileParser } from "../composables/useFileParser";
-import { useDatabase } from "../composables/useDatabase";
+import FileUpload from "@/components/FileUpload.vue";
+import { useFileParser } from "@/composables/useFileParser";
+import { useDatabase } from "@/composables/useDatabase";
 
 // Definición de tipos
 interface BOMItem {

@@ -3,20 +3,18 @@
 		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
 	>
 		<div
-			class="bg-card-light dark:bg-card-dark rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+			class="bg-card-light rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
 		>
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2
-					class="text-xl font-semibold text-text-main-light dark:text-text-main-dark"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">
 					Importar Template de EasyEDA
 				</h2>
 				<button
 					@click="closeImporter"
-					class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
 				>
 					<svg
-						class="w-6 h-6 text-text-muted-light dark:text-text-muted-dark"
+						class="w-6 h-6 text-text-muted-light"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -34,9 +32,7 @@
 			<div class="px-6 pb-6">
 				<!-- Upload Section -->
 				<div class="mb-6">
-					<label
-						class="block text-sm font-medium text-text-main-light dark:text-text-main-dark mb-2"
-					>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
 						Seleccionar archivo de template de EasyEDA
 					</label>
 					<div
@@ -44,7 +40,7 @@
 						@drop.prevent="handleDrop"
 						@dragenter.prevent="handleDragEnter"
 						@dragleave.prevent="handleDragLeave"
-						class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-colors"
+						class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-colors"
 						:class="dragActive ? 'border-primary bg-primary/10' : ''"
 						@click="triggerFileInput"
 					>
@@ -69,13 +65,11 @@
 									d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
 								></path>
 							</svg>
-							<p class="text-text-main-light dark:text-text-main-dark">
+							<p class="text-text-main-light">
 								<span class="font-medium text-primary">Click para subir</span> o
 								arrastra un archivo JSON aquí
 							</p>
-							<p
-								class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1"
-							>
+							<p class="text-sm text-text-muted-light mt-1">
 								Solo archivos .json de EasyEDA
 							</p>
 						</div>
@@ -90,65 +84,45 @@
 					<div
 						class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"
 					></div>
-					<p class="text-text-main-light dark:text-text-main-dark">
-						Procesando template...
-					</p>
+					<p class="text-text-main-light">Procesando template...</p>
 				</div>
 
 				<!-- Error State -->
 				<div v-else-if="error" class="mb-6">
-					<div
-						class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
-					>
-						<p class="text-red-700 dark:text-red-300">{{ error }}</p>
+					<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+						<p class="text-red-700">{{ error }}</p>
 					</div>
 				</div>
 
 				<!-- Success State with Preview -->
 				<div v-else-if="importResult && importResult.success">
-					<div
-						class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6"
-					>
-						<p class="text-green-700 dark:text-green-300">
+					<div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+						<p class="text-green-700">
 							{{ importResult.message }}
 						</p>
 					</div>
 
 					<!-- Metadata -->
 					<div class="mb-6">
-						<h3
-							class="text-lg font-medium text-text-main-light dark:text-text-main-dark mb-3"
-						>
+						<h3 class="text-lg font-medium text-text-main-light mb-3">
 							Metadatos del Template
 						</h3>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div>
-								<p
-									class="text-sm text-text-muted-light dark:text-text-muted-dark"
-								>
-									Título
-								</p>
-								<p class="text-text-main-light dark:text-text-main-dark">
+								<p class="text-sm text-text-muted-light">Título</p>
+								<p class="text-text-main-light">
 									{{ importResult.metadata.title || "N/A" }}
 								</p>
 							</div>
 							<div>
-								<p
-									class="text-sm text-text-muted-light dark:text-text-muted-dark"
-								>
-									Autor
-								</p>
-								<p class="text-text-main-light dark:text-text-main-dark">
+								<p class="text-sm text-text-muted-light">Autor</p>
+								<p class="text-text-main-light">
 									{{ importResult.metadata.author || "N/A" }}
 								</p>
 							</div>
 							<div>
-								<p
-									class="text-sm text-text-muted-light dark:text-text-muted-dark"
-								>
-									Componentes
-								</p>
-								<p class="text-text-main-light dark:text-text-main-dark">
+								<p class="text-sm text-text-muted-light">Componentes</p>
+								<p class="text-text-main-light">
 									{{ importResult.metadata.componentCount }}
 								</p>
 							</div>
@@ -157,40 +131,36 @@
 
 					<!-- Components Preview -->
 					<div class="mb-6">
-						<h3
-							class="text-lg font-medium text-text-main-light dark:text-text-main-dark mb-3"
-						>
+						<h3 class="text-lg font-medium text-text-main-light mb-3">
 							Vista Previa de Componentes
 						</h3>
-						<div
-							class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
-						>
+						<div class="border border-gray-200 rounded-lg overflow-hidden">
 							<table class="w-full">
-								<thead class="bg-gray-50 dark:bg-gray-800">
+								<thead class="bg-gray-50">
 									<tr>
 										<th
-											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 										>
 											Nombre
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 										>
 											Categoría
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 										>
 											Part Number
 										</th>
 										<th
-											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase"
+											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 										>
 											LCSC
 										</th>
 									</tr>
 								</thead>
-								<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+								<tbody class="divide-y divide-gray-200">
 									<tr
 										v-for="(component, index) in importResult.components.slice(
 											0,
@@ -198,31 +168,23 @@
 										)"
 										:key="index"
 									>
-										<td
-											class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-										>
+										<td class="px-4 py-3 text-sm text-text-main-light">
 											{{ component.name || "N/A" }}
 										</td>
-										<td
-											class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-										>
+										<td class="px-4 py-3 text-sm text-text-main-light">
 											{{ component.category || "N/A" }}
 										</td>
-										<td
-											class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-										>
+										<td class="px-4 py-3 text-sm text-text-main-light">
 											{{ component.part_number || "N/A" }}
 										</td>
-										<td
-											class="px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark"
-										>
+										<td class="px-4 py-3 text-sm text-text-main-light">
 											{{ component.lcsc_part || "N/A" }}
 										</td>
 									</tr>
 									<tr v-if="importResult.components.length > 10">
 										<td
 											colspan="4"
-											class="px-4 py-3 text-sm text-center text-text-muted-light dark:text-text-muted-dark"
+											class="px-4 py-3 text-sm text-center text-text-muted-light"
 										>
 											... y
 											{{ importResult.components.length - 10 }} componentes más
@@ -237,7 +199,7 @@
 					<div class="flex justify-end gap-3">
 						<button
 							@click="closeImporter"
-							class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-text-main-light dark:text-text-main-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+							class="px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
 						>
 							Cancelar
 						</button>
