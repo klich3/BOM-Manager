@@ -21,5 +21,20 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ['@tauri-apps/plugin-sql']
     }
-  }
+  },
+
+  nitro: {
+    wasm: false
+  },
+
+  experimental: {
+    inlineSSRStyles: true,
+
+    watcher: "parcel", // 'chokidar' or 'parcel' are also options
+    defaults: {
+      nuxtLink: {
+        trailingSlash: "remove", // 'append | remove' según tu preferencia quito o pone slash al final de la url
+      },
+    },
+  },
 })
