@@ -1,4 +1,5 @@
 import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
+import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import type { BOMProject } from '@/types/bom';
 import type { Database } from '@/types/database';
 
@@ -9,6 +10,7 @@ const generateId = (): string => {
 
 export const useProjectsDatabase = () => {
     const { getDatabase } = useDatabaseAdapter();
+    const { logActivity } = useActivityDatabase();
 
     // Métodos para proyectos
     const getAllProjects = async () => {
@@ -50,6 +52,9 @@ export const useProjectsDatabase = () => {
                 [id, project.name || '', project.description || null, now, now]
             );
 
+            // Registrar actividad
+            await logActivity('CREATE', 'projects', id, `Proyecto '${project.name || 'sin nombre'}' creado`);
+
             return id;
         } catch (error) {
             console.error('Error creando proyecto:', error);
@@ -69,6 +74,9 @@ export const useProjectsDatabase = () => {
                 [project.name, project.description, now, id]
             );
 
+            // Registrar actividad
+            await logActivity('UPDATE', 'projects', id, `Proyecto '${project.name || 'sin nombre'}' actualizado`);
+
             return true;
         } catch (error) {
             console.error('Error actualizando proyecto:', error);
@@ -81,7 +89,13 @@ export const useProjectsDatabase = () => {
         if (!database) return false;
 
         try {
+            // Registrar actividad antes de eliminar
+            const project = await getProjectById(id);
             await database.execute('DELETE FROM projects WHERE id = ?', [id]);
+
+            // Registrar actividad
+            await logActivity('DELETE', 'projects', id, `Proyecto '${project?.name || 'sin nombre'}' eliminado`);
+
             return true;
         } catch (error) {
             console.error('Error eliminando proyecto:', error);

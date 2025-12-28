@@ -1,4 +1,5 @@
 import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
+import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import type { Database } from '@/types/database';
 
 // Función para generar IDs únicos
@@ -8,6 +9,7 @@ const generateId = (): string => {
 
 export const useProjectItemsDatabase = () => {
     const { getDatabase } = useDatabaseAdapter();
+    const { logActivity } = useActivityDatabase();
 
     // Métodos para la relación proyecto-items
     const getProjectItems = async (projectId: string) => {
@@ -42,6 +44,9 @@ export const useProjectItemsDatabase = () => {
                 [id, projectId, itemId, quantity, now, now]
             );
 
+            // Registrar actividad
+            await logActivity('CREATE', 'project_items', id, `Item agregado al proyecto ${projectId}`);
+
             return true;
         } catch (error) {
             console.error('Error agregando item al proyecto:', error);
@@ -54,10 +59,14 @@ export const useProjectItemsDatabase = () => {
         if (!database) return false;
 
         try {
+            // Registrar actividad antes de eliminar
             await database.execute(
                 'DELETE FROM project_items WHERE project_id = ? AND item_id = ?',
                 [projectId, itemId]
             );
+
+            // Registrar actividad
+            await logActivity('DELETE', 'project_items', `${projectId}-${itemId}`, `Item ${itemId} removido del proyecto ${projectId}`);
 
             return true;
         } catch (error) {
@@ -77,6 +86,9 @@ export const useProjectItemsDatabase = () => {
                 'UPDATE project_items SET quantity = ?, updated_at = ? WHERE project_id = ? AND item_id = ?',
                 [quantity, now, projectId, itemId]
             );
+
+            // Registrar actividad
+            await logActivity('UPDATE', 'project_items', `${projectId}-${itemId}`, `Cantidad actualizada para item ${itemId} en proyecto ${projectId}`);
 
             return true;
         } catch (error) {

@@ -128,7 +128,7 @@ import { useDatabase } from "@/composables/useDatabase";
 import { useRouter } from "vue-router";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import ProjectModal from "@/components/ProjectModal.vue";
+import ProjectModal from "@/components/project/ProjectModal.vue";
 import ProjectCard from "@/components/project/ProjectCard.vue";
 import { navigateTo } from "nuxt/app";
 

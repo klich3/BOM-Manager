@@ -151,9 +151,6 @@ export const useWebDatabase = () => {
 
                 db = createdDb;
 
-                console.log('Base de datos con worker oficial creada exitosamente, creando tablas');
-
-                // Crear tablas usando el esquema definido en JSON
                 const { createTables } = await useDatabaseSchema();
                 await createTables(db);
 
@@ -170,7 +167,6 @@ export const useWebDatabase = () => {
 
     const getDatabase = async () => {
         if (!db) {
-            console.log('getDatabase: inicializando base de datos con worker oficial');
             await initDatabase();
         }
         return db;

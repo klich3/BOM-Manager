@@ -11,17 +11,12 @@
 					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
 					<BellIcon class="w-5 h-5" />
 					<span
-						v-if="stats.lowStock > 0"
+						v-if="stats.lowStock > 0 || unreadNotificationsCount > 0"
 						class="bg-red-500 text-white text-xs font-bold px-1.5 rounded-full"
-						>{{ stats.lowStock }}</span
+						>{{ stats.lowStock + unreadNotificationsCount }}</span
 					>
 					<span>Alertas</span>
 				</button>
-				<div
-					class="flex items-center gap-3 bg-white border border-gray-200 px-4 py-2 rounded-full text-sm font-medium">
-					<span class="text-text-muted-light">Proyecto:</span>
-					<span class="text-text-main-light">BOM Manager</span>
-				</div>
 			</div>
 		</header>
 
@@ -145,7 +140,7 @@
 					<!-- Quick Actions -->
 					<div class="grid grid-cols-3 gap-4">
 						<button
-							@click="router.push('/inventory')"
+							:to="{ name: 'inventory' }"
 							class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow">
 							<div class="flex justify-between items-start mb-2">
 								<DocumentArrowUpIcon class="w-5 h-5 text-text-muted-light" />
@@ -155,7 +150,7 @@
 						</button>
 
 						<button
-							@click="router.push('/inventory')"
+							:to="{ name: 'inventory' }"
 							class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow">
 							<div class="flex justify-between items-start mb-2">
 								<CubeIcon class="w-5 h-5 text-text-muted-light" />
@@ -165,7 +160,7 @@
 						</button>
 
 						<button
-							@click="router.push('/projects')"
+							:to="{ name: 'projects' }"
 							class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow">
 							<div class="flex justify-between items-start mb-2">
 								<RectangleStackIcon class="w-5 h-5 text-text-muted-light" />
@@ -245,6 +240,9 @@ const stats = ref({
 	totalValue: 0,
 });
 
+// Variable para contar notificaciones no leídas
+const unreadNotificationsCount = ref(0);
+
 // Nueva variable para la actividad reciente
 const recentActivity = ref<{ id: string; description: string; date: string }[]>([]);
 
@@ -293,9 +291,44 @@ const loadStats = async () => {
 	}
 };
 
+const loadUnreadNotificationsCount = async () => {
+	try {
+		unreadNotificationsCount.value = await db.getUnreadNotificationsCount();
+	} catch (error) {
+		console.error("Error cargando conteo de notificaciones:", error);
+		unreadNotificationsCount.value = 0;
+	}
+};
+
+const loadRecentActivity = async () => {
+	try {
+		const activity = await db.getAllActivity(10); // Obtener las últimas 10 actividades
+		recentActivity.value = activity.map((item: any) => ({
+			id: item.id,
+			description: item.description,
+			date: formatDate(new Date(item.created_at)),
+		}));
+	} catch (error) {
+		console.error("Error cargando actividad reciente:", error);
+		recentActivity.value = [];
+	}
+};
+
+const formatDate = (date: Date) => {
+	return date.toLocaleDateString("es-ES", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+};
+
 onMounted(async () => {
 	try {
 		await loadStats();
+		await loadUnreadNotificationsCount();
+		await loadRecentActivity();
 	} catch (error) {
 		console.error("Error en mounted:", error);
 	} finally {

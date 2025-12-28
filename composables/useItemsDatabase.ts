@@ -1,4 +1,5 @@
 import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
+import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import type { BOMItem } from '@/types/bom';
 import type { Database } from '@/types/database';
 
@@ -9,6 +10,7 @@ const generateId = (): string => {
 
 export const useItemsDatabase = () => {
     const { getDatabase } = useDatabaseAdapter();
+    const { logActivity } = useActivityDatabase();
 
     // Métodos para items
     const getAllItems = async () => {
@@ -68,6 +70,9 @@ export const useItemsDatabase = () => {
                 ]
             );
 
+            // Registrar actividad
+            await logActivity('CREATE', 'bom_items', id, `Item '${item.name || 'sin nombre'}' creado`);
+
             return id;
         } catch (error) {
             console.error('Error creando item:', error);
@@ -104,6 +109,9 @@ export const useItemsDatabase = () => {
                 ]
             );
 
+            // Registrar actividad
+            await logActivity('UPDATE', 'bom_items', id, `Item '${item.name || 'sin nombre'}' actualizado`);
+
             return true;
         } catch (error) {
             console.error('Error actualizando item:', error);
@@ -116,7 +124,13 @@ export const useItemsDatabase = () => {
         if (!database) return false;
 
         try {
+            // Registrar actividad antes de eliminar
+            const item = await getItemById(id);
             await database.execute('DELETE FROM bom_items WHERE id = ?', [id]);
+
+            // Registrar actividad
+            await logActivity('DELETE', 'bom_items', id, `Item '${item?.name || 'sin nombre'}' eliminado`);
+
             return true;
         } catch (error) {
             console.error('Error eliminando item:', error);

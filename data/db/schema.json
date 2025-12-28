@@ -11,6 +11,14 @@
 		{
 			"name": "project_items",
 			"definition": "CREATE TABLE IF NOT EXISTS project_items (\n  id TEXT PRIMARY KEY,\n  project_id TEXT NOT NULL,\n  item_id TEXT NOT NULL,\n  quantity REAL NOT NULL DEFAULT 1,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL,\n  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,\n  FOREIGN KEY (item_id) REFERENCES bom_items(id) ON DELETE CASCADE,\n  UNIQUE(project_id, item_id)\n)"
+		},
+		{
+			"name": "activity",
+			"definition": "CREATE TABLE IF NOT EXISTS activity (\n  id TEXT PRIMARY KEY,\n  action TEXT NOT NULL,\n  table_name TEXT NOT NULL,\n  record_id TEXT NOT NULL,\n  user_id TEXT,\n  description TEXT,\n  created_at TEXT NOT NULL\n)"
+		},
+		{
+			"name": "notifications",
+			"definition": "CREATE TABLE IF NOT EXISTS notifications (\n  id TEXT PRIMARY KEY,\n  title TEXT NOT NULL,\n  message TEXT NOT NULL,\n  type TEXT DEFAULT 'info',\n  is_read INTEGER DEFAULT 0,\n  created_at TEXT NOT NULL\n)"
 		}
 	]
 }

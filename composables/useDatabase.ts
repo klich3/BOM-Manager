@@ -1,6 +1,8 @@
 import { useItemsDatabase } from '@/composables/useItemsDatabase';
 import { useProjectsDatabase } from '@/composables/useProjectsDatabase';
 import { useProjectItemsDatabase } from '@/composables/useProjectItemsDatabase';
+import { useActivityDatabase } from '@/composables/useActivityDatabase';
+import { useNotificationsDatabase } from '@/composables/useNotificationsDatabase';
 
 export const initDatabase = async () => {
   const itemsDb = useItemsDatabase();
@@ -22,6 +24,8 @@ export const useDatabase = () => {
   const itemsDb = useItemsDatabase();
   const projectsDb = useProjectsDatabase();
   const projectItemsDb = useProjectItemsDatabase();
+  const activityDb = useActivityDatabase();
+  const notificationsDb = useNotificationsDatabase();
 
   return {
     // Métodos para items
@@ -47,6 +51,21 @@ export const useDatabase = () => {
     addItemToProject: projectItemsDb.addItemToProject,
     removeItemFromProject: projectItemsDb.removeItemFromProject,
     updateProjectItemQuantity: projectItemsDb.updateProjectItemQuantity,
-    checkLowStockAndNotify: projectItemsDb.checkLowStockAndNotify
+    checkLowStockAndNotify: projectItemsDb.checkLowStockAndNotify,
+
+    // Métodos para actividad
+    logActivity: activityDb.logActivity,
+    getActivityByTable: activityDb.getActivityByTable,
+    getAllActivity: activityDb.getAllActivity,
+    getActivityByAction: activityDb.getActivityByAction,
+
+    // Métodos para notificaciones
+    createNotification: notificationsDb.createNotification,
+    getUnreadNotifications: notificationsDb.getUnreadNotifications,
+    getAllNotifications: notificationsDb.getAllNotifications,
+    markNotificationAsRead: notificationsDb.markNotificationAsRead,
+    markAllNotificationsAsRead: notificationsDb.markAllNotificationsAsRead,
+    deleteNotification: notificationsDb.deleteNotification,
+    getUnreadNotificationsCount: notificationsDb.getUnreadNotificationsCount
   };
 };
