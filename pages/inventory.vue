@@ -372,6 +372,18 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Confirm Modal -->
+	<ConfirmModal
+		:show="showConfirmModal"
+		:title="confirmModalTitle"
+		:message="confirmModalMessage"
+		:confirm-text="confirmModalConfirmText"
+		@confirm="confirmDeleteItem"
+		@close="closeConfirmModal" />
+
+	<!-- Toast Notification -->
+	<Toast :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
 </template>
 
 <script setup lang="ts">
@@ -406,6 +418,8 @@ import FileUpload from "@/components/FileUpload.vue";
 import ListManager from "@/components/ListManager.vue";
 import LCSCPreview from "@/components/LCSCPreview.vue";
 import AddItemToInventoryModal from "@/components/AddItemToInventoryModal.vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
+import Toast from "@/components/Toast.vue";
 
 definePageMeta({
 	name: "inventory",
@@ -451,6 +465,18 @@ const itemForm = ref({
 // LCSC Preview State
 const showLCSCPreview = ref(false);
 const lcscPartNumber = ref("");
+
+// Confirm Modal State
+const showConfirmModal = ref(false);
+const confirmModalTitle = ref("");
+const confirmModalMessage = ref("");
+const confirmModalConfirmText = ref("");
+const itemToDelete = ref<string | null>(null);
+
+// Toast State
+const showToast = ref(false);
+const toastMessage = ref("");
+const toastType = ref<"success" | "error" | "warning" | "info">("info");
 
 // Computed
 const categories = computed(() => {
@@ -538,11 +564,43 @@ const editItem = (item: any) => {
 	showAddModal.value = true;
 };
 
-const deleteItemConfirm = async (id: string) => {
-	if (confirm("¿Estás seguro de eliminar este componente?")) {
-		await db.deleteItem(id);
-		await loadItems();
+const deleteItemConfirm = (id: string) => {
+	itemToDelete.value = id;
+	confirmModalTitle.value = "Eliminar Componente";
+	confirmModalMessage.value = "¿Estás seguro de eliminar este componente? Esta acción no se puede deshacer.";
+	confirmModalConfirmText.value = "Eliminar";
+	showConfirmModal.value = true;
+};
+
+const confirmDeleteItem = async () => {
+	if (itemToDelete.value) {
+		try {
+			await db.deleteItem(itemToDelete.value);
+			await loadItems();
+			showToastMessage("Componente eliminado exitosamente", "success");
+		} catch (error) {
+			console.error("Error eliminando componente:", error);
+			showToastMessage("Error al eliminar el componente", "error");
+		}
+		itemToDelete.value = null;
+		showConfirmModal.value = false;
 	}
+};
+
+const closeConfirmModal = () => {
+	showConfirmModal.value = false;
+	itemToDelete.value = null;
+};
+
+const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
+	toastMessage.value = message;
+	toastType.value = type;
+	showToast.value = true;
+
+	// Auto-hide after 3 seconds
+	setTimeout(() => {
+		showToast.value = false;
+	}, 3000);
 };
 
 const exportInventory = () => {
@@ -596,13 +654,13 @@ const handleFileImport = async (file: File) => {
 
 			await loadItems();
 			showImportModal.value = false;
-			alert(`Importación exitosa: ${result.items.length} items agregados`);
+			showToastMessage(`Importación exitosa: ${result.items.length} items agregados`, "success");
 		} else {
-			alert(`Error en la importación: ${result.errors.join(", ")}`);
+			showToastMessage(`Error en la importación: ${result.errors.join(", ")}`, "error");
 		}
 	} catch (error) {
 		console.error("Error importando archivo:", error);
-		alert("Error al importar archivo");
+		showToastMessage("Error al importar archivo", "error");
 	}
 };
 
@@ -622,7 +680,7 @@ const createListFromSelection = () => {
 	}));
 
 	if (selectedItems.length === 0) {
-		alert("No hay items para agregar a la lista");
+		showToastMessage("No hay items para agregar a la lista", "warning");
 		return;
 	}
 
@@ -643,7 +701,7 @@ const saveList = (list: any) => {
 		items: list.items,
 	});
 	showListManager.value = false;
-	alert(`Lista "${list.name}" guardada exitosamente`);
+	showToastMessage(`Lista "${list.name}" guardada exitosamente`, "success");
 };
 
 const openLcscPreview = (lcscPart: string) => {
@@ -657,12 +715,12 @@ const openLcscPurchase = (lcscPart: string) => {
 
 const mergeSelectedLists = () => {
 	if (selectedListsForMerge.value.length < 2) {
-		alert("Selecciona al menos 2 listas para mezclar");
+		showToastMessage("Selecciona al menos 2 listas para mezclar", "warning");
 		return;
 	}
 
 	if (!mergeListName.value.trim()) {
-		alert("Ingresa un nombre para la lista combinada");
+		showToastMessage("Ingresa un nombre para la lista combinada", "warning");
 		return;
 	}
 
@@ -671,10 +729,10 @@ const mergeSelectedLists = () => {
 		showListsManagement.value = false;
 		selectedListsForMerge.value = [];
 		mergeListName.value = "";
-		alert("Listas combinadas exitosamente");
+		showToastMessage("Listas combinadas exitosamente", "success");
 	} catch (error: any) {
 		console.error("Error al mezclar listas:", error);
-		alert("Error al mezclar las listas: " + error.message);
+		showToastMessage("Error al mezclar las listas: " + error.message, "error");
 	}
 };
 

@@ -87,7 +87,16 @@
 				</button>
 			</div>
 
-			<div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			<TransitionGroup
+				tag="div"
+				class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+				enter-active-class="transition-all duration-300"
+				enter-from-class="opacity-0 scale-95"
+				enter-to-class="opacity-100 scale-100"
+				leave-active-class="transition-all duration-300"
+				leave-from-class="opacity-100 scale-100"
+				leave-to-class="opacity-0 scale-95"
+				mode="out-in">
 				<ProjectCard
 					v-for="project in filteredProjects"
 					:key="project.id"
@@ -95,7 +104,7 @@
 					@view-project="viewProject"
 					@edit-project="editProject"
 					@delete-project="deleteProjectConfirm" />
-			</div>
+			</TransitionGroup>
 		</div>
 	</main>
 
@@ -105,6 +114,15 @@
 		:editing-project="editingProject"
 		@close="closeModal"
 		@save="handleSaveProject" />
+
+	<!-- Confirm Modal -->
+	<ConfirmModal
+		:show="showConfirmModal"
+		:title="confirmModalTitle"
+		:message="confirmModalMessage"
+		:confirm-text="confirmModalConfirmText"
+		@confirm="confirmDeleteProject"
+		@close="closeConfirmModal" />
 </template>
 
 <script setup lang="ts">
@@ -124,12 +142,14 @@ import {
 	TrashIcon,
 	XMarkIcon,
 } from "@heroicons/vue/24/outline";
+import { unref } from "vue";
 import { useDatabase } from "@/composables/useDatabase";
 import { useRouter } from "vue-router";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ProjectModal from "@/components/project/ProjectModal.vue";
 import ProjectCard from "@/components/project/ProjectCard.vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 import { navigateTo } from "nuxt/app";
 
 const db = useDatabase();
@@ -143,6 +163,11 @@ const projects = ref<any[]>([]);
 const searchQuery = ref("");
 const showAddProjectModal = ref(false);
 const editingProject = ref<any>(null);
+const showConfirmModal = ref(false);
+const confirmModalTitle = ref("");
+const confirmModalMessage = ref("");
+const confirmModalConfirmText = ref("");
+const projectToDelete = ref<string | null>(null);
 
 // Computed
 const filteredProjects = computed(() => {
@@ -183,11 +208,30 @@ const editProject = (project: any) => {
 	showAddProjectModal.value = true;
 };
 
-const deleteProjectConfirm = async (id: string) => {
-	if (confirm("¿Estás seguro de eliminar este proyecto?")) {
-		await db.deleteProject(id);
-		await loadProjects();
+const deleteProjectConfirm = (id: string) => {
+	projectToDelete.value = id;
+	confirmModalTitle.value = "Eliminar Proyecto";
+	confirmModalMessage.value = "¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.";
+	confirmModalConfirmText.value = "Eliminar";
+	showConfirmModal.value = true;
+};
+
+const confirmDeleteProject = async () => {
+	if (projectToDelete.value) {
+		try {
+			await db.deleteProject(projectToDelete.value);
+			await loadProjects();
+		} catch (error) {
+			console.error("Error eliminando proyecto:", error);
+		}
+		projectToDelete.value = null;
 	}
+	showConfirmModal.value = false;
+};
+
+const closeConfirmModal = () => {
+	showConfirmModal.value = false;
+	projectToDelete.value = null;
 };
 
 const viewProject = async (id: string) => {

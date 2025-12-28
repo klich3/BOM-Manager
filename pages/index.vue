@@ -28,42 +28,6 @@
 			<div v-else class="grid grid-cols-12 gap-6">
 				<!-- Left Column -->
 				<div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
-					<!-- Main Status Card -->
-					<div class="bg-card-light rounded-3xl p-6 shadow-sm h-[380px] relative overflow-hidden group">
-						<div class="flex justify-between items-start z-10 relative">
-							<div>
-								<div class="flex items-center gap-2 text-text-muted-light text-sm mb-1">
-									<BuildingOfficeIcon class="w-5 h-5" />
-									<span>Sistema de Inventario</span>
-								</div>
-								<h2 class="text-4xl font-bold text-text-main-light mt-2">Activo</h2>
-								<div class="flex items-center gap-2 mt-3">
-									<CheckCircleIcon class="w-5 h-5 text-green-500" />
-									<span class="text-sm font-medium">Sistema Operativo</span>
-								</div>
-								<div class="text-xs text-text-muted-light mt-1">
-									{{ currentDate }}
-								</div>
-							</div>
-						</div>
-
-						<div class="absolute bottom-6 right-6 z-10">
-							<div
-								class="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-gray-100 w-48">
-								<div class="flex justify-between items-start mb-2">
-									<div class="bg-gray-900 text-white text-[10px] px-2 py-0.5 rounded">ITEMS</div>
-									<div class="w-2 h-2 rounded-full bg-green-500"></div>
-								</div>
-								<div class="text-center">
-									<div class="text-xs font-bold text-text-main-light">
-										{{ stats.totalItems }}
-									</div>
-									<div class="text-[10px] text-text-muted-light">Total Componentes</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
 					<!-- Stats Grid -->
 					<div class="grid grid-cols-2 gap-4">
 						<div
@@ -139,35 +103,38 @@
 
 					<!-- Quick Actions -->
 					<div class="grid grid-cols-3 gap-4">
-						<button
-							:to="{ name: 'inventory' }"
-							class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow">
-							<div class="flex justify-between items-start mb-2">
-								<DocumentArrowUpIcon class="w-5 h-5 text-text-muted-light" />
-							</div>
-							<div class="text-xs text-text-muted-light">Importar</div>
-							<div class="text-sm font-bold text-text-main-light mt-1">CSV/XLSX</div>
-						</button>
+						<NuxtLink :to="{ name: 'inventory' }" class="block">
+							<button
+								class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow w-full">
+								<div class="flex justify-between items-start mb-2">
+									<DocumentArrowUpIcon class="w-5 h-5 text-text-muted-light" />
+								</div>
+								<div class="text-xs text-text-muted-light">Importar</div>
+								<div class="text-sm font-bold text-text-main-light mt-1">CSV/XLSX</div>
+							</button>
+						</NuxtLink>
 
-						<button
-							:to="{ name: 'inventory' }"
-							class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow">
-							<div class="flex justify-between items-start mb-2">
-								<CubeIcon class="w-5 h-5 text-text-muted-light" />
-							</div>
-							<div class="text-xs text-text-muted-light">Ver</div>
-							<div class="text-sm font-bold text-text-main-light mt-1">Inventario</div>
-						</button>
+						<NuxtLink :to="{ name: 'inventory' }" class="block">
+							<button
+								class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow w-full">
+								<div class="flex justify-between items-start mb-2">
+									<CubeIcon class="w-5 h-5 text-text-muted-light" />
+								</div>
+								<div class="text-xs text-text-muted-light">Ver</div>
+								<div class="text-sm font-bold text-text-main-light mt-1">Inventario</div>
+							</button>
+						</NuxtLink>
 
-						<button
-							:to="{ name: 'projects' }"
-							class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow">
-							<div class="flex justify-between items-start mb-2">
-								<RectangleStackIcon class="w-5 h-5 text-text-muted-light" />
-							</div>
-							<div class="text-xs text-text-muted-light">Gestionar</div>
-							<div class="text-sm font-bold text-text-main-light mt-1">Proyectos</div>
-						</button>
+						<NuxtLink :to="{ name: 'projects' }" class="block">
+							<button
+								class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow w-full">
+								<div class="flex justify-between items-start mb-2">
+									<RectangleStackIcon class="w-5 h-5 text-text-muted-light" />
+								</div>
+								<div class="text-xs text-text-muted-light">Gestionar</div>
+								<div class="text-sm font-bold text-text-main-light mt-1">Proyectos</div>
+							</button>
+						</NuxtLink>
 					</div>
 				</div>
 
