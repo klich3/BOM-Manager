@@ -88,17 +88,6 @@ BOM-Manager/
 - SQLLite
 
 
-# Funcionalidad Features
-
-## Implementado (Prototipo Inicial)
-
-- [x] Configuración base del proyecto Nuxt3 + Tauri
-- [x] Integración de TailwindCSS
-- [x] Base de datos SQLite configurada
-- [x] Dashboard principal con estadísticas
-- [x] Sistema de tipos TypeScript
-- [x] Estructura de carpetas y componentes
-
 
 
 

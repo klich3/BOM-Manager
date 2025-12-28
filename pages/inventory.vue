@@ -2,40 +2,32 @@
 	<!-- Main Content -->
 	<main class="min-h-screen">
 		<!-- Header -->
-		<header
-			class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200"
-		>
+		<header class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200">
 			<div>
-				<h1 class="text-2xl font-semibold text-text-main-light">
-					Inventario de Componentes
-				</h1>
+				<h1 class="text-2xl font-semibold text-text-main-light">Inventario de Componentes</h1>
 			</div>
 			<div class="flex items-center gap-4">
 				<button
 					@click="showImportModal = true"
-					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
-				>
+					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<DocumentArrowUpIcon class="w-5 h-5" />
 					<span>Importar</span>
 				</button>
 				<button
 					@click="createListFromSelection"
-					class="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-700 transition-colors"
-				>
+					class="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-700 transition-colors">
 					<ClipboardDocumentListIcon class="w-5 h-5" />
 					<span>Crear Lista</span>
 				</button>
 				<button
 					@click="exportInventory"
-					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
-				>
+					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
 					<DocumentArrowDownIcon class="w-5 h-5" />
 					<span>Exportar</span>
 				</button>
 				<button
 					@click="showAddModal = true"
-					class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
-				>
+					class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors">
 					<PlusIcon class="w-5 h-5" />
 					<span>Agregar Item</span>
 				</button>
@@ -48,9 +40,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 				<div class="bg-card-light rounded-2xl p-4 shadow-sm">
 					<div class="flex items-center gap-3">
-						<div
-							class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
 							<CubeIcon class="w-5 h-5 text-blue-600" />
 						</div>
 						<div>
@@ -64,9 +54,7 @@
 
 				<div class="bg-card-light rounded-2xl p-4 shadow-sm">
 					<div class="flex items-center gap-3">
-						<div
-							class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
 							<CheckCircleIcon class="w-5 h-5 text-green-600" />
 						</div>
 						<div>
@@ -78,13 +66,9 @@
 					</div>
 				</div>
 
-				<div
-					class="bg-card-light rounded-2xl p-4 shadow-sm border border-amber-200"
-				>
+				<div class="bg-card-light rounded-2xl p-4 shadow-sm border border-amber-200">
 					<div class="flex items-center gap-3">
-						<div
-							class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
 							<ExclamationTriangleIcon class="w-5 h-5 text-amber-600" />
 						</div>
 						<div>
@@ -98,16 +82,12 @@
 
 				<div class="bg-card-light rounded-2xl p-4 shadow-sm">
 					<div class="flex items-center gap-3">
-						<div
-							class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
 							<CurrencyDollarIcon class="w-5 h-5 text-purple-600" />
 						</div>
 						<div>
 							<p class="text-xs text-text-muted-light">Valor Total</p>
-							<p class="text-2xl font-bold text-text-main-light">
-								${{ totalValue }}
-							</p>
+							<p class="text-2xl font-bold text-text-main-light">${{ totalValue }}</p>
 						</div>
 					</div>
 				</div>
@@ -116,19 +96,14 @@
 			<!-- List Management Section -->
 			<div class="bg-card-light rounded-2xl p-6 shadow-sm mb-6">
 				<div class="flex justify-between items-center mb-4">
-					<h3 class="text-lg font-semibold text-text-main-light">
-						Gestión de Listas
-					</h3>
+					<h3 class="text-lg font-semibold text-text-main-light">Gestión de Listas</h3>
 					<button
 						@click="showListsManagement = true"
-						class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
-					>
+						class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
 						Gestionar Listas
 					</button>
 				</div>
-				<p class="text-text-muted-light text-sm">
-					Tienes {{ lists.listCount }} listas guardadas
-				</p>
+				<p class="text-text-muted-light text-sm">Tienes {{ lists.listCount }} listas guardadas</p>
 			</div>
 
 			<!-- Search and Filters -->
@@ -136,19 +111,16 @@
 				<div class="flex flex-col md:flex-row gap-4">
 					<div class="flex-1 relative">
 						<MagnifyingGlassIcon
-							class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-						/>
+							class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
 						<input
 							v-model="searchQuery"
 							type="text"
 							placeholder="Buscar por nombre, categoría, proveedor..."
-							class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-						/>
+							class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light" />
 					</div>
 					<select
 						v-model="filterCategory"
-						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-					>
+						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
 						<option value="">Todas las categorías</option>
 						<option v-for="cat in categories" :key="cat" :value="cat">
 							{{ cat }}
@@ -156,8 +128,7 @@
 					</select>
 					<select
 						v-model="filterStock"
-						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-					>
+						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
 						<option value="all">Todos</option>
 						<option value="ok">Stock OK</option>
 						<option value="low">Stock Bajo</option>
@@ -171,39 +142,25 @@
 					<table class="w-full">
 						<thead class="bg-gray-50">
 							<tr>
-								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
-								>
+								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 									Componente
 								</th>
-								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
-								>
+								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 									Categoría
 								</th>
-								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
-								>
+								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 									Stock
 								</th>
-								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
-								>
+								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 									Proveedor
 								</th>
-								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
-								>
+								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 									Precio
 								</th>
-								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
-								>
+								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 									LCSC
 								</th>
-								<th
-									class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase"
-								>
+								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 									Acciones
 								</th>
 							</tr>
@@ -212,13 +169,10 @@
 							<tr v-if="filteredItems.length === 0">
 								<td colspan="6" class="px-6 py-12 text-center">
 									<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
-									<p class="text-text-muted-light">
-										No hay componentes en el inventario
-									</p>
+									<p class="text-text-muted-light">No hay componentes en el inventario</p>
 									<button
 										@click="showAddModal = true"
-										class="mt-4 text-primary hover:underline text-sm font-medium"
-									>
+										class="mt-4 text-primary hover:underline text-sm font-medium">
 										Agregar primer componente
 									</button>
 								</td>
@@ -226,8 +180,7 @@
 							<tr
 								v-for="item in paginatedItems"
 								:key="item.id"
-								class="hover:bg-gray-50 transition-colors"
-							>
+								class="hover:bg-gray-50 transition-colors">
 								<td class="px-6 py-4">
 									<div>
 										<p class="text-sm font-semibold text-text-main-light">
@@ -239,9 +192,7 @@
 									</div>
 								</td>
 								<td class="px-6 py-4">
-									<span
-										class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium"
-									>
+									<span class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium">
 										{{ item.category || "Sin categoría" }}
 									</span>
 								</td>
@@ -250,11 +201,8 @@
 										<div
 											class="w-2 h-2 rounded-full"
 											:class="
-												item.in_stock < (item.min_stock || 0)
-													? 'bg-amber-500'
-													: 'bg-green-500'
-											"
-										></div>
+												item.in_stock < (item.min_stock || 0) ? 'bg-amber-500' : 'bg-green-500'
+											"></div>
 										<span class="text-sm text-text-main-light">
 											{{ item.in_stock }} {{ item.unit }}
 										</span>
@@ -270,43 +218,36 @@
 									<div class="flex items-center gap-2">
 										<span
 											v-if="item.lcsc_part"
-											class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium"
-										>
+											class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium">
 											{{ item.lcsc_part }}
 										</span>
 										<button
 											v-if="item.lcsc_part"
 											@click="openLcscPreview(item.lcsc_part)"
 											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-											title="Ver en LCSC"
-										>
+											title="Ver en LCSC">
 											<GlobeAltIcon class="w-4 h-4 text-blue-600" />
 										</button>
 										<button
 											v-if="item.lcsc_part"
 											@click="openLcscPurchase(item.lcsc_part)"
 											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-											title="Comprar en LCSC"
-										>
+											title="Comprar en LCSC">
 											<ShoppingCartIcon class="w-4 h-4 text-green-600" />
 										</button>
-										<span v-else class="text-xs text-text-muted-light">
-											N/A
-										</span>
+										<span v-else class="text-xs text-text-muted-light"> N/A </span>
 									</div>
 								</td>
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-2">
 										<button
 											@click="editItem(item)"
-											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-										>
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
 											<PencilIcon class="w-4 h-4 text-blue-600" />
 										</button>
 										<button
 											@click="deleteItemConfirm(item.id)"
-											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-										>
+											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
 											<TrashIcon class="w-4 h-4 text-red-600" />
 										</button>
 									</div>
@@ -317,10 +258,7 @@
 				</div>
 
 				<!-- Pagination -->
-				<div
-					v-if="totalPages > 1"
-					class="px-6 py-4 border-t border-gray-200 flex items-center justify-between"
-				>
+				<div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
 					<p class="text-sm text-text-muted-light">
 						Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
 						{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
@@ -330,15 +268,13 @@
 						<button
 							@click="currentPage--"
 							:disabled="currentPage === 1"
-							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-						>
+							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
 							Anterior
 						</button>
 						<button
 							@click="currentPage++"
 							:disabled="currentPage === totalPages"
-							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-						>
+							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
 							Siguiente
 						</button>
 					</div>
@@ -348,49 +284,32 @@
 	</main>
 
 	<!-- LCSC Preview Modal -->
-	<LCSCPreview
-		:show="showLCSCPreview"
-		:part-number="lcscPartNumber"
-		@close="showLCSCPreview = false"
-	/>
+	<LCSCPreview :show="showLCSCPreview" :part-number="lcscPartNumber" @close="showLCSCPreview = false" />
 
 	<!-- Add/Edit Item Modal -->
 	<AddItemToInventoryModal
 		:show="showAddModal"
 		:editing-item="editingItem"
 		@close="closeItemModal"
-		@save="handleSaveItem"
-	/>
+		@save="handleSaveItem" />
 
 	<!-- Import Modal -->
-	<div
-		v-if="showImportModal"
-		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-	>
+	<div v-if="showImportModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 		<div class="bg-card-light rounded-2xl shadow-xl max-w-lg w-full p-6">
 			<div class="flex items-center justify-between mb-6">
-				<h2 class="text-xl font-semibold text-text-main-light">
-					Importar Archivo BOM
-				</h2>
-				<button
-					@click="showImportModal = false"
-					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">Importar Archivo BOM</h2>
+				<button @click="showImportModal = false" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
 					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
 			<div class="space-y-4">
-				<FileUpload
-					@file-selected="handleFileImport"
-					@error="handleImportError"
-				/>
+				<FileUpload @file-selected="handleFileImport" @error="handleImportError" />
 
 				<div class="flex gap-3 pt-4">
 					<button
 						@click="showImportModal = false"
-						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
-					>
+						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors">
 						Cancelar
 					</button>
 				</div>
@@ -399,29 +318,14 @@
 	</div>
 
 	<!-- List Manager Modal -->
-	<ListManager
-		v-if="showListManager"
-		v-model="showListManager"
-		:items="[]"
-		@saved="saveList"
-	/>
+	<ListManager v-if="showListManager" v-model="showListManager" :items="[]" @saved="saveList" />
 
 	<!-- Lists Management Modal -->
-	<div
-		v-if="showListsManagement"
-		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-	>
-		<div
-			class="bg-card-light rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-		>
+	<div v-if="showListsManagement" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-card-light rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2 class="text-xl font-semibold text-text-main-light">
-					Gestión de Listas
-				</h2>
-				<button
-					@click="showListsManagement = false"
-					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-				>
+				<h2 class="text-xl font-semibold text-text-main-light">Gestión de Listas</h2>
+				<button @click="showListsManagement = false" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
 					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
@@ -429,37 +333,25 @@
 			<div class="px-6 pb-6">
 				<!-- Merge Lists Section -->
 				<div class="mb-6">
-					<h3 class="text-lg font-medium text-text-main-light mb-4">
-						Mezclar Listas
-					</h3>
+					<h3 class="text-lg font-medium text-text-main-light mb-4">Mezclar Listas</h3>
 					<div class="space-y-4">
-						<div
-							v-for="list in lists.lists.value"
-							:key="list.id"
-							class="flex items-center"
-						>
+						<div v-for="list in lists.lists.value" :key="list.id" class="flex items-center">
 							<input
 								v-model="selectedListsForMerge"
 								:value="list.id"
 								type="checkbox"
 								:id="`list-${list.id}`"
-								class="mr-3 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-							/>
+								class="mr-3 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
 							<label :for="`list-${list.id}`" class="flex-1">
 								<div>
 									<p class="font-medium text-text-main-light">
 										{{ list.name }}
 									</p>
-									<p class="text-sm text-text-muted-light">
-										{{ list.items.length }} componentes
-									</p>
+									<p class="text-sm text-text-muted-light">{{ list.items.length }} componentes</p>
 								</div>
 							</label>
 						</div>
-						<div
-							v-if="lists.lists.value.length === 0"
-							class="text-center py-4 text-text-muted-light"
-						>
+						<div v-if="lists.lists.value.length === 0" class="text-center py-4 text-text-muted-light">
 							No hay listas para mezclar
 						</div>
 					</div>
@@ -468,13 +360,11 @@
 							v-model="mergeListName"
 							type="text"
 							placeholder="Nombre de la lista combinada"
-							class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-						/>
+							class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light" />
 						<button
 							@click="mergeSelectedLists"
 							:disabled="selectedListsForMerge.length < 2"
-							class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-						>
+							class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
 							Mezclar Listas
 						</button>
 					</div>
@@ -516,6 +406,11 @@ import FileUpload from "@/components/FileUpload.vue";
 import ListManager from "@/components/ListManager.vue";
 import LCSCPreview from "@/components/LCSCPreview.vue";
 import AddItemToInventoryModal from "@/components/AddItemToInventoryModal.vue";
+
+definePageMeta({
+	name: "inventory",
+	layout: "default",
+});
 
 const db = useDatabase();
 const { exportAllInventory } = useExport();
@@ -559,9 +454,7 @@ const lcscPartNumber = ref("");
 
 // Computed
 const categories = computed(() => {
-	const cats = new Set(
-		items.value.map((item) => item.category).filter(Boolean)
-	);
+	const cats = new Set(items.value.map((item) => item.category).filter(Boolean));
 	return Array.from(cats);
 });
 
@@ -576,24 +469,20 @@ const filteredItems = computed(() => {
 				item.name?.toLowerCase().includes(query) ||
 				item.category?.toLowerCase().includes(query) ||
 				item.supplier?.toLowerCase().includes(query) ||
-				item.part_number?.toLowerCase().includes(query)
+				item.part_number?.toLowerCase().includes(query),
 		);
 	}
 
 	// Category filter
 	if (filterCategory.value) {
-		filtered = filtered.filter(
-			(item) => item.category === filterCategory.value
-		);
+		filtered = filtered.filter((item) => item.category === filterCategory.value);
 	}
 
 	// Stock filter
 	if (filterStock.value === "low") {
 		filtered = filtered.filter((item) => item.in_stock < (item.min_stock || 0));
 	} else if (filterStock.value === "ok") {
-		filtered = filtered.filter(
-			(item) => item.in_stock >= (item.min_stock || 0)
-		);
+		filtered = filtered.filter((item) => item.in_stock >= (item.min_stock || 0));
 	}
 
 	return filtered;
@@ -610,19 +499,15 @@ const totalPages = computed(() => {
 });
 
 const stockOK = computed(() => {
-	return items.value.filter((item) => item.in_stock >= (item.min_stock || 0))
-		.length;
+	return items.value.filter((item) => item.in_stock >= (item.min_stock || 0)).length;
 });
 
 const lowStockCount = computed(() => {
-	return items.value.filter((item) => item.in_stock < (item.min_stock || 0))
-		.length;
+	return items.value.filter((item) => item.in_stock < (item.min_stock || 0)).length;
 });
 
 const totalValue = computed(() => {
-	return items.value
-		.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0)
-		.toFixed(2);
+	return items.value.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0).toFixed(2);
 });
 
 // Methods

@@ -2,19 +2,14 @@
 	<!-- Main Content -->
 	<main class="min-h-screen">
 		<!-- Header -->
-		<header
-			class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200"
-		>
+		<header class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200">
 			<div>
-				<h1 class="text-2xl font-semibold text-text-main-light">
-					Gestión de Proyectos
-				</h1>
+				<h1 class="text-2xl font-semibold text-text-main-light">Gestión de Proyectos</h1>
 			</div>
 			<div class="flex items-center gap-4">
 				<button
 					@click="showAddProjectModal = true"
-					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
-				>
+					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<PlusIcon class="w-5 h-5" />
 					<span>Nuevo Proyecto</span>
 				</button>
@@ -27,9 +22,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
-						<div
-							class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
 							<RectangleStackIcon class="w-6 h-6 text-purple-600" />
 						</div>
 						<div>
@@ -43,9 +36,7 @@
 
 				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
-						<div
-							class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
 							<CheckCircleIcon class="w-6 h-6 text-green-600" />
 						</div>
 						<div>
@@ -59,9 +50,7 @@
 
 				<div class="bg-card-light rounded-2xl p-6 shadow-sm">
 					<div class="flex items-center gap-4">
-						<div
-							class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
 							<CurrencyDollarIcon class="w-6 h-6 text-blue-600" />
 						</div>
 						<div>
@@ -76,33 +65,23 @@
 			<div class="bg-card-light rounded-2xl p-6 shadow-sm mb-6">
 				<div class="relative">
 					<MagnifyingGlassIcon
-						class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-					/>
+						class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
 					<input
 						v-model="searchQuery"
 						type="text"
 						placeholder="Buscar proyectos..."
-						class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-					/>
+						class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light" />
 				</div>
 			</div>
 
 			<!-- Projects Grid -->
-			<div
-				v-if="filteredProjects.length === 0"
-				class="bg-card-light rounded-2xl p-12 shadow-sm text-center"
-			>
+			<div v-if="filteredProjects.length === 0" class="bg-card-light rounded-2xl p-12 shadow-sm text-center">
 				<RectangleStackIcon class="w-16 h-16 mx-auto mb-4 text-gray-300" />
-				<h3 class="text-lg font-semibold text-text-main-light mb-2">
-					No hay proyectos
-				</h3>
-				<p class="text-text-muted-light mb-6">
-					Comienza creando tu primer proyecto
-				</p>
+				<h3 class="text-lg font-semibold text-text-main-light mb-2">No hay proyectos</h3>
+				<p class="text-text-muted-light mb-6">Comienza creando tu primer proyecto</p>
 				<button
 					@click="showAddProjectModal = true"
-					class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
-				>
+					class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<PlusIcon class="w-5 h-5" />
 					<span>Crear Proyecto</span>
 				</button>
@@ -113,25 +92,20 @@
 					v-for="project in filteredProjects"
 					:key="project.id"
 					class="bg-card-light rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/50"
-					@click="viewProject(project.id)"
-				>
+					@click="viewProject(project.id)">
 					<div class="flex items-start justify-between mb-4">
-						<div
-							class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center"
-						>
+						<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
 							<RectangleStackIcon class="w-6 h-6 text-primary" />
 						</div>
 						<div class="flex gap-2">
 							<button
 								@click.stop="editProject(project)"
-								class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-							>
+								class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
 								<PencilIcon class="w-4 h-4 text-blue-600" />
 							</button>
 							<button
 								@click.stop="deleteProjectConfirm(project.id)"
-								class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-							>
+								class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
 								<TrashIcon class="w-4 h-4 text-red-600" />
 							</button>
 						</div>
@@ -144,9 +118,7 @@
 						{{ project.description || "Sin descripción" }}
 					</p>
 
-					<div
-						class="flex items-center justify-between text-xs text-text-muted-light"
-					>
+					<div class="flex items-center justify-between text-xs text-text-muted-light">
 						<span>{{ formatDate(project.created_at) }}</span>
 						<div class="flex items-center gap-1">
 							<CubeIcon class="w-4 h-4" />
@@ -163,8 +135,7 @@
 		:show="showAddProjectModal"
 		:editing-project="editingProject"
 		@close="closeModal"
-		@save="handleSaveProject"
-	/>
+		@save="handleSaveProject" />
 </template>
 
 <script setup lang="ts">
@@ -190,6 +161,11 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ProjectModal from "@/components/ProjectModal.vue";
 
+definePageMeta({
+	name: "projects",
+	layout: "default",
+});
+
 const db = useDatabase();
 const router = useRouter();
 
@@ -205,9 +181,7 @@ const filteredProjects = computed(() => {
 
 	const query = searchQuery.value.toLowerCase();
 	return projects.value.filter(
-		(project) =>
-			project.name?.toLowerCase().includes(query) ||
-			project.description?.toLowerCase().includes(query)
+		(project) => project.name?.toLowerCase().includes(query) || project.description?.toLowerCase().includes(query),
 	);
 });
 

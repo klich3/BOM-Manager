@@ -10,6 +10,13 @@ export default defineNuxtConfig({
   css: ["@/assets/css/app.css"],
   modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt"],
 
+  router: {
+    options: {
+      linkActiveClass: "menu-active",
+      linkExactActiveClass: "exact-active",
+    },
+  },
+
   vite: {
     clearScreen: false,
     envPrefix: ["VITE_", "TAURI_"],
