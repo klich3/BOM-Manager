@@ -30,7 +30,7 @@
 	},
 	"plugins": {
 		"sql": {
-			"preload": ["sqlite:mydatabase.db"]
+			"preload": ["sqlite:bom_manager.db"]
 		}
 	}
 }
