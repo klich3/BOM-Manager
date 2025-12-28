@@ -4,7 +4,9 @@ import type { Database } from '@/types/database';
 const createWebDatabase = async (): Promise<Database> => {
     try {
         // Importar dinámicamente sqlite-wasm usando el worker promiser
-        const { sqlite3Worker1Promiser } = await import('@sqlite.org/sqlite-wasm');
+        // Usamos un import directo para evitar conflictos de resolución
+        const sqliteWasmModule = await import('@sqlite.org/sqlite-wasm');
+        const { sqlite3Worker1Promiser } = sqliteWasmModule;
 
         // Crear el promiser para interactuar con SQLite a través del worker
         const p = sqlite3Worker1Promiser({
@@ -75,6 +77,8 @@ export const useWebDatabase = () => {
 
         try {
             db = await createWebDatabase();
+
+            console.log('Base de datos web con SQLite WASM inicializada exitosamente', db);
 
             // Crear tabla de items si no existe
             await db.execute(`

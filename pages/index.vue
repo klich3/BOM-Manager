@@ -33,7 +33,10 @@
 
 		<!-- Dashboard Content -->
 		<div class="p-8 pt-4">
-			<div class="grid grid-cols-12 gap-6">
+			<div v-if="loading" class="flex justify-center items-center h-64">
+				<div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+			</div>
+			<div v-else class="grid grid-cols-12 gap-6">
 				<!-- Left Column -->
 				<div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
 					<!-- Main Status Card -->
@@ -233,7 +236,19 @@
 					</div>
 
 					<div class="bg-card-light rounded-3xl p-6 shadow-sm">
-						<div class="text-center py-12 text-text-muted-light">
+						<div v-if="recentActivity.length > 0">
+							<!-- Mostrar actividad reciente si hay datos -->
+							<div v-for="activity in recentActivity" :key="activity.id" class="py-2 border-b border-gray-100 last:border-b-0">
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-3">
+										<div class="w-2 h-2 rounded-full bg-green-500"></div>
+										<span class="text-sm">{{ activity.description }}</span>
+									</div>
+									<span class="text-xs text-text-muted-light">{{ activity.date }}</span>
+								</div>
+							</div>
+						</div>
+						<div v-else class="text-center py-12 text-text-muted-light">
 							<CubeIcon class="w-12 h-12 mx-auto mb-4 opacity-50" />
 							<p class="text-sm">No hay actividad reciente</p>
 							<p class="text-xs mt-2">
@@ -269,12 +284,16 @@ import { useRouter } from "vue-router";
 const db = useDatabase();
 const router = useRouter();
 
+const loading = ref(true);
 const stats = ref({
 	totalItems: 0,
 	projects: 0,
 	lowStock: 0,
 	totalValue: 0,
 });
+
+// Nueva variable para la actividad reciente
+const recentActivity = ref<{id: string, description: string, date: string}[]>([]);
 
 const currentDate = computed(() => {
 	const now = new Date();
@@ -327,7 +346,13 @@ const loadStats = async () => {
 };
 
 onMounted(async () => {
-	await loadStats();
+	try {
+		await loadStats();
+	} catch (error) {
+		console.error("Error en mounted:", error);
+	} finally {
+		loading.value = false;
+	}
 });
 </script>
 

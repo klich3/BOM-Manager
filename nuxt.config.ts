@@ -1,4 +1,6 @@
 import { defineNuxtConfig } from 'nuxt/config';
+import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -29,10 +31,14 @@ export default defineNuxtConfig({
       include: ["@tauri-apps/plugin-sql"],
       exclude: ['@sqlite.org/sqlite-wasm'],
     },
+
+    plugins: [
+      wasm(),
+      topLevelAwait()
+    ],
   },
 
   nitro: {
-
     routeRules: {
       '**': {
         headers: {
