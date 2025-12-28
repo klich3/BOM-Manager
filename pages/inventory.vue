@@ -373,7 +373,6 @@
 		</div>
 	</div>
 
-	
 	<!-- Toast Notification -->
 	<Toast :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
 </template>
@@ -561,9 +560,9 @@ const editItem = (item: any) => {
 const deleteItemConfirm = async (id: string) => {
 	const confirmed = await showConfirmation(
 		"Eliminar Componente",
-		"¿Estás seguro de eliminar este componente? Esta acción no se puede deshacer."
+		"¿Estás seguro de eliminar este componente? Esta acción no se puede deshacer.",
 	);
-	
+
 	if (confirmed) {
 		try {
 			await db.deleteItem(id);
