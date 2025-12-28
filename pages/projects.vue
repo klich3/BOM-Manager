@@ -114,15 +114,6 @@
 		:editing-project="editingProject"
 		@close="closeModal"
 		@save="handleSaveProject" />
-
-	<!-- Confirm Modal -->
-	<ConfirmModal
-		:show="showConfirmModal"
-		:title="confirmModalTitle"
-		:message="confirmModalMessage"
-		:confirm-text="confirmModalConfirmText"
-		@confirm="confirmDeleteProject"
-		@close="closeConfirmModal" />
 </template>
 
 <script setup lang="ts">
@@ -147,12 +138,18 @@ import { useDatabase } from "@/composables/useDatabase";
 import { useRouter } from "vue-router";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useDialog } from "@/composables/useDialog";
 import ProjectModal from "@/components/project/ProjectModal.vue";
 import ProjectCard from "@/components/project/ProjectCard.vue";
-import ConfirmModal from "@/components/ConfirmModal.vue";
 import { navigateTo } from "nuxt/app";
 
+definePageMeta({
+	name: "projects",
+	layout: "default",
+});
+
 const db = useDatabase();
+const { showConfirmation } = useDialog();
 
 // Definir metadatos de la página
 // Esta macro está disponible globalmente en Nuxt 3
@@ -163,11 +160,6 @@ const projects = ref<any[]>([]);
 const searchQuery = ref("");
 const showAddProjectModal = ref(false);
 const editingProject = ref<any>(null);
-const showConfirmModal = ref(false);
-const confirmModalTitle = ref("");
-const confirmModalMessage = ref("");
-const confirmModalConfirmText = ref("");
-const projectToDelete = ref<string | null>(null);
 
 // Computed
 const filteredProjects = computed(() => {
@@ -208,30 +200,20 @@ const editProject = (project: any) => {
 	showAddProjectModal.value = true;
 };
 
-const deleteProjectConfirm = (id: string) => {
-	projectToDelete.value = id;
-	confirmModalTitle.value = "Eliminar Proyecto";
-	confirmModalMessage.value = "¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.";
-	confirmModalConfirmText.value = "Eliminar";
-	showConfirmModal.value = true;
-};
+const deleteProjectConfirm = async (id: string) => {
+	const confirmed = await showConfirmation(
+		"Eliminar Proyecto",
+		"¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.",
+	);
 
-const confirmDeleteProject = async () => {
-	if (projectToDelete.value) {
+	if (confirmed) {
 		try {
-			await db.deleteProject(projectToDelete.value);
+			await db.deleteProject(id);
 			await loadProjects();
 		} catch (error) {
 			console.error("Error eliminando proyecto:", error);
 		}
-		projectToDelete.value = null;
 	}
-	showConfirmModal.value = false;
-};
-
-const closeConfirmModal = () => {
-	showConfirmModal.value = false;
-	projectToDelete.value = null;
 };
 
 const viewProject = async (id: string) => {

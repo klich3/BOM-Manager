@@ -1,3 +1,6 @@
+- [ ] - user settings -> https://v2.tauri.app/plugin/window-state/
+
+
 ### 1. Importación de Archivos CSV/XLSX
 - [x] Instalar `papaparse` para CSV
 - [x] Instalar `xlsx` para Excel
@@ -11,7 +14,6 @@
 - [ ] - Import -> cuadrar las columnas 
 - [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir
 - [ ]   - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
-
 
 ### 2. Vista de Inventario
 - [x] Crear página `/pages/inventory.vue`

@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue';
+import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
 
 export interface Notification {
     id: string;
@@ -106,6 +107,39 @@ export const useNotifications = () => {
         );
     };
 
+    /**
+     * Verifica si las notificaciones están habilitadas
+     */
+    const checkNotificationPermission = async () => {
+        let permissionGranted = await isPermissionGranted();
+
+        if (!permissionGranted) {
+            const permission = await requestPermission();
+            permissionGranted = permission === 'granted';
+        }
+
+        return permissionGranted;
+    };
+
+    /**
+     * Envía una notificación nativa del sistema operativo (solo en Tauri)
+     */
+    const sendSystemNotification = async (title: string, message: string) => {
+        if (typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__) {
+            try {
+                const permissionGranted = await checkNotificationPermission();
+                if (permissionGranted) {
+                    await sendNotification({
+                        title,
+                        body: message,
+                    });
+                }
+            } catch (error) {
+                console.error('Error sending system notification:', error);
+            }
+        }
+    };
+
     return {
         notifications: computed(() => notifications.value),
         addNotification,
@@ -115,6 +149,7 @@ export const useNotifications = () => {
         error,
         warning,
         info,
-        lowStockAlert
+        lowStockAlert,
+        sendSystemNotification
     };
 };

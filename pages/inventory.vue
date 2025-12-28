@@ -373,21 +373,14 @@
 		</div>
 	</div>
 
-	<!-- Confirm Modal -->
-	<ConfirmModal
-		:show="showConfirmModal"
-		:title="confirmModalTitle"
-		:message="confirmModalMessage"
-		:confirm-text="confirmModalConfirmText"
-		@confirm="confirmDeleteItem"
-		@close="closeConfirmModal" />
-
+	
 	<!-- Toast Notification -->
 	<Toast :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { useDialog } from "@/composables/useDialog";
 import {
 	CpuChipIcon,
 	Squares2X2Icon,
@@ -430,6 +423,7 @@ const db = useDatabase();
 const { exportAllInventory } = useExport();
 const { parseFile } = useFileParser();
 const lists = useLists();
+const { showConfirmation } = useDialog();
 
 // State
 const items = ref<any[]>([]);
@@ -466,12 +460,12 @@ const itemForm = ref({
 const showLCSCPreview = ref(false);
 const lcscPartNumber = ref("");
 
-// Confirm Modal State
-const showConfirmModal = ref(false);
-const confirmModalTitle = ref("");
-const confirmModalMessage = ref("");
-const confirmModalConfirmText = ref("");
-const itemToDelete = ref<string | null>(null);
+// Confirm Modal State - Not used when using Tauri dialogs
+// const showConfirmModal = ref(false);
+// const confirmModalTitle = ref("");
+// const confirmModalMessage = ref("");
+// const confirmModalConfirmText = ref("");
+// const itemToDelete = ref<string | null>(null);
 
 // Toast State
 const showToast = ref(false);
@@ -564,32 +558,22 @@ const editItem = (item: any) => {
 	showAddModal.value = true;
 };
 
-const deleteItemConfirm = (id: string) => {
-	itemToDelete.value = id;
-	confirmModalTitle.value = "Eliminar Componente";
-	confirmModalMessage.value = "¿Estás seguro de eliminar este componente? Esta acción no se puede deshacer.";
-	confirmModalConfirmText.value = "Eliminar";
-	showConfirmModal.value = true;
-};
-
-const confirmDeleteItem = async () => {
-	if (itemToDelete.value) {
+const deleteItemConfirm = async (id: string) => {
+	const confirmed = await showConfirmation(
+		"Eliminar Componente",
+		"¿Estás seguro de eliminar este componente? Esta acción no se puede deshacer."
+	);
+	
+	if (confirmed) {
 		try {
-			await db.deleteItem(itemToDelete.value);
+			await db.deleteItem(id);
 			await loadItems();
 			showToastMessage("Componente eliminado exitosamente", "success");
 		} catch (error) {
 			console.error("Error eliminando componente:", error);
 			showToastMessage("Error al eliminar el componente", "error");
 		}
-		itemToDelete.value = null;
-		showConfirmModal.value = false;
 	}
-};
-
-const closeConfirmModal = () => {
-	showConfirmModal.value = false;
-	itemToDelete.value = null;
 };
 
 const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
