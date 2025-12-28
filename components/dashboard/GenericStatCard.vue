@@ -38,13 +38,13 @@ const props = withDefaults(defineProps<Props>(), {
 const getValue = () => {
 	switch (props.type) {
 		case "projects":
-			return props.stats.projects || 0;
+			return (props.stats && props.stats.projects) || 0;
 		case "totalValue":
 			return props.valueType === "currency"
-				? props.formatValue(props.stats.totalValue || 0)
-				: props.stats.totalValue || 0;
+				? props.formatValue(Number(props.stats?.totalValue) || 0)
+				: Number(props.stats?.totalValue) || 0;
 		case "lowStock":
-			return props.stats.lowStock || 0;
+			return (props.stats && props.stats.lowStock) || 0;
 		default:
 			return 0;
 	}

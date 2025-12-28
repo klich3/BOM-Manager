@@ -1,5 +1,5 @@
 - [ ] - user settings -> https://v2.tauri.app/plugin/window-state/
-
+-home hay que modificar el items cuentas
 
 ### 1. Importación de Archivos CSV/XLSX
 - [x] Instalar `papaparse` para CSV

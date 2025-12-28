@@ -62,6 +62,11 @@ const iconComponent = computed(() => {
 
 const formattedValue = computed(() => {
 	if (props.valueType === "currency") {
+		// Si el valor ya es un string formateado, lo devolvemos tal cual
+		if (typeof props.value === "string" && props.value.startsWith("$")) {
+			return props.value;
+		}
+		// Si es un número o string no formateado, lo formateamos como moneda
 		return `$${props.formatValue(Number(props.value))}`;
 	}
 	return props.value;
