@@ -30,75 +30,26 @@
 				<div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
 					<!-- Stats Grid -->
 					<div class="grid grid-cols-2 gap-4">
-						<div
-							class="bg-primary rounded-3xl p-5 text-white flex flex-col justify-between shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow cursor-pointer relative overflow-hidden">
-							<div class="absolute top-0 right-0 p-4 opacity-20">
-								<CheckCircleIcon class="w-16 h-16" />
-							</div>
-							<div class="flex justify-between items-start z-10">
-								<div class="flex items-center gap-2">
-									<CubeIcon class="w-5 h-5" />
-									<span class="text-sm font-medium">Stock Health</span>
-								</div>
-							</div>
-							<div class="z-10">
-								<div class="flex items-end gap-2">
-									<span class="text-4xl font-bold">{{ stockHealthPercentage }}%</span>
-								</div>
-								<p class="text-xs opacity-80 mt-2">Inventario en niveles óptimos</p>
-							</div>
-						</div>
+						<StockHealthIndicator
+							:percentage="stockHealthPercentage"
+							:title="'Stock Health'"
+							:status-text="'Inventario en niveles óptimos'" />
 
-						<div
-							class="bg-card-light rounded-3xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-							<div class="flex justify-between items-start">
-								<div class="flex items-center gap-2 text-text-muted-light">
-									<RectangleStackIcon class="w-5 h-5" />
-									<span class="text-sm font-medium">Proyectos</span>
-								</div>
-							</div>
-							<div>
-								<span class="text-4xl font-bold text-text-main-light">{{ stats.projects }}</span>
-								<p class="text-xs text-text-muted-light mt-2">Proyectos activos</p>
-							</div>
-						</div>
+						<GenericStatCard
+							:stats="stats"
+							type="projects"
+							title="Proyectos"
+							subtitle="Proyectos activos" />
 
-						<div
-							class="bg-card-light rounded-3xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-							<div class="flex justify-between items-start">
-								<div class="flex items-center gap-2 text-text-muted-light">
-									<CurrencyDollarIcon class="w-5 h-5" />
-									<span class="text-sm font-medium">Valor Total</span>
-								</div>
-							</div>
-							<div>
-								<span class="text-4xl font-bold text-text-main-light"
-									>${{ formatValue(stats.totalValue) }}</span
-								>
-								<p class="text-xs text-text-muted-light mt-2">Inversión en inventario</p>
-							</div>
-						</div>
+						<GenericStatCard
+							:stats="stats"
+							type="totalValue"
+							title="Valor Total"
+							subtitle="Inversión en inventario"
+							value-type="currency"
+							:format-value="formatValue" />
 
-						<div
-							class="bg-card-light rounded-3xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer border"
-							:class="stats.lowStock > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-transparent'">
-							<div class="flex justify-between items-start">
-								<div class="flex items-center gap-2 text-text-muted-light">
-									<ExclamationTriangleIcon
-										class="w-5 h-5"
-										:class="stats.lowStock > 0 ? 'text-amber-500' : ''" />
-									<span class="text-sm font-medium">Alertas</span>
-								</div>
-							</div>
-							<div>
-								<span
-									class="text-4xl font-bold"
-									:class="stats.lowStock > 0 ? 'text-amber-600' : 'text-text-main-light'"
-									>{{ stats.lowStock }}</span
-								>
-								<p class="text-xs text-text-muted-light mt-2">Stock bajo</p>
-							</div>
-						</div>
+						<GenericStatCard :stats="stats" type="lowStock" title="Alertas" subtitle="Stock bajo" />
 					</div>
 
 					<!-- Quick Actions -->
@@ -190,6 +141,8 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useDatabase } from "@/composables/useDatabase";
 import { useRouter } from "vue-router";
+import StockHealthIndicator from "@/components/dashboard/StockHealthIndicator.vue";
+import GenericStatCard from "@/components/dashboard/GenericStatCard.vue";
 
 definePageMeta({
 	name: "home",

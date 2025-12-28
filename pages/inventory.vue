@@ -137,147 +137,34 @@
 			</div>
 
 			<!-- Items Table -->
-			<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
-				<div class="overflow-x-auto">
-					<table class="w-full">
-						<thead class="bg-gray-50">
-							<tr>
-								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-									Componente
-								</th>
-								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-									Categoría
-								</th>
-								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-									Stock
-								</th>
-								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-									Proveedor
-								</th>
-								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-									Precio
-								</th>
-								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-									LCSC
-								</th>
-								<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-									Acciones
-								</th>
-							</tr>
-						</thead>
-						<tbody class="divide-y divide-gray-200">
-							<tr v-if="filteredItems.length === 0">
-								<td colspan="6" class="px-6 py-12 text-center">
-									<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
-									<p class="text-text-muted-light">No hay componentes en el inventario</p>
-									<button
-										@click="showAddModal = true"
-										class="mt-4 text-primary hover:underline text-sm font-medium">
-										Agregar primer componente
-									</button>
-								</td>
-							</tr>
-							<tr
-								v-for="item in paginatedItems"
-								:key="item.id"
-								class="hover:bg-gray-50 transition-colors">
-								<td class="px-6 py-4">
-									<div>
-										<p class="text-sm font-semibold text-text-main-light">
-											{{ item.name }}
-										</p>
-										<p class="text-xs text-text-muted-light">
-											{{ item.part_number || "N/A" }}
-										</p>
-									</div>
-								</td>
-								<td class="px-6 py-4">
-									<span class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium">
-										{{ item.category || "Sin categoría" }}
-									</span>
-								</td>
-								<td class="px-6 py-4">
-									<div class="flex items-center gap-2">
-										<div
-											class="w-2 h-2 rounded-full"
-											:class="
-												item.in_stock < (item.min_stock || 0) ? 'bg-amber-500' : 'bg-green-500'
-											"></div>
-										<span class="text-sm text-text-main-light">
-											{{ item.in_stock }} {{ item.unit }}
-										</span>
-									</div>
-								</td>
-								<td class="px-6 py-4 text-sm text-text-muted-light">
-									{{ item.supplier || "N/A" }}
-								</td>
-								<td class="px-6 py-4 text-sm font-medium text-text-main-light">
-									${{ (item.price || 0).toFixed(2) }}
-								</td>
-								<td class="px-6 py-4">
-									<div class="flex items-center gap-2">
-										<span
-											v-if="item.lcsc_part"
-											class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium">
-											{{ item.lcsc_part }}
-										</span>
-										<button
-											v-if="item.lcsc_part"
-											@click="openLcscPreview(item.lcsc_part)"
-											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-											title="Ver en LCSC">
-											<GlobeAltIcon class="w-4 h-4 text-blue-600" />
-										</button>
-										<button
-											v-if="item.lcsc_part"
-											@click="openLcscPurchase(item.lcsc_part)"
-											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-											title="Comprar en LCSC">
-											<ShoppingCartIcon class="w-4 h-4 text-green-600" />
-										</button>
-										<span v-else class="text-xs text-text-muted-light"> N/A </span>
-									</div>
-								</td>
-								<td class="px-6 py-4">
-									<div class="flex items-center gap-2">
-										<button
-											@click="editItem(item)"
-											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-											<PencilIcon class="w-4 h-4 text-blue-600" />
-										</button>
-										<button
-											@click="deleteItemConfirm(item.id)"
-											class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-											<TrashIcon class="w-4 h-4 text-red-600" />
-										</button>
-									</div>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
+			<InventoryTable
+				:items="paginatedItems"
+				@edit-item="editItem"
+				@delete-item="deleteItemConfirm"
+				@open-lcsc-preview="openLcscPreview"
+				@open-lcsc-purchase="openLcscPurchase"
+				@add-first-item="showAddModal = true" />
 
-				<!-- Pagination -->
-				<div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-					<p class="text-sm text-text-muted-light">
-						Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
-						{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
-						de {{ filteredItems.length }} items
-					</p>
-					<div class="flex gap-2">
-						<button
-							@click="currentPage--"
-							:disabled="currentPage === 1"
-							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
-							Anterior
-						</button>
-						<button
-							@click="currentPage++"
-							:disabled="currentPage === totalPages"
-							class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
-							Siguiente
-						</button>
-					</div>
+			<!-- Pagination -->
+			<div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+				<p class="text-sm text-text-muted-light">
+					Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
+					{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
+					de {{ filteredItems.length }} items
+				</p>
+				<div class="flex gap-2">
+					<button
+						@click="currentPage--"
+						:disabled="currentPage === 1"
+						class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
+						Anterior
+					</button>
+					<button
+						@click="currentPage++"
+						:disabled="currentPage === totalPages"
+						class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
+						Siguiente
+					</button>
 				</div>
 			</div>
 		</div>
@@ -412,6 +299,7 @@ import LCSCPreview from "@/components/LCSCPreview.vue";
 import AddItemToInventoryModal from "@/components/AddItemToInventoryModal.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import Toast from "@/components/Toast.vue";
+import InventoryTable from "@/components/inventory/InventoryTable.vue";
 
 definePageMeta({
 	name: "inventory",
