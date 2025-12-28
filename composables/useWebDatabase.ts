@@ -1,4 +1,5 @@
 import type { Database } from '@/types/database';
+import { useDatabaseSchema } from './useDatabaseSchema';
 
 // Variable global para mantener la instancia de la base de datos
 let dbInstance: any = null;
@@ -9,7 +10,7 @@ const initSqliteWasm = async () => {
         return dbInstance;
     }
 
-    console.log('Inicializando SQLite WASM con worker oficial y OPFS');
+    console.info('Inicializando SQLite WASM con worker oficial y OPFS');
 
     try {
         const { sqlite3Worker1Promiser } = await import('@sqlite.org/sqlite-wasm');
@@ -23,14 +24,13 @@ const initSqliteWasm = async () => {
         });
 
         const version = await promiser('config-get', {});
-        console.log('[SQLite3] Running version', version.result.version.libVersion);
+        console.info('[SQLite3] Running version', version.result.version.libVersion);
 
         const response = await promiser('open', {
             filename: 'file:bom_manager.db?vfs=opfs'
         });
 
         const dbId = response.dbId as string;
-        console.log('Base de datos abierta con OPFS, dbId:', dbId);
 
         // Ejecutar configuración inicial de la base de datos
         await promiser('exec', {
@@ -66,7 +66,7 @@ const initSqliteWasm = async () => {
                         }
                     });
 
-                    console.log('[SELECT] ->:', convertedRows);
+                    //console.log('[SELECT] ->:', convertedRows);
 
                     return convertedRows as T;
                 } catch (error) {
@@ -83,7 +83,7 @@ const initSqliteWasm = async () => {
                         returnValue: 'this'
                     });
 
-                    console.log('[EXECUTE] ->:', result);
+                    //console.log('[EXECUTE] ->:', result);
 
                     return { rowsAffected: 1, lastInsertRowid: null }; // Valor por defecto para operaciones de modificación
                 } catch (error) {
@@ -138,73 +138,24 @@ export const useWebDatabase = () => {
         if (db) return db;
 
         // Si ya hay una promesa de inicialización en curso, esperarla
-        if (initPromise) {
+        if (initPromise)
             return await initPromise;
-        }
 
         // Crear una promesa de inicialización para evitar inicializaciones múltiples
         initPromise = (async () => {
             try {
-                console.log('Llamando a createWebDatabase con worker oficial');
                 const createdDb = await createWebDatabase();
 
-                console.log('createWebDatabase con worker oficial completado, verificando resultado');
-                if (!createdDb) {
+                if (!createdDb)
                     throw new Error('createWebDatabase retornó null o undefined');
-                }
 
                 db = createdDb;
 
                 console.log('Base de datos con worker oficial creada exitosamente, creando tablas');
 
-                // Crear tabla de items si no existe
-                await db.execute(`
-            CREATE TABLE IF NOT EXISTS bom_items (
-              id TEXT PRIMARY KEY,
-              name TEXT NOT NULL,
-              description TEXT,
-              quantity REAL NOT NULL,
-              unit TEXT NOT NULL,
-              category TEXT,
-              supplier TEXT,
-              part_number TEXT,
-              lcsc_part TEXT,
-              price REAL,
-              in_stock REAL NOT NULL DEFAULT 0,
-              min_stock REAL,
-              notes TEXT,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL
-            )
-          `);
-
-                // Crear tabla de proyectos
-                await db.execute(`
-            CREATE TABLE IF NOT EXISTS projects (
-              id TEXT PRIMARY KEY,
-              name TEXT NOT NULL,
-              description TEXT,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL
-            )
-          `);
-
-                // Crear tabla de relación proyecto-items
-                await db.execute(`
-            CREATE TABLE IF NOT EXISTS project_items (
-              id TEXT PRIMARY KEY,
-              project_id TEXT NOT NULL,
-              item_id TEXT NOT NULL,
-              quantity REAL NOT NULL DEFAULT 1,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL,
-              FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-              FOREIGN KEY (item_id) REFERENCES bom_items(id) ON DELETE CASCADE,
-              UNIQUE(project_id, item_id)
-            )
-          `);
-
-                console.log('Tablas creadas exitosamente con worker oficial');
+                // Crear tablas usando el esquema definido en JSON
+                const { createTables } = await useDatabaseSchema();
+                await createTables(db);
 
                 return db;
             } catch (error) {

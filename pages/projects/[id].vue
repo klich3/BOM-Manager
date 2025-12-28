@@ -416,12 +416,10 @@ import { useRouter, useRoute } from "vue-router";
 import type { BOMItem, BOMProject } from "@/types/bom";
 import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
 
-/*
 definePageMeta({
-	name: "projects",
+	name: "projects-id",
 	layout: "default",
 });
-*/
 
 const router = useRouter();
 const route = useRoute();

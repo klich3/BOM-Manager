@@ -88,44 +88,13 @@
 			</div>
 
 			<div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				<div
+				<ProjectCard
 					v-for="project in filteredProjects"
 					:key="project.id"
-					class="bg-card-light rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/50"
-					@click="viewProject(project.id)">
-					<div class="flex items-start justify-between mb-4">
-						<div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-							<RectangleStackIcon class="w-6 h-6 text-primary" />
-						</div>
-						<div class="flex gap-2">
-							<button
-								@click.stop="editProject(project)"
-								class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-								<PencilIcon class="w-4 h-4 text-blue-600" />
-							</button>
-							<button
-								@click.stop="deleteProjectConfirm(project.id)"
-								class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-								<TrashIcon class="w-4 h-4 text-red-600" />
-							</button>
-						</div>
-					</div>
-
-					<h3 class="text-lg font-semibold text-text-main-light mb-2">
-						{{ project.name }}
-					</h3>
-					<p class="text-sm text-text-muted-light mb-4 line-clamp-2">
-						{{ project.description || "Sin descripción" }}
-					</p>
-
-					<div class="flex items-center justify-between text-xs text-text-muted-light">
-						<span>{{ formatDate(project.created_at) }}</span>
-						<div class="flex items-center gap-1">
-							<CubeIcon class="w-4 h-4" />
-							<span>0 items</span>
-						</div>
-					</div>
-				</div>
+					:project="project"
+					@view-project="viewProject"
+					@edit-project="editProject"
+					@delete-project="deleteProjectConfirm" />
 			</div>
 		</div>
 	</main>
@@ -160,13 +129,13 @@ import { useRouter } from "vue-router";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ProjectModal from "@/components/ProjectModal.vue";
-
-definePageMeta({
-	name: "projects",
-	layout: "default",
-});
+import ProjectCard from "@/components/project/ProjectCard.vue";
+import { navigateTo } from "nuxt/app";
 
 const db = useDatabase();
+
+// Definir metadatos de la página
+// Esta macro está disponible globalmente en Nuxt 3
 const router = useRouter();
 
 // State
@@ -221,8 +190,8 @@ const deleteProjectConfirm = async (id: string) => {
 	}
 };
 
-const viewProject = (id: string) => {
-	router.push(`/projects/${id}`);
+const viewProject = async (id: string) => {
+	await navigateTo({ name: "projects-id", params: { id } });
 };
 
 const closeModal = () => {

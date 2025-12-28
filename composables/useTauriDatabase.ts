@@ -1,11 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 
 import type { Database } from '@/types/database';
+import { useDatabaseSchema } from './useDatabaseSchema';
 
-// Función para crear una base de datos con Tauri
 const createTauriDatabase = async (): Promise<Database> => {
     try {
-        // Importar dinámicamente el plugin de SQL
         const { default: Database } = await import('@tauri-apps/plugin-sql');
         const db = await Database.load('sqlite:bom_manager.db');
 
@@ -32,52 +31,8 @@ export const useTauriDatabase = () => {
         try {
             db = await createTauriDatabase();
 
-            // Crear tabla de items si no existe
-            await db.execute(`
-        CREATE TABLE IF NOT EXISTS bom_items (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          quantity REAL NOT NULL,
-          unit TEXT NOT NULL,
-          category TEXT,
-          supplier TEXT,
-          part_number TEXT,
-          lcsc_part TEXT,
-          price REAL,
-          in_stock REAL NOT NULL DEFAULT 0,
-          min_stock REAL,
-          notes TEXT,
-          created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL
-        )
-      `);
-
-            // Crear tabla de proyectos
-            await db.execute(`
-        CREATE TABLE IF NOT EXISTS projects (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL
-        )
-      `);
-
-            // Crear tabla de relación proyecto-items
-            await db.execute(`
-        CREATE TABLE IF NOT EXISTS project_items (
-          id TEXT PRIMARY KEY,
-          project_id TEXT NOT NULL,
-          item_id TEXT NOT NULL,
-          quantity REAL NOT NULL DEFAULT 1,
-          created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL,
-          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-          FOREIGN KEY (item_id) REFERENCES bom_items(id) ON DELETE CASCADE,
-          UNIQUE(project_id, item_id)
-        )
-      `);
+            const { createTables } = await useDatabaseSchema();
+            await createTables(db);
 
             return db;
         } catch (error) {
