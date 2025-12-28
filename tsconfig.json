@@ -7,7 +7,7 @@
 		"module": "ES2020",
 		"moduleResolution": "bundler",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./*"]
 		},
 		"resolveJsonModule": true,
 		"strict": true,
@@ -16,5 +16,5 @@
 		"isolatedModules": true,
 		"skipLibCheck": true
 	},
-	"include": ["env.d.ts", "src/**/*", "src/**/*.vue", "typed-router.d.ts"]
+	"include": ["env.d.ts", "**/*", "**/*.vue"]
 }

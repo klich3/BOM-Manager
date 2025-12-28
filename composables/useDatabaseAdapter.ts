@@ -8,17 +8,13 @@ export const useDatabaseAdapter = () => {
     const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
     const { getDatabase: getTauriDatabase } = useTauriDatabase();
-    const { select, execute } = useWebDatabase();
+    const { getDatabase: getWebDatabase } = useWebDatabase();
 
     const getDatabase = async () => {
         if (isTauri) {
             return await getTauriDatabase();
         } else {
-            // Para entorno web, retornamos un objeto compatible con la interfaz Database
-            return {
-                select,
-                execute
-            };
+            return await getWebDatabase();
         }
     };
 

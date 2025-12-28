@@ -1,13 +1,12 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config';
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
 
-  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt"],
-
   ssr: false,
-
   css: ["@/assets/css/app.css"],
+  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt"],
 
   vite: {
     clearScreen: false,
@@ -32,7 +31,17 @@ export default defineNuxtConfig({
     },
   },
 
-  nitro: { headers: { "Cross-Origin-Embedder-Policy": "require-corp", "Cross-Origin-Opener-Policy": "same-origin" } },
+  nitro: {
+
+    routeRules: {
+      '**': {
+        headers: {
+          'Cross-Origin-Embedder-Policy': 'require-corp',
+          'Cross-Origin-Opener-Policy': 'same-origin',
+        },
+      },
+    },
+  },
 
   experimental: {
     watcher: "parcel", // 'chokidar' or 'parcel' are also options
