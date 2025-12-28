@@ -88,6 +88,13 @@ BOM-Manager/
 - SQLLite
 
 
+## Dev tools
+
+* https://developer.chrome.com/blog/sqlite-wasm-in-the-browser-backed-by-the-origin-private-file-system?hl=es-419
 
 
+## Docs
+
+* https://v2.tauri.app/plugin/dialog/
+* https://sqlite.org/wasm/doc/trunk/api-worker1.md
 

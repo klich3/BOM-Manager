@@ -12,12 +12,7 @@ const initSqliteWasm = async () => {
     console.log('Inicializando SQLite WASM con worker oficial y OPFS');
 
     try {
-        // Importar dinámicamente sqlite-wasm usando el worker promiser oficial
         const { sqlite3Worker1Promiser } = await import('@sqlite.org/sqlite-wasm');
-
-        console.log('Módulo SQLite WASM oficial importado, creando worker promiser');
-
-        // Crear el promiser para interactuar con SQLite a través del worker
         const promiser: any = await new Promise((resolve) => {
             const _promiser = sqlite3Worker1Promiser({
                 onready: () => {
@@ -27,7 +22,9 @@ const initSqliteWasm = async () => {
             });
         });
 
-        // Abrir la base de datos con OPFS
+        const version = await promiser('config-get', {});
+        console.log('[SQLite3] Running version', version.result.version.libVersion);
+
         const response = await promiser('open', {
             filename: 'file:bom_manager.db?vfs=opfs'
         });
@@ -46,49 +43,48 @@ const initSqliteWasm = async () => {
             dbId,
             promiser,
             select: async <T = any[]>(query: string, params?: any[]): Promise<T> => {
-                console.log('Ejecutando consulta SELECT con worker oficial:', query, params);
-
                 try {
-                    // Para consultas SELECT, obtener los resultados
-                    const result = await promiser('exec', {
+                    const convertedRows: any[] = [];
+                    let columnNames: string[] = [];
+
+                    await promiser('exec', {
                         dbId,
                         sql: query,
                         bind: params || [],
-                        returnValue: 'resultRows' // Devolver las filas obtenidas
+                        callback: (row: any) => {
+                            // El callback recibe objetos con formato {type: string, row: [...], rowNumber: number, columnNames: [...]}
+                            if (row && row.columnNames) {
+                                columnNames = row.columnNames;
+                            }
+                            if (row && row.row && Array.isArray(row.row)) {
+                                const obj: any = {};
+                                for (let i = 0; i < columnNames.length; i++) {
+                                    obj[columnNames[i]] = row.row[i];
+                                }
+                                convertedRows.push(obj);
+                            }
+                        }
                     });
 
-                    console.log('Resultado de SELECT con worker oficial:', result);
+                    console.log('[SELECT] ->:', convertedRows);
 
-                    // El resultado puede tener diferentes formatos, dependiendo de la implementación
-                    if (Array.isArray(result)) {
-                        return result as T;
-                    } else if (result && typeof result === 'object' && 'rows' in result) {
-                        return (result as any).rows as T;
-                    } else if (result && Array.isArray((result as any).rows)) {
-                        return (result as any).rows as T;
-                    } else {
-                        // Si no es un formato esperado, devolver array vacío
-                        return [] as T;
-                    }
+                    return convertedRows as T;
                 } catch (error) {
                     console.error('Error en consulta SELECT con worker oficial:', error);
                     throw error;
                 }
             },
             execute: async (query: string, params?: any[]): Promise<any> => {
-                console.log('Ejecutando consulta EXECUTE con worker oficial:', query, params);
-
                 try {
                     const result = await promiser('exec', {
                         dbId,
                         sql: query,
                         bind: params || [],
-                        returnValue: 'this' // Para operaciones de modificación
+                        returnValue: 'this'
                     });
 
-                    console.log('Resultado de EXECUTE con worker oficial:', result);
+                    console.log('[EXECUTE] ->:', result);
 
-                    // Devolvemos un objeto indicando éxito
                     return { rowsAffected: 1, lastInsertRowid: null }; // Valor por defecto para operaciones de modificación
                 } catch (error) {
                     console.error('Error en consulta EXECUTE con worker oficial:', error);
