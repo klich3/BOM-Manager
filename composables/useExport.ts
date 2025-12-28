@@ -1,7 +1,7 @@
-import { useDatabase } from '../composables/useDatabase';
-import { useNotifications } from '../composables/useNotifications';
+import { useDatabase } from '@/composables/useDatabase';
+import { useNotifications } from '@/composables/useNotifications';
 import * as XLSX from 'xlsx';
-import type { BOMItem } from '../types/bom';
+import type { BOMItem } from '@/types/bom';
 
 export const useExport = () => {
     const db = useDatabase();

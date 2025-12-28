@@ -1,5 +1,5 @@
-import { useDatabase } from './useDatabase';
-import { useLists } from './useLists';
+import { useDatabase } from '@/composables/useDatabase';
+import { useLists } from '@/composables/useLists';
 import { invoke } from '@tauri-apps/api/core';
 
 // Definición de la estructura de respaldo

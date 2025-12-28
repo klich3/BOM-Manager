@@ -412,11 +412,12 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useDatabase } from "@/composables/useDatabase";
 import { useCostCalculator } from "@/composables/useCostCalculator";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import type { BOMItem, BOMProject } from "@/types/bom";
 import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
 
 const router = useRouter();
+const route = useRoute();
 const db = useDatabase();
 const { calculateProjectCost, formatCurrency, taxRate } = useCostCalculator();
 
@@ -490,24 +491,27 @@ const availableItems = computed(() => {
 
 // Methods
 const loadProject = async () => {
-	// Simulación - en una implementación real, usaríamos el ID del proyecto de la ruta
-	// const projectId = useRoute().params.id as string;
+	const projectId = route.params.id as string;
 
-	// Por ahora, simulamos un proyecto
-	project.value = {
-		id: "project-1",
-		name: "Proyecto Demo",
-		description: "Proyecto de ejemplo para demostrar funcionalidades",
-		items: [],
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	};
+	try {
+		// Cargar el proyecto específico
+		const projectData = await db.getProjectById(projectId);
+		if (!projectData) {
+			router.push("/projects");
+			return;
+		}
 
-	// Cargar items del proyecto (simulado)
-	projectItems.value = await db.getAllItems();
+		project.value = projectData;
 
-	// Cargar todos los items para agregar al proyecto
-	allItems.value = await db.getAllItems();
+		// Cargar items del proyecto
+		projectItems.value = await db.getProjectItems(projectId);
+
+		// Cargar todos los items para agregar al proyecto
+		allItems.value = await db.getAllItems();
+	} catch (error) {
+		console.error("Error cargando proyecto:", error);
+		router.push("/projects");
+	}
 };
 
 const calculateItemTotal = (item: any): number => {
@@ -515,39 +519,69 @@ const calculateItemTotal = (item: any): number => {
 };
 
 const updateItemQuantity = async (itemId: string, newQuantity: number) => {
-	// En una implementación real, actualizaría la relación proyecto-item en la base de datos
-	const item = projectItems.value.find((i) => i.id === itemId);
-	if (item) {
-		item.quantity = newQuantity;
-		// Recalcular costos
-		calculateProjectCostMethod();
+	const projectId = route.params.id as string;
+
+	try {
+		const success = await db.updateProjectItemQuantity(
+			projectId,
+			itemId,
+			newQuantity
+		);
+		if (success) {
+			const item = projectItems.value.find((i) => i.id === itemId);
+			if (item) {
+				item.quantity = newQuantity;
+				// Recalcular costos
+				calculateProjectCostMethod();
+			}
+		}
+	} catch (error) {
+		console.error("Error actualizando cantidad de item:", error);
 	}
 };
 
 const removeItemFromProject = async (itemId: string) => {
+	const projectId = route.params.id as string;
+
 	if (confirm("¿Estás seguro de remover este item del proyecto?")) {
-		// En una implementación real, eliminaría la relación proyecto-item en la base de datos
-		const index = projectItems.value.findIndex((i) => i.id === itemId);
-		if (index !== -1) {
-			projectItems.value.splice(index, 1);
-			// Recalcular costos
-			calculateProjectCostMethod();
+		try {
+			const success = await db.removeItemFromProject(projectId, itemId);
+			if (success) {
+				const index = projectItems.value.findIndex((i) => i.id === itemId);
+				if (index !== -1) {
+					projectItems.value.splice(index, 1);
+					// Recalcular costos
+					calculateProjectCostMethod();
+				}
+			}
+		} catch (error) {
+			console.error("Error removiendo item del proyecto:", error);
 		}
 	}
 };
 
-const addItemToProject = (item: any) => {
-	// Verificar si el item ya está en el proyecto
-	const existingItem = projectItems.value.find((i) => i.id === item.id);
-	if (existingItem) {
-		alert("Este item ya está en el proyecto");
-		return;
-	}
+const addItemToProject = async (item: any) => {
+	const projectId = route.params.id as string;
 
-	// Agregar item al proyecto con cantidad por defecto de 1
-	const itemToAdd = { ...item, quantity: 1 };
-	projectItems.value.push(itemToAdd);
-	closeAddItemModal();
+	try {
+		// Verificar si el item ya está en el proyecto
+		const existingItem = projectItems.value.find((i) => i.id === item.id);
+		if (existingItem) {
+			alert("Este item ya está en el proyecto");
+			return;
+		}
+
+		// Agregar item al proyecto con cantidad por defecto de 1
+		const success = await db.addItemToProject(projectId, item.id, 1);
+		if (success) {
+			const itemToAdd = { ...item, quantity: 1 };
+			projectItems.value.push(itemToAdd);
+			closeAddItemModal();
+			calculateProjectCostMethod();
+		}
+	} catch (error) {
+		console.error("Error agregando item al proyecto:", error);
+	}
 };
 
 const closeAddItemModal = () => {
@@ -557,10 +591,13 @@ const closeAddItemModal = () => {
 
 const calculateProjectCostMethod = () => {
 	if (projectItems.value.length > 0) {
-		const quantities = projectItems.value.reduce((acc, item) => {
-			acc[item.id] = item.quantity || 1;
-			return acc;
-		}, {} as Record<string, number>);
+		const quantities = projectItems.value.reduce(
+			(acc, item) => {
+				acc[item.id] = item.quantity || 1;
+				return acc;
+			},
+			{} as Record<string, number>
+		);
 
 		costBreakdown.value = calculateProjectCost(projectItems.value, quantities);
 	}

@@ -1,5 +1,5 @@
-import { useDatabase } from './useDatabase';
-import { useNotifications } from './useNotifications';
+import { useDatabase } from '@/composables/useDatabase';
+import { useNotifications } from '@/composables/useNotifications';
 
 export const useLowStock = () => {
     const db = useDatabase();

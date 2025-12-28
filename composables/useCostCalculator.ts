@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { BOMItem } from '../types/bom';
+import type { BOMItem } from '@/types/bom';
 
 export interface CostCalculation {
     subtotal: number;

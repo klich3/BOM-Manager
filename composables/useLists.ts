@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { BOMItem } from '../types/bom';
+import type { BOMItem } from '@/types/bom';
 
 // Definición de tipos para las listas
 export interface ComponentItem {

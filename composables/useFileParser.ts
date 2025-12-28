@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { z } from 'zod';
-import type { BOMItem } from '../types/bom';
+import type { BOMItem } from '@/types/bom';
 
 // Schema de validación para items BOM
 const BOMItemSchema = z.object({

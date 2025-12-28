@@ -22,7 +22,6 @@ export interface BOMProject {
   id: string;
   name: string;
   description?: string;
-  items: BOMItem[];
   createdAt: Date;
   updatedAt: Date;
 }
