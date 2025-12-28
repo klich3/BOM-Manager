@@ -7,12 +7,16 @@
 		<div class="flex justify-between items-start">
 			<div class="flex items-center gap-2 text-text-muted-light">
 				<component :is="iconComponent" class="w-5 h-5" :class="iconColorClass" />
-				<span class="text-sm font-medium">{{ title }}</span>
+				<span class="text-sm font-medium"
+					><slot name="title">{{ title }}</slot></span
+				>
 			</div>
 		</div>
 		<div>
 			<span :class="['text-4xl font-bold', valueColorClass]">{{ formattedValue }}</span>
-			<p class="text-xs text-text-muted-light mt-2">{{ subtitle }}</p>
+			<p class="text-xs text-text-muted-light mt-2">
+				<slot name="subtitle">{{ subtitle }}</slot>
+			</p>
 		</div>
 	</div>
 </template>
@@ -22,9 +26,9 @@ import { computed } from "vue";
 import { RectangleStackIcon, CurrencyDollarIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 
 interface Props {
-	title: string;
+	title?: string;
 	value: number | string;
-	subtitle: string;
+	subtitle?: string;
 	valueType?: "number" | "currency";
 	hasAlert?: boolean;
 	formatValue?: (value: number) => string;
@@ -37,11 +41,20 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const iconComponent = computed(() => {
-	if (props.title.toLowerCase().includes("proyect") || props.title.toLowerCase().includes("project")) {
+	if (
+		props.title &&
+		(props.title.toLowerCase().includes("proyect") || props.title.toLowerCase().includes("project"))
+	) {
 		return RectangleStackIcon;
-	} else if (props.title.toLowerCase().includes("total") || props.title.toLowerCase().includes("valor")) {
+	} else if (
+		props.title &&
+		(props.title.toLowerCase().includes("total") || props.title.toLowerCase().includes("valor"))
+	) {
 		return CurrencyDollarIcon;
-	} else if (props.title.toLowerCase().includes("alert") || props.title.toLowerCase().includes("stock bajo")) {
+	} else if (
+		props.title &&
+		(props.title.toLowerCase().includes("alert") || props.title.toLowerCase().includes("stock bajo"))
+	) {
 		return ExclamationTriangleIcon;
 	}
 	return RectangleStackIcon; // default icon

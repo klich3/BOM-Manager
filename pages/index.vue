@@ -35,21 +35,24 @@
 							:title="'Stock Health'"
 							:status-text="'Inventario en niveles óptimos'" />
 
-						<GenericStatCard
-							:stats="stats"
-							type="projects"
-							title="Proyectos"
-							subtitle="Proyectos activos" />
+						<GenericStatCard :stats="stats" type="projects">
+							<template #title>Proyectos</template>
+							<template #subtitle>Proyectos activos</template>
+						</GenericStatCard>
 
 						<GenericStatCard
 							:stats="stats"
 							type="totalValue"
-							title="Valor Total"
-							subtitle="Inversión en inventario"
 							value-type="currency"
-							:format-value="formatValue" />
+							:format-value="formatValue">
+							<template #title>Valor Total</template>
+							<template #subtitle>Inversión en inventario</template>
+						</GenericStatCard>
 
-						<GenericStatCard :stats="stats" type="lowStock" title="Alertas" subtitle="Stock bajo" />
+						<GenericStatCard :stats="stats" type="lowStock">
+							<template #title>Alertas</template>
+							<template #subtitle>Stock bajo</template>
+						</GenericStatCard>
 					</div>
 
 					<!-- Quick Actions -->

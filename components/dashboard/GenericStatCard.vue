@@ -5,7 +5,10 @@
 		:subtitle="subtitle"
 		:value-type="valueType"
 		:format-value="formatValue"
-		:has-alert="hasAlert()" />
+		:has-alert="hasAlert()">
+		<template #title>{{ title }}</template>
+		<template #subtitle>{{ subtitle }}</template>
+	</StatCard>
 </template>
 
 <script setup lang="ts">
@@ -21,8 +24,8 @@ interface Stats {
 interface Props {
 	stats: Stats;
 	type: "projects" | "totalValue" | "lowStock";
-	title: string;
-	subtitle: string;
+	title?: string;
+	subtitle?: string;
 	valueType?: "number" | "currency";
 	formatValue?: (value: number) => string;
 }
