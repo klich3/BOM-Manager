@@ -18,7 +18,15 @@ export const useItemsDatabase = () => {
         if (!database) return [];
 
         try {
-            const result = await database.select<any[]>('SELECT * FROM bom_items ORDER BY created_at DESC');
+            const result = await database.select<any[]>(`
+                SELECT 
+                    bi.*, 
+                    p.name as project_name
+                FROM bom_items bi
+                LEFT JOIN project_items pi ON bi.id = pi.item_id
+                LEFT JOIN projects p ON pi.project_id = p.id
+                ORDER BY bi.created_at DESC
+            `);
             return result;
         } catch (error) {
             console.error('Error obteniendo items:', error);

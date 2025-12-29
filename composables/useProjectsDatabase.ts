@@ -18,7 +18,15 @@ export const useProjectsDatabase = () => {
         if (!database) return [];
 
         try {
-            const result = await database.select<any[]>('SELECT * FROM projects ORDER BY created_at DESC');
+            const result = await database.select<any[]>(`
+                SELECT 
+                    p.*, 
+                    COUNT(pi.item_id) as itemCount
+                FROM projects p
+                LEFT JOIN project_items pi ON p.id = pi.project_id
+                GROUP BY p.id
+                ORDER BY p.created_at DESC
+            `);
             return result;
         } catch (error) {
             console.error('Error obteniendo proyectos:', error);
