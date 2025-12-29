@@ -117,7 +117,7 @@ export const useExport = () => {
             'partNumber',
             'lcscPart',
             'price',
-            'inStock',
+            // 'inStock', // Eliminado porque ya no se usa
             'minStock',
             'notes',
             'createdAt',
@@ -135,7 +135,7 @@ export const useExport = () => {
             item.partNumber || '',
             item.lcscPart || '',
             item.price || '',
-            item.inStock,
+            // item.inStock, // Eliminado porque ya no se usa
             item.minStock || '',
             item.notes || '',
             item.createdAt,
@@ -165,7 +165,7 @@ export const useExport = () => {
             'Número de Parte': item.partNumber || '',
             'Parte LCSC': item.lcscPart || '',
             'Precio': item.price || 0,
-            'Stock Actual': item.inStock,
+            // 'Stock Actual': item.inStock, // Eliminado porque ya no se usa
             'Stock Mínimo': item.minStock || 0,
             'Notas': item.notes || '',
             'Creado': new Date(item.createdAt).toLocaleDateString(),

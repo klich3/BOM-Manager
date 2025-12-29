@@ -72,10 +72,8 @@
 						<div class="flex items-center gap-2">
 							<div
 								class="w-2 h-2 rounded-full"
-								:class="
-									(item.in_stock || 0) < (item.min_stock || 0) ? 'bg-amber-500' : 'bg-green-500'
-								"></div>
-							<span class="text-sm text-text-main-light"> {{ item.in_stock }} {{ item.unit }} </span>
+								:class="(item.min_stock || 0) > 0 ? 'bg-green-500' : 'bg-gray-300'"></div>
+							<span class="text-sm text-text-main-light"> -- </span>
 						</div>
 					</td>
 					<td class="px-6 py-4 text-sm text-text-muted-light">
@@ -159,7 +157,7 @@ interface ProjectItem {
 	part_number?: string;
 	category?: string;
 	quantity?: number;
-	in_stock?: number;
+	// in_stock?: number; // Eliminado porque ya no se usa
 	min_stock?: number;
 	price?: number;
 	unit?: string;

@@ -5,17 +5,17 @@ export interface BOMItem {
   name: string;
   description?: string;
   quantity: number;
-  unit: string;
+  unit?: string;
   category?: string;
   supplier?: string;
   partNumber?: string;
   lcscPart?: string;
   price?: number;
-  inStock: number;
+  // inStock: number; // Eliminado porque ya no se usa
   minStock?: number;
   notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   manufacturer?: string;
   customerNo?: string;
   package?: string;

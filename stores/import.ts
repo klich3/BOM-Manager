@@ -48,7 +48,6 @@ export const useImportStore = defineStore('import', {
                 const requiredFields = [
                     { key: "name", label: "Nombre" },
                     { key: "quantity", label: "Cantidad" },
-                    { key: "unit", label: "Unidad" },
                 ];
                 return requiredFields.every((field) => {
                     const mappedValue = state.columnMapping[field.key];
@@ -60,7 +59,6 @@ export const useImportStore = defineStore('import', {
         requiredFields: () => [
             { key: "name", label: "Nombre" },
             { key: "quantity", label: "Cantidad" },
-            { key: "unit", label: "Unidad" },
         ],
         optionalFields: () => [
             { key: "description", label: "Descripción" },
@@ -69,7 +67,7 @@ export const useImportStore = defineStore('import', {
             { key: "partNumber", label: "Número de parte" },
             { key: "lcscPart", label: "Referencia LCSC" },
             { key: "price", label: "Precio" },
-            { key: "inStock", label: "Stock actual" },
+
             { key: "minStock", label: "Stock mínimo" },
             { key: "notes", label: "Notas" },
             { key: "manufacturer", label: "Fabricante" },
@@ -171,7 +169,6 @@ export const useImportStore = defineStore('import', {
                 const requiredFields = [
                     { key: "name", label: "Nombre" },
                     { key: "quantity", label: "Cantidad" },
-                    { key: "unit", label: "Unidad" },
                 ];
                 return requiredFields.every((field) => {
                     const mappedValue = this.columnMapping[field.key];
@@ -193,6 +190,9 @@ export const useImportStore = defineStore('import', {
         async processFile(file: File, parseFile: (file: File) => Promise<ParseResult>, detectColumnMapping: (headers: string[]) => Record<string, string | null>) {
             this.setIsProcessing(true);
 
+            // Set the selected file first
+            this.setSelectedFile(file);
+
             try {
                 const result = await parseFile(file);
 
@@ -200,16 +200,16 @@ export const useImportStore = defineStore('import', {
                 this.setParsedItems(result.items as Partial<BOMItem>[]);
 
                 if (result.success && result.items.length > 0) {
-                    // Get sample data for preview (show more rows for better preview)
-                    const firstItem = result.items[0];
-                    const headers = Object.keys(firstItem);
+                    // Get original headers from the parsed data
+                    // We need to get the original headers from the file, not from the processed items
+                    const originalHeaders = Object.keys(result.items[0] || {});
 
                     const sampleData = {
-                        headers: headers,
+                        headers: originalHeaders,
                         rows: result.items.slice(0, 50).map((item: any) => {
                             if (item && typeof item === "object") {
                                 // Ensure we're extracting values in the same order as headers
-                                return headers.map((header) => {
+                                return originalHeaders.map((header) => {
                                     const value = item[header];
                                     return value !== undefined && value !== null ? value : "";
                                 });
@@ -222,8 +222,8 @@ export const useImportStore = defineStore('import', {
                     this.setSampleData(sampleData);
 
                     // Initialize column mapping with auto-detected values
-                    if (headers.length > 0) {
-                        const autoMapping = detectColumnMapping(headers);
+                    if (originalHeaders.length > 0) {
+                        const autoMapping = detectColumnMapping(originalHeaders);
                         // Filtrar los valores nulos antes de asignarlos
                         const filteredMapping: Record<string, string> = {};
                         for (const [key, value] of Object.entries(autoMapping)) {
@@ -249,20 +249,17 @@ export const useImportStore = defineStore('import', {
             this.setIsProcessing(true);
 
             try {
-                // Parsear el archivo
-                if (!selectedFile) {
-                    throw new Error('No hay archivo seleccionado para importar');
-                }
-                const result = await parseFile(selectedFile);
+                // Usar los items ya procesados y mapeados en lugar de volver a parsear
+                const itemsToImport = this.parsedItems;
 
-                if (result.success && result.items.length > 0) {
+                if (itemsToImport.length > 0) {
                     let importedCount = 0;
                     const errors: string[] = [];
 
                     // Dependiendo del destino seleccionado, importar de manera diferente
                     if (importDestination === 'global') {
                         // Importar al inventario global
-                        for (const item of result.items) {
+                        for (const item of itemsToImport) {
                             const success = await db.createItem(item);
                             if (success) {
                                 importedCount++;
@@ -272,7 +269,7 @@ export const useImportStore = defineStore('import', {
                         }
                     } else if (importDestination === 'project' && selectedProjectId) {
                         // Importar a un proyecto específico
-                        for (const item of result.items) {
+                        for (const item of itemsToImport) {
                             // Crear o actualizar el item en el inventario global
                             const itemId = await db.createItem(item);
 
@@ -294,7 +291,7 @@ export const useImportStore = defineStore('import', {
 
                     return { importedCount, errors };
                 } else {
-                    throw new Error(`Error en la importación: ${result.errors.join(", ")}`);
+                    throw new Error("No hay items para importar");
                 }
             } catch (error) {
                 console.error("Error al procesar la importación:", error);

@@ -48,25 +48,32 @@ export const useItemsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                `INSERT INTO bom_items (id, name, description, quantity, unit, category, supplier, 
-         part_number, lcsc_part, price, in_stock, min_stock, notes, created_at, updated_at) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO bom_items (id, name, description, quantity, category, supplier, 
+         part_number, lcsc_part, price, min_stock, notes, created_at, updated_at, manufacturer, 
+         customer_no, package, rohs, ext_price, lead_time, date_code_lot_no, status) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     id,
                     item.name || '',
                     item.description || null,
                     item.quantity || 0,
-                    item.unit || '',
                     item.category || null,
                     item.supplier || null,
                     item.partNumber || null,
                     item.lcscPart || null,
                     item.price || null,
-                    item.inStock || 0,
                     item.minStock || null,
                     item.notes || null,
                     now,
-                    now
+                    now,
+                    item.manufacturer || null,
+                    item.customerNo || null,
+                    item.package || null,
+                    item.rohs || null,
+                    item.extPrice || null,
+                    item.leadTime || null,
+                    item.dateCodeLotNo || null,
+                    item.status || null
                 ]
             );
 
@@ -88,23 +95,30 @@ export const useItemsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                `UPDATE bom_items SET name = ?, description = ?, quantity = ?, unit = ?, category = ?,
-         supplier = ?, part_number = ?, lcsc_part = ?, price = ?, in_stock = ?, min_stock = ?,
-         notes = ?, updated_at = ? WHERE id = ?`,
+                `UPDATE bom_items SET name = ?, description = ?, quantity = ?, category = ?,
+         supplier = ?, part_number = ?, lcsc_part = ?, price = ?, min_stock = ?,
+         notes = ?, updated_at = ?, manufacturer = ?, customer_no = ?, package = ?,
+         rohs = ?, ext_price = ?, lead_time = ?, date_code_lot_no = ?, status = ? WHERE id = ?`,
                 [
                     item.name,
                     item.description,
                     item.quantity,
-                    item.unit,
                     item.category,
                     item.supplier,
                     item.partNumber,
                     item.lcscPart,
                     item.price,
-                    item.inStock,
                     item.minStock,
                     item.notes,
                     now,
+                    item.manufacturer,
+                    item.customerNo,
+                    item.package,
+                    item.rohs,
+                    item.extPrice,
+                    item.leadTime,
+                    item.dateCodeLotNo,
+                    item.status,
                     id
                 ]
             );
@@ -146,8 +160,8 @@ export const useItemsDatabase = () => {
         try {
             const now = new Date().toISOString();
             await database.execute(
-                'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
-                [newStock, now, id]
+                'UPDATE bom_items SET updated_at = ? WHERE id = ?',
+                [now, id]
             );
             return true;
         } catch (error) {
@@ -169,26 +183,15 @@ export const useItemsDatabase = () => {
             const now = new Date().toISOString();
 
             for (const bomItem of bomItems) {
-                // Obtener el stock actual del item
+                // Obtener el item
                 const currentItem = await getItemById(bomItem.id);
                 if (!currentItem) {
                     errors.push(`Item con ID ${bomItem.id} no encontrado`);
                     continue;
                 }
 
-                const currentStock = currentItem.in_stock || 0;
-                const newStock = currentStock - bomItem.quantity;
-
-                if (newStock < 0) {
-                    errors.push(`Stock insuficiente para ${currentItem.name}. Requerido: ${bomItem.quantity}, Disponible: ${currentStock}`);
-                    continue;
-                }
-
-                // Actualizar el stock
-                await database.execute(
-                    'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
-                    [newStock, now, bomItem.id]
-                );
+                // No se puede descontar stock porque la columna in_stock ha sido eliminada
+                console.warn(`No se puede descontar stock para ${currentItem.name} porque la columna in_stock ha sido eliminada`);
             }
 
             if (errors.length > 0) {
@@ -221,21 +224,15 @@ export const useItemsDatabase = () => {
             const now = new Date().toISOString();
 
             for (const update of stockUpdates) {
-                // Obtener el stock actual del item
+                // Obtener el item
                 const currentItem = await getItemById(update.id);
                 if (!currentItem) {
                     errors.push(`Item con ID ${update.id} no encontrado`);
                     continue;
                 }
 
-                const currentStock = currentItem.in_stock || 0;
-                const newStock = currentStock + update.quantity;
-
-                // Actualizar el stock
-                await database.execute(
-                    'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
-                    [newStock, now, update.id]
-                );
+                // No se puede agregar stock porque la columna in_stock ha sido eliminada
+                console.warn(`No se puede agregar stock para ${currentItem.name} porque la columna in_stock ha sido eliminada`);
             }
 
             if (errors.length > 0) {
@@ -261,8 +258,9 @@ export const useItemsDatabase = () => {
         if (!database) return [];
 
         try {
+            // Ahora que in_stock ha sido eliminado, simplemente devolvemos items con min_stock definido
             const result = await database.select<any[]>(
-                'SELECT * FROM bom_items WHERE in_stock < (min_stock || 0) OR (min_stock IS NOT NULL AND in_stock <= min_stock)'
+                'SELECT * FROM bom_items WHERE min_stock IS NOT NULL AND min_stock > 0'
             );
             return result;
         } catch (error) {

@@ -42,8 +42,8 @@
 										{{ selectedFile.name }}
 									</p>
 									<p class="text-sm text-gray-500">
-										{{ formatFileSize(selectedFile.size) }} •
-										{{ selectedFile.type || "Archivo" }}
+										{{ formatFileSize(selectedFile?.size || 0) }} •
+										{{ selectedFile?.type || "Archivo" }}
 									</p>
 								</div>
 								<button
@@ -57,83 +57,97 @@
 				</div>
 
 				<div v-if="step === 2">
-					<!-- Step 2: Column Mapping -->
+					<!-- Step 2: Data Mapping -->
 					<div class="mb-6">
 						<h3 class="text-lg font-medium text-gray-900 mb-4">Mapeo de columnas</h3>
-						<p class="text-gray-600 mb-4">Selecciona las columnas correspondientes a cada campo del BOM:</p>
+						<p class="text-gray-600 mb-4">Mapea las columnas del archivo con los campos del esquema:</p>
 
-						<div
-							v-if="sampleData && sampleData.headers && sampleData.headers.length > 0"
-							class="grid grid-cols-2 gap-3">
-							<!-- Column mapping options -->
-							<div
-								v-for="requiredField in requiredFields"
-								:key="requiredField.key"
-								class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-								<label class="w-24 text-xs font-medium text-gray-700">
-									{{ requiredField.label }} <span class="text-red-500">*</span>
-								</label>
-								<select
-									v-model="columnMapping[requiredField.key]"
-									class="flex-1 px-2 py-1 text-xs border border-gray-300 rounded-md bg-white text-gray-900">
-									<option value="">Seleccionar columna...</option>
-									<option v-for="header in sampleData.headers" :key="header" :value="header">
+						<!-- Column mapping table -->
+						<div class="mb-6 overflow-x-auto">
+							<div class="grid grid-cols-2 gap-4">
+								<div
+									class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border">
+									Columna del archivo
+								</div>
+								<div
+									class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border">
+									Mapear a campo
+								</div>
+								<template v-for="(header, headerIndex) in originalHeaders" :key="headerIndex">
+									<div class="px-3 py-2 font-mono text-sm bg-gray-50 border-t">
 										{{ header }}
-									</option>
-								</select>
-							</div>
-
-							<!-- Optional fields -->
-							<div
-								v-for="optionalField in optionalFields"
-								:key="optionalField.key"
-								class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-								<label class="w-24 text-xs font-medium text-gray-700">
-									{{ optionalField.label }}
-								</label>
-								<select
-									v-model="columnMapping[optionalField.key]"
-									class="flex-1 px-2 py-1 text-xs border border-gray-300 rounded-md bg-white text-gray-900">
-									<option value="">Seleccionar columna...</option>
-									<option v-for="header in sampleData.headers" :key="header" :value="header">
-										{{ header }}
-									</option>
-								</select>
+									</div>
+									<div class="px-3 py-2 border-t">
+										<select
+											:value="columnMapping[header] || ''"
+											@change="(e: Event) => updateColumnMapping(header, (e.target as HTMLSelectElement).value)"
+											class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+											<option value="">Seleccionar campo...</option>
+											<optgroup label="Campos requeridos">
+												<option value="name">Nombre</option>
+												<option value="quantity">Cantidad</option>
+											</optgroup>
+											<optgroup label="Campos opcionales">
+												<option value="description">Descripción</option>
+												<option value="category">Categoría</option>
+												<option value="supplier">Proveedor</option>
+												<option value="partNumber">Número de parte</option>
+												<option value="lcscPart">Referencia LCSC</option>
+												<option value="price">Precio</option>
+												<option value="minStock">Stock mínimo</option>
+												<option value="notes">Notas</option>
+												<option value="manufacturer">Fabricante</option>
+												<option value="customerNo">Número de Cliente</option>
+												<option value="package">Empaquetado</option>
+												<option value="rohs">RoHS</option>
+												<option value="extPrice">Precio Extendido</option>
+												<option value="leadTime">Tiempo de Entrega</option>
+												<option value="dateCodeLotNo">Código de Fecha/Número de Lote</option>
+												<option value="status">Estado</option>
+											</optgroup>
+										</select>
+									</div>
+								</template>
 							</div>
 						</div>
-					</div>
 
-					<!-- Data Preview -->
-					<div v-if="sampleData && sampleData.rows && sampleData.rows.length > 0">
-						<h3 class="text-lg font-medium text-gray-900 mb-4">Vista previa de datos</h3>
-						<div class="overflow-x-auto">
-							<table class="min-w-full divide-y divide-gray-200">
-								<thead class="bg-gray-50">
-									<tr>
-										<th
-											v-for="header in sampleData.headers"
-											:key="header"
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											{{ header }}
-											<span
-												v-if="getColumnMappingLabel(header)"
-												class="inline-block ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded">
-												{{ getColumnMappingLabel(header) }}
-											</span>
-										</th>
-									</tr>
-								</thead>
-								<tbody class="bg-white divide-y divide-gray-200">
-									<tr v-for="(row, index) in sampleData.rows" :key="index">
-										<td
-											v-for="(cell, cellIndex) in row"
-											:key="cellIndex"
-											class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
-											{{ cell }}
-										</td>
-									</tr>
-								</tbody>
-							</table>
+						<!-- Preview of final table -->
+						<div>
+							<h3 class="text-lg font-medium text-gray-900 mb-4">Vista previa de la tabla final</h3>
+							<div class="overflow-x-auto">
+								<table class="min-w-full divide-y divide-gray-200">
+									<thead class="bg-gray-50">
+										<tr>
+											<th
+												v-for="(header, headerIndex) in originalHeaders"
+												:key="'preview-header-' + headerIndex"
+												class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+												{{ header }}
+												<span v-if="columnMapping[header]" class="block text-xs text-gray-500">
+													→ {{ getFieldName(columnMapping[header]) }}
+												</span>
+											</th>
+										</tr>
+									</thead>
+									<tbody class="bg-white divide-y divide-gray-200">
+										<tr v-for="(row, rowIndex) in sampleData?.rows?.slice(0, 5)" :key="rowIndex">
+											<td
+												v-for="(cell, cellIndex) in row"
+												:key="'preview-cell-' + rowIndex + '-' + cellIndex"
+												class="px-3 py-2 text-sm text-gray-900">
+												{{ cell }}
+											</td>
+										</tr>
+										<tr v-if="sampleData && sampleData.rows && sampleData.rows.length > 5">
+											<td
+												:colspan="originalHeaders.length"
+												class="px-3 py-2 text-sm text-center text-gray-500">
+												+ {{ sampleData ? sampleData.rows.length - 5 : 0 }} filas más...
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -215,10 +229,6 @@
 										</th>
 										<th
 											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Unidad
-										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 											Proveedor
 										</th>
 										<th
@@ -252,9 +262,6 @@
 											{{ item.quantity }}
 										</td>
 										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.unit }}
-										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
 											{{ item.supplier || "-" }}
 										</td>
 										<td class="px-3 py-2 text-sm text-gray-900">
@@ -274,7 +281,7 @@
 										</td>
 									</tr>
 									<tr v-if="parsedItems.length > 10">
-										<td :colspan="9" class="px-3 py-2 text-sm text-center text-gray-500">
+										<td :colspan="8" class="px-3 py-2 text-sm text-center text-gray-500">
 											+ {{ parsedItems.length - 10 }} items más...
 										</td>
 									</tr>
@@ -326,9 +333,11 @@ import { XMarkIcon, ArrowRightIcon } from "@heroicons/vue/24/outline";
 import FileUpload from "@/components/FileUpload.vue";
 import { useFileParser, type ParseResult } from "@/composables/useFileParser";
 import type { BOMItem } from "@/types/bom";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useDatabase } from "@/composables/useDatabase";
 import { useImportStore } from "@/stores/import";
+import { storeToRefs } from "pinia";
+import { useNotifications } from "@/composables/useNotifications";
 
 // Definir los eventos que emite este componente
 const emit = defineEmits<{
@@ -351,21 +360,70 @@ const { parseFile, detectColumnMapping } = useFileParser();
 const db = useDatabase();
 const importStore = useImportStore();
 
-// Access state from store
-const step = computed(() => importStore.step);
-const selectedFile = computed(() => importStore.selectedFile);
-const sampleData = computed(() => importStore.sampleData);
-const parseResult = computed(() => importStore.parseResult);
-const parsedItems = computed(() => importStore.parsedItems);
-const isProcessing = computed(() => importStore.isProcessing);
-const columnMapping = computed(() => importStore.columnMapping);
-const projects = computed(() => importStore.projects);
-const importDestination = computed(() => importStore.importDestination);
-const selectedProjectId = computed(() => importStore.selectedProjectId);
+// Access state from store using storeToRefs
+const {
+	step,
+	selectedFile,
+	sampleData,
+	parseResult,
+	parsedItems,
+	isProcessing,
+	columnMapping,
+	projects,
+	importDestination,
+	selectedProjectId,
+} = storeToRefs(importStore);
 
-// Si se proporciona un projectId, establecerlo como destino por defecto
-if (props.projectId) {
-	importStore.setImportDestination("project");
+// Initialize notifications composable
+const { success, error: showError, warning, info } = useNotifications();
+
+// Reactive variables for component matching
+const rowComponentMatches = ref<Record<number, string>>({});
+const columnComponentMatches = ref<Record<number, string>>({});
+const existingComponents = ref<any[]>([]);
+const originalHeaders = ref<string[]>([]);
+
+// Load existing components from database
+const loadExistingComponents = async () => {
+	try {
+		const allItems = await db.getAllItems();
+		existingComponents.value = allItems;
+	} catch (error) {
+		console.error("Error loading existing components:", error);
+		showError("Error", "Error al cargar componentes existentes");
+	}
+};
+
+// Load existing components when sample data is available
+watch(
+	() => sampleData.value,
+	async (newSampleData) => {
+		if (newSampleData && newSampleData.rows.length > 0) {
+			await loadExistingComponents();
+			// Set original headers from sample data
+			if (newSampleData.headers && newSampleData.headers.length > 0) {
+				originalHeaders.value = [...newSampleData.headers];
+			}
+		}
+	},
+	{ immediate: true },
+);
+
+// Cargar proyectos cuando se inicialice el componente
+const loadProjects = async () => {
+	try {
+		await importStore.loadProjects(db);
+	} catch (error) {
+		console.error("Error al cargar los proyectos:", error);
+		emit("error", `Error al cargar los proyectos: ${(error as Error).message}`);
+	}
+};
+
+// Ejecutar al inicio
+loadProjects();
+
+// Si se proporciona un projectId, seleccionar automáticamente el proyecto
+if (props.projectId && !selectedProjectId.value) {
 	importStore.setSelectedProjectId(props.projectId);
 }
 
@@ -373,7 +431,7 @@ if (props.projectId) {
 const requiredFields = [
 	{ key: "name", label: "Nombre" },
 	{ key: "quantity", label: "Cantidad" },
-	{ key: "unit", label: "Unidad" },
+	//{ key: "unit", label: "Unidad" },
 ];
 
 const optionalFields = [
@@ -383,24 +441,31 @@ const optionalFields = [
 	{ key: "partNumber", label: "Número de parte" },
 	{ key: "lcscPart", label: "Referencia LCSC" },
 	{ key: "price", label: "Precio" },
-	{ key: "inStock", label: "Stock actual" },
+	//{ key: "inStock", label: "Stock actual" },
 	{ key: "minStock", label: "Stock mínimo" },
 	{ key: "notes", label: "Notas" },
 	{ key: "manufacturer", label: "Fabricante" },
-	{ key: "customerNo", label: "Número de Cliente" },
+	//{ key: "customerNo", label: "Número de Cliente" },
 	{ key: "package", label: "Empaquetado" },
-	{ key: "rohs", label: "RoHS" },
-	{ key: "extPrice", label: "Precio Extendido" },
-	{ key: "leadTime", label: "Tiempo de Entrega" },
-	{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
-	{ key: "status", label: "Estado" },
-	{ key: "createdAt", label: "Fecha de Creación" },
-	{ key: "updatedAt", label: "Fecha de Actualización" },
+	//{ key: "rohs", label: "RoHS" },
+	//{ key: "extPrice", label: "Precio Extendido" },
+	//{ key: "leadTime", label: "Tiempo de Entrega" },
+	//{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
+	//{ key: "status", label: "Estado" },
+	//{ key: "createdAt", label: "Fecha de Creación" },
+	//{ key: "updatedAt", label: "Fecha de Actualización" },
 ];
 
 // Computed properties
 const canProceed = computed(() => {
-	return importStore.canProceedToNextStep();
+	if (importStore.step === 1) {
+		return !!importStore.selectedFile;
+	} else if (importStore.step === 2) {
+		// For step 2, ensure required fields are mapped
+		const requiredFields = ["name", "quantity"];
+		return requiredFields.every((field) => Object.values(importStore.columnMapping).includes(field));
+	}
+	return true;
 });
 
 // Funciones para manejar eventos
@@ -426,7 +491,7 @@ const resetImport = () => {
 
 // Additional methods
 const nextStep = () => {
-	if (importStore.canProceedToNextStep()) {
+	if (importStore.canProceed) {
 		importStore.goToNextStep();
 	}
 };
@@ -455,21 +520,9 @@ const getProgressWidth = () => {
 	return `${width}%`;
 };
 
-// Cargar proyectos cuando se inicialice el componente
-const loadProjects = async () => {
-	try {
-		await importStore.loadProjects(db);
-	} catch (error) {
-		console.error("Error al cargar los proyectos:", error);
-		emit("error", `Error al cargar los proyectos: ${(error as Error).message}`);
-	}
-};
-
-// Ejecutar al inicio
-loadProjects();
-
-// Si se proporciona un projectId, seleccionar automáticamente el proyecto
+// Si se proporciona un projectId, establecerlo como destino por defecto
 if (props.projectId) {
+	importStore.setImportDestination("project");
 	importStore.setSelectedProjectId(props.projectId);
 }
 
@@ -500,16 +553,71 @@ const getColumnMappingLabel = (header: string): string | null => {
 };
 
 const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
-	// Emitir un evento para que el componente padre maneje la notificación
-	emit("notification", { message, type });
+	// Usar el composable de notificaciones
+	switch (type) {
+		case "success":
+			success("Éxito", message);
+			break;
+		case "error":
+			showError("Error", message);
+			break;
+		case "warning":
+			warning("Advertencia", message);
+			break;
+		case "info":
+		default:
+			info("Información", message);
+			break;
+	}
+};
+
+// Función para actualizar el mapeo de columnas
+const updateColumnMapping = (header: string, field: string) => {
+	importStore.columnMapping = {
+		...importStore.columnMapping,
+		[header]: field,
+	};
+};
+
+// Función para obtener el nombre legible de un campo
+const getFieldName = (field: string): string => {
+	const fieldLabels: Record<string, string> = {
+		name: "Nombre",
+		quantity: "Cantidad",
+		description: "Descripción",
+		category: "Categoría",
+		supplier: "Proveedor",
+		partNumber: "Número de parte",
+		lcscPart: "Referencia LCSC",
+		price: "Precio",
+		minStock: "Stock mínimo",
+		notes: "Notas",
+		manufacturer: "Fabricante",
+		customerNo: "Número de Cliente",
+		package: "Empaquetado",
+		rohs: "RoHS",
+		extPrice: "Precio Extendido",
+		leadTime: "Tiempo de Entrega",
+		dateCodeLotNo: "Código de Fecha/Número de Lote",
+		status: "Estado",
+	};
+	return fieldLabels[field] || field;
 };
 
 const confirmImport = async () => {
+	console.log("1", importStore.selectedFile);
+	// Verificar que hay un archivo seleccionado antes de proceder
+	if (!importStore.selectedFile) {
+		showToastMessage("No hay archivo seleccionado para importar", "error");
+		return;
+	}
+
+	console.log("2");
 	importStore.setIsProcessing(true);
+	console.log("3");
 
 	try {
 		// Parsear el archivo usando el composable useFileParser
-		const { parseFile } = useFileParser();
 		const result = await importStore.confirmImport(
 			db,
 			importStore.selectedFile,
@@ -517,6 +625,8 @@ const confirmImport = async () => {
 			importStore.selectedProjectId,
 			parseFile,
 		);
+
+		console.log("4", result);
 
 		let message = `Importación completada: ${result.importedCount} items procesados.`;
 		if (result.errors.length > 0) {

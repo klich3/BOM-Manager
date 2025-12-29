@@ -8,13 +8,13 @@ const BOMItemSchema = z.object({
     name: z.string().min(1, 'El nombre es requerido'),
     description: z.string().optional(),
     quantity: z.number().min(0, 'La cantidad debe ser mayor o igual a 0'),
-    unit: z.string().min(1, 'La unidad es requerida'),
+    unit: z.string().optional(), // Cambiado a opcional ya que se eliminó la columna
     category: z.string().optional(),
     supplier: z.string().optional(),
     partNumber: z.string().optional(),
     lcscPart: z.string().optional(),
     price: z.number().min(0).optional(),
-    inStock: z.number().min(0).default(0),
+    // inStock: z.number().min(0).default(0), // Eliminado porque ya no se usa
     minStock: z.number().min(0).optional(),
     notes: z.string().optional(),
     manufacturer: z.string().optional(),
@@ -51,13 +51,13 @@ export const useFileParser = () => {
             name: ['name', 'nombre', 'component', 'componente', 'part', 'parte', 'item'],
             description: ['description', 'descripcion', 'desc', 'details', 'detalles'],
             quantity: ['quantity', 'cantidad', 'qty', 'cant', 'amount', 'quantity'],
-            unit: ['unit', 'unidad', 'units', 'unidades', 'uom'],
+            unit: ['unit', 'unidad', 'units', 'unidades', 'uom'], // Restaurado para detección automática, pero no requerido
             category: ['category', 'categoria', 'type', 'tipo', 'class', 'clase'],
             supplier: ['supplier', 'proveedor', 'vendor', 'manufacturer', 'fabricante'],
             partNumber: ['part_number', 'partnumber', 'part number', 'numero de parte', 'mpn', 'p/n', 'sku', 'manufacture part number'],
             lcscPart: ['lcsc', 'lcsc_part', 'lcsc part', 'lcsc_number', 'lcsc part number'],
             price: ['price', 'precio', 'cost', 'costo', 'unit_price', 'precio_unitario', 'unit price'],
-            inStock: ['in_stock', 'instock', 'stock', 'inventory', 'inventario', 'on_hand'],
+            // inStock: ['in_stock', 'instock', 'stock', 'inventory', 'inventario', 'on_hand'], // Eliminado porque ya no se usa
             minStock: ['min_stock', 'minstock', 'minimum', 'minimo', 'reorder', 'reorder_point'],
             notes: ['notes', 'notas', 'comments', 'comentarios', 'remarks', 'observaciones'],
             manufacturer: ['manufacturer', 'fabricante', 'maker', 'producer'],
@@ -212,7 +212,8 @@ export const useFileParser = () => {
         // Verificar que al menos tengamos los campos esenciales
         const hasName = Object.values(mapping).includes('name');
         const hasQuantity = Object.values(mapping).includes('quantity');
-        const hasUnit = Object.values(mapping).includes('unit');
+        // No verificamos unidad ya que ya no es requerida
+        // const hasUnit = Object.values(mapping).includes('unit');
 
         if (!hasName) {
             result.warnings.push('No se detectó una columna de "nombre". Verifica el mapeo.');
@@ -220,17 +221,18 @@ export const useFileParser = () => {
         if (!hasQuantity) {
             result.warnings.push('No se detectó una columna de "cantidad". Se usará 0 por defecto.');
         }
-        if (!hasUnit) {
-            result.warnings.push('No se detectó una columna de "unidad". Se usará "pcs" por defecto.');
-        }
+        // No mostramos advertencia para unidad ya que ya no es requerida
+        // if (!hasUnit) {
+        //     result.warnings.push('No se detectó una columna de "unidad". Se usará "pcs" por defecto.');
+        // }
 
         // Procesar cada fila
         data.forEach((row, index) => {
             try {
                 const item: any = {
                     quantity: 0,
-                    unit: 'pcs',
-                    inStock: 0
+                    // No inicializamos unidad ya que ya no es requerida
+                    // inStock: 0 // Eliminado porque ya no se usa
                 };
 
                 // Mapear datos según el mapping detectado
@@ -239,9 +241,10 @@ export const useFileParser = () => {
                         const value = row[header];
 
                         // Convertir valores numéricos
-                        if (['quantity', 'price', 'inStock', 'minStock'].includes(field)) {
+                        const numericFields = ['quantity', 'price', 'minStock', 'extPrice', 'leadTime']; // inStock eliminado porque ya no se usa
+                        if (numericFields.includes(field)) {
                             const numValue = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.-]/g, ''));
-                            item[field] = isNaN(numValue) ? 0 : numValue;
+                            item[field] = isNaN(numValue) ? (field === 'leadTime' || field === 'extPrice' ? undefined : 0) : numValue;
                         } else {
                             item[field] = String(value).trim();
                         }
