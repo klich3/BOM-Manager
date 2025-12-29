@@ -141,6 +141,7 @@
 				:items="paginatedItems"
 				@edit-item="editItem"
 				@delete-item="deleteItemConfirm"
+				@delete-selected-items="deleteSelectedItemsConfirm"
 				@open-lcsc-preview="openLcscPreview"
 				@open-lcsc-purchase="openLcscPurchase"
 				@add-first-item="showAddModal = true" />
@@ -556,6 +557,26 @@ const handleMergeLists = (listIds: string[], newListName: string) => {
 	} catch (error: any) {
 		console.error("Error al mezclar listas:", error);
 		showToastMessage("Error al mezclar las listas: " + error.message, "error");
+	}
+};
+
+const deleteSelectedItemsConfirm = async (ids: string[]) => {
+	const confirmed = await showConfirmation(
+		"Eliminar Componentes",
+		`¿Estás seguro de eliminar ${ids.length} componentes seleccionados? Esta acción no se puede deshacer.`,
+	);
+
+	if (confirmed) {
+		try {
+			for (const id of ids) {
+				await db.deleteItem(id);
+			}
+			await loadItems();
+			showToastMessage(`${ids.length} componentes eliminados exitosamente`, "success");
+		} catch (error) {
+			console.error("Error eliminando componentes:", error);
+			showToastMessage("Error al eliminar los componentes", "error");
+		}
 	}
 };
 

@@ -228,7 +228,7 @@
 											{{ item.manufacturer || "-" }}
 										</td>
 										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.ext_price ? `$${item.ext_price}` : "-" }}
+											{{ item.extPrice ? `$${item.extPrice}` : "-" }}
 										</td>
 										<td class="px-3 py-2 text-sm text-gray-900">
 											{{ item.rohs || "-" }}
@@ -343,6 +343,8 @@ const optionalFields = [
 	{ key: "leadTime", label: "Tiempo de Entrega" },
 	{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
 	{ key: "status", label: "Estado" },
+	{ key: "createdAt", label: "Fecha de Creación" },
+	{ key: "updatedAt", label: "Fecha de Actualización" },
 ];
 
 // Computed properties
@@ -444,18 +446,22 @@ const detectColumnMapping = (headers: string[]): Record<string, string> => {
 	const mapping: Record<string, string> = {};
 
 	const patterns: Record<string, string[]> = {
+		// Campos requeridos
 		name: ["name", "nombre", "component", "componente", "part", "parte", "item"],
-		description: ["description", "descripcion", "desc", "details", "detalles"],
 		quantity: ["quantity", "cantidad", "qty", "cant", "amount"],
 		unit: ["unit", "unidad", "units", "unidades", "uom"],
+		// Campos opcionales
+		description: ["description", "descripcion", "desc", "details", "detalles"],
 		category: ["category", "categoria", "type", "tipo", "class", "clase"],
 		supplier: ["supplier", "proveedor", "vendor", "manufacturer", "fabricante"],
-		partNumber: ["part_number", "partnumber", "part number", "numero de parte", "mpn", "p/n", "sku"],
+		partNumber: ["part_number", "partnumber", "part number", "numero de parte", "mpn", "p/n", "sku", "partnumber"],
 		lcscPart: ["lcsc", "lcsc_part", "lcsc part", "lcsc_number"],
 		price: ["price", "precio", "cost", "costo", "unit_price", "precio_unitario"],
 		inStock: ["in_stock", "instock", "stock", "inventory", "inventario", "on_hand"],
 		minStock: ["min_stock", "minstock", "minimum", "minimo", "reorder", "reorder_point"],
 		notes: ["notes", "notas", "comments", "comentarios", "remarks", "observaciones"],
+		createdAt: ["created_at", "created", "fecha_creacion", "fecha_creación", "creation_date"],
+		updatedAt: ["updated_at", "updated", "fecha_actualizacion", "fecha_actualización", "modification_date"],
 		manufacturer: ["manufacturer", "fabricante", "maker", "producer"],
 		customerNo: ["customer_no", "customer no", "customer number", "numero cliente", "cliente no", "customer id"],
 		package: ["package", "packaging", "empaquetado", "housing", "case", "encapsulado"],

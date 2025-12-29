@@ -97,7 +97,12 @@
 			<!-- Project Items Table -->
 			<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
 				<div class="overflow-x-auto">
-					<ProjectItemsTable :items="projectItems" @import-components="handleImportComponents" />
+					<ProjectItemsTable
+								:items="projectItems"
+								@edit-item="editItem"
+								@remove-item="removeItemFromProject"
+								@remove-selected-items="removeSelectedItemsFromProject"
+								@import-components="handleImportComponents" />
 				</div>
 			</div>
 		</div>
@@ -313,6 +318,42 @@ const removeItemFromProject = async (itemId: string) => {
 			showToastMessage("Error al remover el componente del proyecto", "error");
 		}
 	}
+};
+
+const removeSelectedItemsFromProject = async (ids: string[]) => {
+	const confirmed = await showConfirmation(
+		"Remover Componentes",
+		`¿Estás seguro de remover ${ids.length} componentes seleccionados del proyecto? Esta acción no se puede deshacer.`,
+	);
+
+	if (confirmed) {
+		try {
+			const projectId = route.params.id as string;
+			let removedCount = 0;
+			for (const id of ids) {
+				const success = await db.removeItemFromProject(projectId, id);
+				if (success) {
+					const index = projectItems.value.findIndex((i) => i.id === id);
+					if (index !== -1) {
+						projectItems.value.splice(index, 1);
+						removedCount++;
+					}
+				}
+			}
+			// Recalcular costos
+			calculateProjectCostMethod();
+			showToastMessage(`${removedCount} componentes removidos del proyecto exitosamente`, "success");
+		} catch (error) {
+			console.error("Error removiendo items del proyecto:", error);
+			showToastMessage("Error al remover los componentes del proyecto", "error");
+		}
+	}
+};
+
+const editItem = (item: any) => {
+	// En la vista de proyecto, no hay edición directa de items
+	// La edición se hace en el inventario general
+	showToastMessage("La edición de componentes se realiza en el inventario general", "info");
 };
 
 const addItemToProject = async (item: any) => {

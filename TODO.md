@@ -1,6 +1,6 @@
 - [ ] - user settings -> https://v2.tauri.app/plugin/window-state/
 - [ ] home hay que modificar el items cuentas
-- [ ] tablas poner seleccionar todos o unos cuantos para eliminar
+
 
 ### 1. Importación de Archivos CSV/XLSX
 - [x] Instalar `papaparse` para CSV
@@ -8,8 +8,10 @@
 - [x] Crear componente de upload de archivos
 - [x] Implementar parseo y mapeo de columnas
 - [x] Validación de datos importados
-- [ ] Import: modal de importacion al subir el archivo lo ha de leer y tiene que pasar por proceso de parsing de columnas
-- [ ] - Cargar CSV
+- [x] Import: modal de importacion al subir el archivo lo ha de leer y tiene que pasar por proceso de parsing de columnas
+-> - [ ] - import mapeo no es preciso hay que poner las columnas que hay en csv y mostrarlas completamente
+-> - [ ] - import definir al cual Proyecto pertenece el BOM
+- [x] - Cargar CSV
 - [ ] - Cargar XLSX
 - [ ] - Import - Leer -> Templates de easyeda.com
 - [ ] - Import -> cuadrar las columnas 
@@ -21,6 +23,8 @@
 - [x] Componente de tabla con búsqueda y filtros
 - [x] CRUD completo de items
 - [x] Exportar a CSV/XLSX
+- [x] tablas poner seleccionar todos o unos cuantos para eliminar
+-> - [ ] - seleccion varios, opcion modal asignar a un proyecto
 - [ ] - Preview de items de lcsc (en listado de componentes)
 - [ ] - Integrar o mandar para comprar lcsc.com
 - [ ] - Visualizar y guardar el listado de los componentes
@@ -34,7 +38,7 @@
 - [x] Lista de proyectos
 - [x] Detalle de proyecto con items asociados
 - [x] Calculadora de costos
-- [ ] - Proyecto definir el BOM el que pertenece
+
 
 ### 4. Integración LCSC
 - [ ] Investigar API de LCSC
@@ -49,3 +53,7 @@
 
 ### 6. Export
 - [ ] Posibilidad de exportar la DB -> para importar en osx o otro device
+
+### 7. Local storage
+- [ ] cuando se cargan imagenes de lscs -> hay que guardarlas en carpeta tmp para que sea offline
+- [ ] lo mismo cuando se carga los detalles de productos tambien seria bueno guardar + doc/pdf

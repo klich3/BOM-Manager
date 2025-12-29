@@ -2,6 +2,13 @@
 	<div class="overflow-x-auto">
 		<table class="w-full">
 			<thead class="bg-gray-50">
+				<th class="px-6 py-4 w-12">
+					<input
+						type="checkbox"
+						v-model="selectAll"
+						@change="toggleSelectAll"
+						class="rounded text-primary focus:ring-primary border-gray-300" />
+				</th>
 				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Componente</th>
 				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Categoría</th>
 				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Cantidad</th>
@@ -16,12 +23,23 @@
 			</thead>
 			<tbody class="divide-y divide-gray-200">
 				<tr v-if="items.length === 0">
-					<td colspan="11" class="px-6 py-12 text-center">
+					<td colspan="12" class="px-6 py-12 text-center">
 						<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
 						<p class="text-text-muted-light">No hay componentes en el proyecto</p>
 					</td>
 				</tr>
-				<tr v-for="item in items" :key="item.id" class="hover:bg-gray-50 transition-colors">
+				<tr
+					v-for="(item, index) in items"
+					:key="item.id"
+					class="hover:bg-gray-50 transition-colors"
+					:class="{ 'bg-gray-50': selectedItems.includes(item.id) }">
+					<td class="px-6 py-4">
+						<input
+							type="checkbox"
+							:value="item.id"
+							v-model="selectedItems"
+							class="rounded text-primary focus:ring-primary border-gray-300" />
+					</td>
 					<td class="px-6 py-4">
 						<div>
 							<p class="text-sm font-semibold text-text-main-light">
@@ -85,6 +103,22 @@
 				</tr>
 			</tbody>
 		</table>
+	</div>
+	<div class="flex justify-between items-center px-6 py-4 bg-gray-50" v-if="selectedItems.length > 0">
+		<p class="text-sm text-text-main-light">{{ selectedItems.length }} items seleccionados</p>
+		<div class="flex items-center gap-2">
+			<button
+				@click="selectedItems = []"
+				class="flex items-center gap-2 bg-gray-200 text-text-main-light px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">
+				<span>Deseleccionar todos</span>
+			</button>
+			<button
+				@click="deleteSelectedItems"
+				class="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+				<TrashIcon class="w-4 h-4" />
+				<span>Eliminar seleccionados ({{ selectedItems.length }})</span>
+			</button>
+		</div>
 	</div>
 	<div class="flex justify-center items-center mt-4 mb-10">
 		<button
@@ -180,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import {
 	CubeIcon,
 	PencilIcon,
@@ -214,11 +248,37 @@ interface ProjectItem {
 	status?: string;
 }
 
-const props = defineProps<{
-	items: ProjectItem[];
-}>();
+const props = defineProps<{ items: ProjectItem[] }>();
 
-const emit = defineEmits(["edit-item", "remove-item", "import-components"]);
+const emit = defineEmits(["edit-item", "remove-item", "remove-selected-items", "import-components"]);
+
+const selectedItems = ref<string[]>([]);
+const selectAll = ref(false);
+
+const toggleSelectAll = () => {
+	if (selectAll.value) {
+		selectedItems.value = props.items.map((item) => item.id);
+	} else {
+		selectedItems.value = [];
+	}
+};
+
+const deleteSelectedItems = () => {
+	// Emitir un evento para que el componente padre maneje la eliminación de múltiples items
+	const itemsToDelete = [...selectedItems.value];
+	selectedItems.value = [];
+	selectAll.value = false;
+	emit("remove-selected-items", itemsToDelete);
+};
+
+// Actualizar selectAll cuando cambia el número de elementos seleccionados
+watch(
+	selectedItems,
+	(newSelected, oldSelected) => {
+		selectAll.value = newSelected.length === props.items.length && props.items.length > 0;
+	},
+	{ immediate: true },
+);
 
 const showImportModal = ref(false);
 const selectedImportType = ref("easyeda");
