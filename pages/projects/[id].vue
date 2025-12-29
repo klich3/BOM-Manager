@@ -133,7 +133,7 @@
 		v-if="showImportModal"
 		:show="showImportModal"
 		:projectId="route.params.id as string"
-		@close="showImportModal = false"
+		@close="importStore.setShowImportModal(false)"
 		@notification="(data) => showToastMessage(data.message, data.type)"
 		@file-selected-to-project="handleImportToProject" />
 </template>
@@ -141,6 +141,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useDialog } from "@/composables/useDialog";
+import { useImportStore } from "@/stores/import";
 import {
 	CpuChipIcon,
 	Squares2X2Icon,
@@ -208,7 +209,8 @@ const toastMessage = ref("");
 const toastType = ref<"success" | "error" | "warning" | "info">("info");
 
 // Import Modal State
-const showImportModal = ref(false);
+const importStore = useImportStore();
+const showImportModal = computed(() => importStore.showImportModal);
 
 // Computed
 const filteredItems = computed(() => {
@@ -441,7 +443,7 @@ const handleAddItemSearch = (query: string) => {
 };
 
 const handleImportComponents = () => {
-	showImportModal.value = true;
+	importStore.setShowImportModal(true);
 };
 
 const handleImportToProject = async (data: { file: File; projectId: string }) => {
@@ -507,7 +509,7 @@ onMounted(async () => {
 	await loadProject();
 	calculateProjectCostMethod();
 	// Asegurar que el modal de importación esté cerrado al cargar la página
-	showImportModal.value = false;
+	importStore.setShowImportModal(false);
 });
 </script>
 
