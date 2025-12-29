@@ -102,7 +102,8 @@
 								@edit-item="editItem"
 								@remove-item="removeItemFromProject"
 								@remove-selected-items="removeSelectedItemsFromProject"
-								@import-components="handleImportComponents" />
+								@import-components="handleImportComponents"
+								@file-selected-to-project="handleImportToProject" />
 				</div>
 			</div>
 		</div>
@@ -144,6 +145,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useDatabase } from "@/composables/useDatabase";
 import { useCostCalculator } from "@/composables/useCostCalculator";
+import { useFileParser } from "@/composables/useFileParser";
 import { useRouter, useRoute } from "vue-router";
 import type { BOMItem, BOMProject } from "@/types/bom";
 import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
@@ -434,6 +436,53 @@ const handleImportComponents = (importData: { type: string }) => {
 			break;
 		default:
 			console.log('Unknown import type');
+	}
+};
+
+const handleImportToProject = async (data: { file: File; projectId: string }) => {
+	try {
+		// Parsear el archivo usando el composable useFileParser
+		const { parseFile } = useFileParser();
+		const result = await parseFile(data.file);
+
+		if (result.success && result.items.length > 0) {
+			let importedCount = 0;
+			const errors: string[] = [];
+			
+			// Agregar cada item parseado al proyecto
+			for (const item of result.items) {
+				// Crear o actualizar el item en el inventario global
+				const itemId = await db.createItem(item);
+				
+				if (itemId) {
+					// Agregar el item al proyecto
+					const success = await db.addItemToProject(data.projectId, itemId, item.quantity || 1);
+					if (success) {
+						importedCount++;
+					} else {
+						errors.push(`Error al agregar item ${item.name || 'desconocido'} al proyecto`);
+					}
+				} else {
+					errors.push(`Error al crear item ${item.name || 'desconocido'} en el inventario`);
+				}
+			}
+
+			// Recargar los items del proyecto
+			await loadProject();
+			calculateProjectCostMethod();
+			
+			let message = `Importación completada: ${importedCount} items agregados al proyecto.`;
+			if (errors.length > 0) {
+				message += ` Errores: ${errors.length}.`;
+				console.error('Errores durante la importación:', errors);
+			}
+			showToastMessage(message, importedCount > 0 ? "success" : "error");
+		} else {
+			showToastMessage(`Error en la importación: ${result.errors.join(", ")}`, "error");
+		}
+	} catch (error) {
+		console.error("Error al importar archivo al proyecto:", error);
+		showToastMessage("Error al importar archivo al proyecto", "error");
 	}
 };
 

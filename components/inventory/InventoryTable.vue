@@ -36,13 +36,16 @@
 						</th>
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">RoHS</th>
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Proyecto
+						</th>
+						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Acciones
 						</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200">
 					<tr v-if="items.length === 0">
-						<td colspan="12" class="px-6 py-12 text-center">
+						<td colspan="13" class="px-6 py-12 text-center">
 							<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
 							<p class="text-text-muted-light">No hay componentes en el inventario</p>
 						</td>
@@ -126,6 +129,9 @@
 						<td class="px-6 py-4 text-sm text-text-muted-light">
 							{{ item.rohs || "N/A" }}
 						</td>
+						<td class="px-6 py-4 text-sm text-text-muted-light">
+							{{ item.project_name || "N/A" }}
+						</td>
 						<td class="px-6 py-4">
 							<div class="flex items-center gap-2">
 								<button
@@ -194,6 +200,7 @@ interface InventoryItem {
 	lead_time?: number;
 	date_code_lot_no?: string;
 	status?: string;
+	project_name?: string;
 }
 
 interface Props {

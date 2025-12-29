@@ -142,7 +142,46 @@
 					<!-- Step 3: Import Preview -->
 					<div class="mb-6">
 						<h3 class="text-lg font-medium text-gray-900 mb-4">Revisión de importación</h3>
-						<p class="text-gray-600 mb-4">Se importarán {{ parsedItems.length }} items a tu inventario.</p>
+						<p class="text-gray-600 mb-4">Se importarán {{ parsedItems.length }} items.</p>
+
+						<!-- Selección de destino de importación -->
+						<div class="mb-4 p-4 bg-gray-50 rounded-lg">
+							<label class="block text-sm font-medium text-gray-700 mb-2">Destino de importación</label>
+							<div class="flex gap-4">
+								<div class="flex items-center">
+									<input
+										type="radio"
+										v-model="importDestination"
+										value="global"
+										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
+									<label class="ml-2 block text-sm text-gray-700">Inventario Global</label>
+								</div>
+								<div v-if="projects.length > 0" class="flex items-center">
+									<input
+										type="radio"
+										v-model="importDestination"
+										value="project"
+										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
+									<label class="ml-2 block text-sm text-gray-700">Proyecto específico</label>
+								</div>
+							</div>
+
+							<div v-if="importDestination === 'project' && projects.length > 0" class="mt-3">
+								<select
+									v-model="selectedProjectId"
+									class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+									<option value="">Selecciona un proyecto...</option>
+									<option v-for="project in projects" :key="project.id" :value="project.id">
+										{{ project.name }}
+									</option>
+								</select>
+							</div>
+							<div
+								v-else-if="importDestination === 'project' && projects.length === 0"
+								class="mt-2 text-sm text-amber-600">
+								No hay proyectos disponibles. Crea un proyecto primero.
+							</div>
+						</div>
 
 						<div v-if="parseResult.errors.length > 0" class="mb-4">
 							<h4 class="font-medium text-red-600 mb-2">Errores detectados:</h4>
@@ -288,12 +327,15 @@ import FileUpload from "@/components/FileUpload.vue";
 import { useFileParser, type ParseResult } from "@/composables/useFileParser";
 import type { BOMItem } from "@/types/bom";
 import { ref, computed } from "vue";
+import { useDatabase } from "@/composables/useDatabase";
 
 // Definir los eventos que emite este componente
 const emit = defineEmits<{
 	close: [];
 	"file-selected": [file: File];
+	"file-selected-to-project": [data: { file: File; projectId: string }];
 	error: [error: string];
+	notification: [data: { message: string; type: "success" | "error" | "warning" | "info" }];
 }>();
 
 // Definir las props si es necesario
@@ -304,6 +346,7 @@ defineProps<Props>();
 
 // State
 const { parseFile } = useFileParser();
+const db = useDatabase();
 
 const step = ref(1);
 const selectedFile = ref<File | null>(null);
@@ -317,6 +360,9 @@ const parseResult = ref<ParseResult>({
 const parsedItems = ref<Partial<BOMItem>[]>([]);
 const isProcessing = ref(false);
 const columnMapping = ref<Record<string, string>>({});
+const projects = ref<any[]>([]);
+const importDestination = ref<"global" | "project">("global"); // 'global' para inventario global, 'project' cuando se selecciona proyecto específico
+const selectedProjectId = ref<string>(""); // ID del proyecto específico seleccionado
 
 // Required and optional fields for mapping
 const requiredFields = [
@@ -369,19 +415,18 @@ const handleFileImport = async (file: File) => {
 		parseResult.value = result;
 		parsedItems.value = result.items as Partial<BOMItem>[];
 
-		if (result.success || result.items.length > 0) {
-			// Get sample data for preview
+		if (result.success && result.items.length > 0 && result.items[0]) {
+			// Get sample data for preview (show more rows for better preview)
+			const firstItem = result.items[0];
 			sampleData.value = {
-				headers: Object.keys(result.items[0] || {}),
-				rows: result.items.slice(0, 10).map((item: any) => Object.values(item)),
+				headers: Object.keys(firstItem),
+				rows: result.items.slice(0, 50).map((item: any) => Object.values(item)),
 			};
 
 			// Initialize column mapping with auto-detected values
-			if (result.items[0]) {
-				const headers = Object.keys(result.items[0]);
-				const autoMapping = detectColumnMapping(headers);
-				Object.assign(columnMapping.value, autoMapping);
-			}
+			const headers = Object.keys(firstItem);
+			const autoMapping = detectColumnMapping(headers);
+			Object.assign(columnMapping.value, autoMapping);
 		}
 	} catch (error) {
 		console.error("Error parsing file:", error);
@@ -494,6 +539,19 @@ const detectColumnMapping = (headers: string[]): Record<string, string> => {
 	return mapping;
 };
 
+// Cargar proyectos cuando se inicialice el componente
+const loadProjects = async () => {
+	try {
+		projects.value = await db.getAllProjects();
+	} catch (error) {
+		console.error("Error al cargar los proyectos:", error);
+		emit("error", `Error al cargar los proyectos: ${(error as Error).message}`);
+	}
+};
+
+// Ejecutar al inicio
+loadProjects();
+
 const formatFileSize = (bytes: number): string => {
 	if (bytes === 0) return "0 Bytes";
 
@@ -516,9 +574,72 @@ const getColumnMappingLabel = (header: string): string | null => {
 	return null;
 };
 
-const confirmImport = () => {
-	// Emitir el evento de archivo seleccionado para que el padre maneje la importación
-	emit("file-selected", selectedFile.value!);
-	emit("close");
+const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
+	// Emitir un evento para que el componente padre maneje la notificación
+	emit("notification", { message, type });
+};
+
+const confirmImport = async () => {
+	isProcessing.value = true;
+
+	try {
+		// Parsear el archivo usando el composable useFileParser
+		const { parseFile } = useFileParser();
+		const result = await parseFile(selectedFile.value!);
+
+		if (result.success && result.items.length > 0) {
+			let importedCount = 0;
+			const errors: string[] = [];
+
+			// Dependiendo del destino seleccionado, importar de manera diferente
+			if (importDestination.value === "global") {
+				// Importar al inventario global
+				for (const item of result.items) {
+					const success = await db.createItem(item);
+					if (success) {
+						importedCount++;
+					} else {
+						errors.push(`Error al crear item ${item.name || "desconocido"} en el inventario`);
+					}
+				}
+			} else if (importDestination.value === "project" && selectedProjectId.value) {
+				// Importar a un proyecto específico
+				for (const item of result.items) {
+					// Crear o actualizar el item en el inventario global
+					const itemId = await db.createItem(item);
+
+					if (itemId) {
+						// Agregar el item al proyecto
+						const success = await db.addItemToProject(selectedProjectId.value, itemId, item.quantity || 1);
+						if (success) {
+							importedCount++;
+						} else {
+							errors.push(`Error al agregar item ${item.name || "desconocido"} al proyecto`);
+						}
+					} else {
+						errors.push(`Error al crear item ${item.name || "desconocido"} en el inventario`);
+					}
+				}
+			} else {
+				emit("error", "Por favor selecciona un destino de importación válido.");
+				return;
+			}
+
+			let message = `Importación completada: ${importedCount} items procesados.`;
+			if (errors.length > 0) {
+				message += ` Errores: ${errors.length}.`;
+				console.error("Errores durante la importación:", errors);
+			}
+			emit("close");
+			showToastMessage(message, importedCount > 0 ? "success" : "error");
+		} else {
+			emit("error", `Error en la importación: ${result.errors.join(", ")}`);
+		}
+	} catch (error) {
+		console.error("Error al procesar la importación:", error);
+		emit("error", "Error al procesar la importación");
+	} finally {
+		isProcessing.value = false;
+	}
 };
 </script>

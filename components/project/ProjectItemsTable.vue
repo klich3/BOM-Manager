@@ -128,89 +128,6 @@
 			<span>Importar Componentes</span>
 		</button>
 	</div>
-
-	<!-- Modal de importación -->
-	<Teleport to="body">
-		<div v-if="showImportModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-			<div class="bg-card-light rounded-2xl shadow-xl max-w-lg w-full p-6">
-				<div class="flex items-center justify-between mb-6">
-					<h2 class="text-xl font-semibold text-text-main-light">Importar Componentes</h2>
-					<button @click="showImportModal = false" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-						<XMarkIcon class="w-6 h-6 text-text-muted-light" />
-					</button>
-				</div>
-
-				<div class="space-y-4">
-					<div
-						@click="selectedImportType = 'easyeda'"
-						:class="{
-							'bg-primary/10 border border-primary': selectedImportType === 'easyeda',
-							'bg-gray-50 border border-gray-200': selectedImportType !== 'easyeda',
-						}"
-						class="p-4 rounded-xl cursor-pointer transition-colors">
-						<div class="flex items-center gap-3">
-							<div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-								<CodeBracketIcon class="w-5 h-5 text-blue-600" />
-							</div>
-							<div>
-								<h4 class="font-medium text-text-main-light">EasyEDA</h4>
-								<p class="text-sm text-text-muted-light">Importar desde proyecto EasyEDA</p>
-							</div>
-						</div>
-					</div>
-
-					<div
-						@click="selectedImportType = 'csv'"
-						:class="{
-							'bg-primary/10 border border-primary': selectedImportType === 'csv',
-							'bg-gray-50 border border-gray-200': selectedImportType !== 'csv',
-						}"
-						class="p-4 rounded-xl cursor-pointer transition-colors">
-						<div class="flex items-center gap-3">
-							<div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-								<DocumentTextIcon class="w-5 h-5 text-green-600" />
-							</div>
-							<div>
-								<h4 class="font-medium text-text-main-light">CSV</h4>
-								<p class="text-sm text-text-muted-light">Importar desde archivo CSV</p>
-							</div>
-						</div>
-					</div>
-
-					<div
-						@click="selectedImportType = 'json'"
-						:class="{
-							'bg-primary/10 border border-primary': selectedImportType === 'json',
-							'bg-gray-50 border border-gray-200': selectedImportType !== 'json',
-						}"
-						class="p-4 rounded-xl cursor-pointer transition-colors">
-						<div class="flex items-center gap-3">
-							<div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-								<CodeBracketSquareIcon class="w-5 h-5 text-purple-600" />
-							</div>
-							<div>
-								<h4 class="font-medium text-text-main-light">JSON</h4>
-								<p class="text-sm text-text-muted-light">Importar desde archivo JSON</p>
-							</div>
-						</div>
-					</div>
-
-					<div class="flex gap-3 pt-4">
-						<button
-							@click="showImportModal = false"
-							class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors">
-							Cancelar
-						</button>
-						<button
-							@click="confirmImport"
-							class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium">
-							Importar
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</Teleport>
 </template>
 
 <script setup lang="ts">
@@ -250,7 +167,13 @@ interface ProjectItem {
 
 const props = defineProps<{ items: ProjectItem[] }>();
 
-const emit = defineEmits(["edit-item", "remove-item", "remove-selected-items", "import-components"]);
+const emit = defineEmits([
+	"edit-item",
+	"remove-item",
+	"remove-selected-items",
+	"import-components",
+	"file-selected-to-project",
+]);
 
 const selectedItems = ref<string[]>([]);
 const selectAll = ref(false);

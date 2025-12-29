@@ -16,7 +16,17 @@ const BOMItemSchema = z.object({
     price: z.number().min(0).optional(),
     inStock: z.number().min(0).default(0),
     minStock: z.number().min(0).optional(),
-    notes: z.string().optional()
+    notes: z.string().optional(),
+    manufacturer: z.string().optional(),
+    customerNo: z.string().optional(),
+    package: z.string().optional(),
+    rohs: z.string().optional(),
+    extPrice: z.number().optional(),
+    leadTime: z.number().optional(),
+    dateCodeLotNo: z.string().optional(),
+    status: z.string().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional()
 });
 
 export interface ParseResult {
@@ -40,16 +50,34 @@ export const useFileParser = () => {
         const patterns: Record<string, string[]> = {
             name: ['name', 'nombre', 'component', 'componente', 'part', 'parte', 'item'],
             description: ['description', 'descripcion', 'desc', 'details', 'detalles'],
-            quantity: ['quantity', 'cantidad', 'qty', 'cant', 'amount'],
+            quantity: ['quantity', 'cantidad', 'qty', 'cant', 'amount', 'quantity'],
             unit: ['unit', 'unidad', 'units', 'unidades', 'uom'],
             category: ['category', 'categoria', 'type', 'tipo', 'class', 'clase'],
             supplier: ['supplier', 'proveedor', 'vendor', 'manufacturer', 'fabricante'],
-            partNumber: ['part_number', 'partnumber', 'part number', 'numero de parte', 'mpn', 'p/n', 'sku'],
-            lcscPart: ['lcsc', 'lcsc_part', 'lcsc part', 'lcsc_number'],
-            price: ['price', 'precio', 'cost', 'costo', 'unit_price', 'precio_unitario'],
+            partNumber: ['part_number', 'partnumber', 'part number', 'numero de parte', 'mpn', 'p/n', 'sku', 'manufacture part number'],
+            lcscPart: ['lcsc', 'lcsc_part', 'lcsc part', 'lcsc_number', 'lcsc part number'],
+            price: ['price', 'precio', 'cost', 'costo', 'unit_price', 'precio_unitario', 'unit price'],
             inStock: ['in_stock', 'instock', 'stock', 'inventory', 'inventario', 'on_hand'],
             minStock: ['min_stock', 'minstock', 'minimum', 'minimo', 'reorder', 'reorder_point'],
-            notes: ['notes', 'notas', 'comments', 'comentarios', 'remarks', 'observaciones']
+            notes: ['notes', 'notas', 'comments', 'comentarios', 'remarks', 'observaciones'],
+            manufacturer: ['manufacturer', 'fabricante', 'maker', 'producer'],
+            customerNo: ['customer_no', 'customer no', 'customer number', 'numero cliente', 'cliente no', 'customer id', 'customer no.'],
+            package: ['package', 'packaging', 'empaquetado', 'housing', 'case', 'encapsulado'],
+            rohs: ['rohs', 'rohs_compliant', 'rohs compliant', 'environmental', 'ecological'],
+            extPrice: ['ext_price', 'ext price', 'extended price', 'total_price', 'precio_total', 'precio ext', 'ext.price($)', 'ext.price'],
+            leadTime: ['lead_time', 'lead time', 'delivery_time', 'tiempo_entrega', 'delivery', 'plazo', 'estimated lead time'],
+            dateCodeLotNo: [
+                'date_code_lot_no',
+                'date code lot no',
+                'date_code',
+                'lot_no',
+                'date code',
+                'lote',
+                'codigo_fecha',
+                'date code / lot no.',
+                'date code / lot no'
+            ],
+            status: ['status', 'estado', 'state', 'condition', 'situacion']
         };
 
         headers.forEach(header => {
@@ -224,7 +252,13 @@ export const useFileParser = () => {
                 const validation = BOMItemSchema.safeParse(item);
 
                 if (validation.success) {
-                    result.items.push(validation.data);
+                    // Convertir strings de fecha a objetos Date si están presentes
+                    const itemWithDates = {
+                        ...validation.data,
+                        createdAt: validation.data.createdAt ? new Date(validation.data.createdAt) : undefined,
+                        updatedAt: validation.data.updatedAt ? new Date(validation.data.updatedAt) : undefined,
+                    };
+                    result.items.push(itemWithDates);
                 } else {
                     const errorMessages = validation.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`);
                     result.errors.push(`Fila ${index + 2}: ${errorMessages.join(', ')}`);
