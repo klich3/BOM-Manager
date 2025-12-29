@@ -186,7 +186,8 @@
 		v-if="showImportModal"
 		@close="showImportModal = false"
 		@file-selected="handleFileImport"
-		@error="handleImportError" />
+		@error="handleImportError"
+		@import-completed="handleImportCompleted" />
 
 	<!-- List Manager Modal -->
 	<ListManager v-if="showListManager" v-model="showListManager" :items="[]" @saved="saveList" />
@@ -286,13 +287,6 @@ const itemForm = ref({
 // LCSC Preview State
 const showLCSCPreview = ref(false);
 const lcscPartNumber = ref("");
-
-// Confirm Modal State - Not used when using Tauri dialogs
-// const showConfirmModal = ref(false);
-// const confirmModalTitle = ref("");
-// const confirmModalMessage = ref("");
-// const confirmModalConfirmText = ref("");
-// const itemToDelete = ref<string | null>(null);
 
 // Toast State
 const showToast = ref(false);
@@ -473,6 +467,11 @@ const handleFileImport = async (file: File) => {
 		console.error("Error importando archivo:", error);
 		showToastMessage("Error al importar archivo", "error");
 	}
+};
+
+const handleImportCompleted = async () => {
+	await loadItems();
+	showToastMessage("Items importados exitosamente", "success");
 };
 
 const handleImportError = (message: string) => {

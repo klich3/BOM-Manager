@@ -346,6 +346,7 @@ const emit = defineEmits<{
 	"file-selected-to-project": [data: { file: File; projectId: string }];
 	error: [error: string];
 	notification: [data: { message: string; type: "success" | "error" | "warning" | "info" }];
+	"import-completed": [data: { importedCount: number; errors: string[] }];
 }>();
 
 // Definir las props si es necesario
@@ -633,6 +634,8 @@ const confirmImport = async () => {
 			message += ` Errores: ${result.errors.length}.`;
 			console.error("Errores durante la importación:", result.errors);
 		}
+		// Emitir evento de importación completada para que el componente padre pueda actualizar la vista
+		emit("import-completed", { importedCount: result.importedCount, errors: result.errors });
 		emit("close");
 		showToastMessage(message, result.importedCount > 0 ? "success" : "error");
 	} catch (error) {
