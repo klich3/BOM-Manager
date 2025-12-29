@@ -16,6 +16,14 @@ export interface BOMItem {
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
+  manufacturer?: string;
+  customerNo?: string;
+  package?: string;
+  rohs?: string;
+  extPrice?: number;
+  leadTime?: number;
+  dateCodeLotNo?: string;
+  status?: string;
 }
 
 export interface BOMProject {

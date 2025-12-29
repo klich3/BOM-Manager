@@ -19,13 +19,23 @@
 						</th>
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">LCSC</th>
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Empaquetado
+						</th>
+						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Fabricante
+						</th>
+						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Precio Ext.
+						</th>
+						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">RoHS</th>
+						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Acciones
 						</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200">
 					<tr v-if="items.length === 0">
-						<td colspan="7" class="px-6 py-12 text-center">
+						<td colspan="11" class="px-6 py-12 text-center">
 							<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
 							<p class="text-text-muted-light">No hay componentes en el inventario</p>
 						</td>
@@ -86,6 +96,18 @@
 								<span v-else class="text-xs text-text-muted-light"> N/A </span>
 							</div>
 						</td>
+						<td class="px-6 py-4 text-sm text-text-muted-light">
+							{{ item.package || "N/A" }}
+						</td>
+						<td class="px-6 py-4 text-sm text-text-muted-light">
+							{{ item.manufacturer || "N/A" }}
+						</td>
+						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
+							${{ (item.ext_price || 0).toFixed(2) }}
+						</td>
+						<td class="px-6 py-4 text-sm text-text-muted-light">
+							{{ item.rohs || "N/A" }}
+						</td>
 						<td class="px-6 py-4">
 							<div class="flex items-center gap-2">
 								<button
@@ -136,6 +158,14 @@ interface InventoryItem {
 	price?: number;
 	unit?: string;
 	lcsc_part?: string;
+	manufacturer?: string;
+	customer_no?: string;
+	package?: string;
+	rohs?: string;
+	ext_price?: number;
+	lead_time?: number;
+	date_code_lot_no?: string;
+	status?: string;
 }
 
 interface Props {

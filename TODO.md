@@ -1,5 +1,6 @@
 - [ ] - user settings -> https://v2.tauri.app/plugin/window-state/
--home hay que modificar el items cuentas
+- [ ] home hay que modificar el items cuentas
+- [ ] tablas poner seleccionar todos o unos cuantos para eliminar
 
 ### 1. Importación de Archivos CSV/XLSX
 - [x] Instalar `papaparse` para CSV

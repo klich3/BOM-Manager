@@ -2,7 +2,7 @@
 	"tables": [
 		{
 			"name": "bom_items",
-			"definition": "CREATE TABLE IF NOT EXISTS bom_items (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  description TEXT,\n  quantity REAL NOT NULL,\n  unit TEXT NOT NULL,\n  category TEXT,\n  supplier TEXT,\n  part_number TEXT,\n  lcsc_part TEXT,\n  price REAL,\n  in_stock REAL NOT NULL DEFAULT 0,\n  min_stock REAL,\n  notes TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+			"definition": "CREATE TABLE IF NOT EXISTS bom_items (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  description TEXT,\n  quantity REAL NOT NULL,\n  unit TEXT NOT NULL,\n  category TEXT,\n  supplier TEXT,\n  part_number TEXT,\n  lcsc_part TEXT,\n  price REAL,\n  in_stock REAL NOT NULL DEFAULT 0,\n  min_stock REAL,\n  notes TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL,\n  manufacturer TEXT,\n  customer_no TEXT,\n  package TEXT,\n  rohs TEXT,\n  ext_price REAL,\n  lead_time INTEGER,\n  date_code_lot_no TEXT,\n  status TEXT\n)"
 		},
 		{
 			"name": "projects",
