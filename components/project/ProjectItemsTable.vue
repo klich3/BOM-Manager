@@ -2,24 +2,34 @@
 	<div class="overflow-x-auto">
 		<table class="w-full">
 			<thead class="bg-gray-50">
-				<th class="px-6 py-4 w-12">
-					<input
-						type="checkbox"
-						v-model="selectAll"
-						@change="toggleSelectAll"
-						class="rounded text-primary focus:ring-primary border-gray-300" />
-				</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Componente</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Categoría</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Cantidad</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Stock</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Proveedor</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Precio</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Empaquetado</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Fabricante</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Precio Ext.</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">RoHS</th>
-				<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Acciones</th>
+				<tr>
+					<th class="px-6 py-4 w-12">
+						<input
+							type="checkbox"
+							v-model="selectAll"
+							@change="toggleSelectAll"
+							class="rounded text-primary focus:ring-primary border-gray-300" />
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						Componente
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Categoría</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Cantidad</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Stock</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Proveedor</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Precio</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						Empaquetado
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						Fabricante
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						Precio Ext.
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">RoHS</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Acciones</th>
+				</tr>
 			</thead>
 			<tbody class="divide-y divide-gray-200">
 				<tr v-if="items.length === 0">
@@ -120,9 +130,9 @@
 			</button>
 		</div>
 	</div>
-	<div class="flex justify-center items-center mt-4 mb-10">
+	<div class="flex justify-center items-center mt-4 mb-10" v-if="items && items.length > 0">
 		<button
-			@click="showImportModal = true"
+			@click="emit('import-components')"
 			class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 			<ArrowDownTrayIcon class="w-4 h-4" />
 			<span>Importar Componentes</span>
@@ -203,7 +213,6 @@ watch(
 	{ immediate: true },
 );
 
-const showImportModal = ref(false);
 const selectedImportType = ref("easyeda");
 
 const editItem = (item: ProjectItem) => {
@@ -212,10 +221,5 @@ const editItem = (item: ProjectItem) => {
 
 const removeItem = (id: string) => {
 	emit("remove-item", id);
-};
-
-const confirmImport = () => {
-	emit("import-components", { type: selectedImportType.value });
-	showImportModal.value = false;
 };
 </script>

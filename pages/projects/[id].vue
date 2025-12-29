@@ -12,12 +12,20 @@
 				</p>
 			</div>
 			<div class="flex items-center gap-4">
-				<button
+				<!--
+					<button
 					@click="calculateProjectCostMethod"
 					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<CalculatorIcon class="w-5 h-5" />
 					<span>Calcular Costos</span>
 				</button>
+				-->
+				<button
+			@click="handleImportComponents"
+			class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
+			<ArrowDownTrayIcon class="w-4 h-4" />
+			<span>Importar Componentes</span>
+		</button>
 				<button
 					@click="exportProject"
 					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
@@ -119,6 +127,15 @@
 
 	<!-- Toast Notification -->
 	<Toast :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
+
+	<!-- Import Modal -->
+	<ImportModal
+		v-if="showImportModal"
+		:show="showImportModal"
+		:projectId="route.params.id as string"
+		@close="showImportModal = false"
+		@notification="(data) => showToastMessage(data.message, data.type)"
+		@file-selected-to-project="handleImportToProject" />
 </template>
 
 <script setup lang="ts">
@@ -142,7 +159,9 @@ import {
 	TrashIcon,
 	XMarkIcon,
 	PlusIcon,
+	ArrowDownTrayIcon,
 } from "@heroicons/vue/24/outline";
+
 import { useDatabase } from "@/composables/useDatabase";
 import { useCostCalculator } from "@/composables/useCostCalculator";
 import { useFileParser } from "@/composables/useFileParser";
@@ -152,6 +171,7 @@ import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
 import ProjectItemsTable from "@/components/project/ProjectItemsTable.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import Toast from "@/components/Toast.vue";
+import ImportModal from "@/components/ImportModal.vue";
 import { navigateTo } from "nuxt/app";
 
 // Define page meta properties (using Nuxt's automatic route naming)
@@ -186,6 +206,9 @@ const costBreakdown = ref<any>(null);
 const showToast = ref(false);
 const toastMessage = ref("");
 const toastType = ref<"success" | "error" | "warning" | "info">("info");
+
+// Import Modal State
+const showImportModal = ref(false);
 
 // Computed
 const filteredItems = computed(() => {
@@ -417,26 +440,8 @@ const handleAddItemSearch = (query: string) => {
 	addItemSearchQuery.value = query;
 };
 
-const handleImportComponents = (importData: { type: string }) => {
-	console.log('Importing components:', importData);
-	// Aquí se implementaría la lógica para importar componentes
-	// dependiendo del tipo de importación (EasyEDA, CSV, JSON)
-	switch(importData.type) {
-		case 'easyeda':
-			// Implementar lógica para importar desde EasyEDA
-			console.log('Importing from EasyEDA');
-			break;
-		case 'csv':
-			// Implementar lógica para importar desde CSV
-			console.log('Importing from CSV');
-			break;
-		case 'json':
-			// Implementar lógica para importar desde JSON
-			console.log('Importing from JSON');
-			break;
-		default:
-			console.log('Unknown import type');
-	}
+const handleImportComponents = () => {
+	showImportModal.value = true;
 };
 
 const handleImportToProject = async (data: { file: File; projectId: string }) => {
@@ -501,6 +506,8 @@ const showToastMessage = (message: string, type: "success" | "error" | "warning"
 onMounted(async () => {
 	await loadProject();
 	calculateProjectCostMethod();
+	// Asegurar que el modal de importación esté cerrado al cargar la página
+	showImportModal.value = false;
 });
 </script>
 

@@ -341,8 +341,9 @@ const emit = defineEmits<{
 // Definir las props si es necesario
 interface Props {
 	show?: boolean;
+	projectId?: string; // ID del proyecto actual si se está importando desde una página de proyecto
 }
-defineProps<Props>();
+const props = defineProps<Props>();
 
 // State
 const { parseFile } = useFileParser();
@@ -363,6 +364,12 @@ const columnMapping = ref<Record<string, string>>({});
 const projects = ref<any[]>([]);
 const importDestination = ref<"global" | "project">("global"); // 'global' para inventario global, 'project' cuando se selecciona proyecto específico
 const selectedProjectId = ref<string>(""); // ID del proyecto específico seleccionado
+
+// Si se proporciona un projectId, establecerlo como destino por defecto
+if (props.projectId) {
+	importDestination.value = "project";
+	selectedProjectId.value = props.projectId;
+}
 
 // Required and optional fields for mapping
 const requiredFields = [
@@ -399,7 +406,10 @@ const canProceed = computed(() => {
 		return !!selectedFile.value;
 	} else if (step.value === 2) {
 		// Check if required fields are mapped
-		return requiredFields.every((field) => columnMapping.value[field.key]);
+		return requiredFields.every((field) => {
+			const mappedValue = columnMapping.value[field.key];
+			return mappedValue && typeof mappedValue === "string" && mappedValue.trim() !== "";
+		});
 	}
 	return true;
 });
@@ -418,15 +428,30 @@ const handleFileImport = async (file: File) => {
 		if (result.success && result.items.length > 0 && result.items[0]) {
 			// Get sample data for preview (show more rows for better preview)
 			const firstItem = result.items[0];
+			const headers = Object.keys(firstItem);
+
 			sampleData.value = {
-				headers: Object.keys(firstItem),
-				rows: result.items.slice(0, 50).map((item: any) => Object.values(item)),
+				headers: headers,
+				rows: result.items.slice(0, 50).map((item: any) => {
+					if (item && typeof item === "object") {
+						// Ensure we're extracting values in the same order as headers
+						return headers.map((header) => {
+							const value = item[header];
+							return value !== undefined && value !== null ? value : "";
+						});
+					} else {
+						return [];
+					}
+				}),
 			};
 
 			// Initialize column mapping with auto-detected values
-			const headers = Object.keys(firstItem);
-			const autoMapping = detectColumnMapping(headers);
-			Object.assign(columnMapping.value, autoMapping);
+			if (headers.length > 0) {
+				// Use the detectColumnMapping function from the composable
+				const { detectColumnMapping: detectColumnMappingFromComposable } = useFileParser();
+				const autoMapping = detectColumnMappingFromComposable(headers);
+				Object.assign(columnMapping.value, autoMapping);
+			}
 		}
 	} catch (error) {
 		console.error("Error parsing file:", error);
@@ -487,58 +512,6 @@ const getProgressWidth = () => {
 	return `${width}%`;
 };
 
-const detectColumnMapping = (headers: string[]): Record<string, string> => {
-	const mapping: Record<string, string> = {};
-
-	const patterns: Record<string, string[]> = {
-		// Campos requeridos
-		name: ["name", "nombre", "component", "componente", "part", "parte", "item"],
-		quantity: ["quantity", "cantidad", "qty", "cant", "amount"],
-		unit: ["unit", "unidad", "units", "unidades", "uom"],
-		// Campos opcionales
-		description: ["description", "descripcion", "desc", "details", "detalles"],
-		category: ["category", "categoria", "type", "tipo", "class", "clase"],
-		supplier: ["supplier", "proveedor", "vendor", "manufacturer", "fabricante"],
-		partNumber: ["part_number", "partnumber", "part number", "numero de parte", "mpn", "p/n", "sku", "partnumber"],
-		lcscPart: ["lcsc", "lcsc_part", "lcsc part", "lcsc_number"],
-		price: ["price", "precio", "cost", "costo", "unit_price", "precio_unitario"],
-		inStock: ["in_stock", "instock", "stock", "inventory", "inventario", "on_hand"],
-		minStock: ["min_stock", "minstock", "minimum", "minimo", "reorder", "reorder_point"],
-		notes: ["notes", "notas", "comments", "comentarios", "remarks", "observaciones"],
-		createdAt: ["created_at", "created", "fecha_creacion", "fecha_creación", "creation_date"],
-		updatedAt: ["updated_at", "updated", "fecha_actualizacion", "fecha_actualización", "modification_date"],
-		manufacturer: ["manufacturer", "fabricante", "maker", "producer"],
-		customerNo: ["customer_no", "customer no", "customer number", "numero cliente", "cliente no", "customer id"],
-		package: ["package", "packaging", "empaquetado", "housing", "case", "encapsulado"],
-		rohs: ["rohs", "rohs_compliant", "rohs compliant", "environmental", "ecological"],
-		extPrice: ["ext_price", "ext price", "extended price", "total_price", "precio_total", "precio ext"],
-		leadTime: ["lead_time", "lead time", "delivery_time", "tiempo_entrega", "delivery", "plazo"],
-		dateCodeLotNo: [
-			"date_code_lot_no",
-			"date code lot no",
-			"date_code",
-			"lot_no",
-			"date code",
-			"lote",
-			"codigo_fecha",
-		],
-		status: ["status", "estado", "state", "condition", "situacion"],
-	};
-
-	headers.forEach((header) => {
-		const normalized = header.toLowerCase().trim();
-
-		for (const [field, keywords] of Object.entries(patterns)) {
-			if (keywords.some((keyword) => normalized.includes(keyword))) {
-				mapping[field] = header;
-				break;
-			}
-		}
-	});
-
-	return mapping;
-};
-
 // Cargar proyectos cuando se inicialice el componente
 const loadProjects = async () => {
 	try {
@@ -552,6 +525,11 @@ const loadProjects = async () => {
 // Ejecutar al inicio
 loadProjects();
 
+// Si se proporciona un projectId, seleccionar automáticamente el proyecto
+if (props.projectId) {
+	selectedProjectId.value = props.projectId;
+}
+
 const formatFileSize = (bytes: number): string => {
 	if (bytes === 0) return "0 Bytes";
 
@@ -563,6 +541,10 @@ const formatFileSize = (bytes: number): string => {
 };
 
 const getColumnMappingLabel = (header: string): string | null => {
+	if (!header || typeof header !== "string") {
+		return null;
+	}
+
 	for (const [fieldKey, fieldLabel] of Object.entries({
 		...Object.fromEntries(requiredFields.map((f) => [f.key, f.label])),
 		...Object.fromEntries(optionalFields.map((f) => [f.key, f.label])),
