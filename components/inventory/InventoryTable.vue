@@ -4,95 +4,68 @@
 			<table class="w-full">
 				<thead class="bg-gray-50">
 					<tr>
-						<th class="px-6 py-4 w-12">
+						<th v-if="showSelect" class="w-12 px-6 py-3">
 							<input
 								type="checkbox"
-								v-model="selectAll"
+								:checked="selectAll"
 								@change="toggleSelectAll"
-								class="rounded text-primary focus:ring-primary border-gray-300" />
+								class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Componente
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Nombre
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Descripción
+						</th>
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Categoría
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Stock</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Proveedor
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Precio Unit.
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">LCSC</th>
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Precio
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Precio Total
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">Total</th>
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Cantidad Inicial
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">LCSC</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Empaquetado
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Stock Actual
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Fabricante
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Min Stock
 						</th>
-
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Proyecto
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Acciones
 						</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200">
-					<tr v-if="items.length === 0">
-						<td colspan="13" class="px-6 py-12 text-center">
-							<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
-							<p class="text-text-muted-light">No hay componentes en el inventario</p>
-						</td>
-					</tr>
-					<tr
-						v-for="(item, index) in items"
-						:key="item.id"
-						class="hover:bg-gray-50 transition-colors"
-						:class="{ 'bg-gray-50': selectedItems.includes(item.id) }">
-						<td class="px-6 py-4">
+					<tr v-for="item in items" :key="item.id" class="hover:bg-gray-50 transition-colors">
+						<td v-if="showSelect" class="px-6 py-4">
 							<input
 								type="checkbox"
-								:value="item.id"
-								v-model="selectedItems"
-								class="rounded text-primary focus:ring-primary border-gray-300" />
+								:checked="selectedItems.includes(item.id)"
+								@change="toggleSelect(item.id)"
+								class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
 						</td>
 						<td class="px-6 py-4">
-							<div>
-								<p class="text-sm font-semibold text-text-main-light">
-									{{ item.name }}
-								</p>
-								<p class="text-xs text-text-muted-light">
-									{{ item.part_number || "N/A" }}
-								</p>
-							</div>
-						</td>
-						<td class="px-6 py-4">
-							<span class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium">
-								{{ item.category || "Sin categoría" }}
-							</span>
-						</td>
-						<td class="px-6 py-4">
-							<div class="flex items-center gap-2">
-								<div
-									class="w-2 h-2 rounded-full"
-									:class="(item.min_stock || 0) > 0 ? 'bg-green-500' : 'bg-gray-300'"></div>
-								<span class="text-sm text-text-main-light"> -- </span>
-							</div>
+							<div class="text-sm font-medium text-text-main-light">{{ item.name }}</div>
 						</td>
 						<td class="px-6 py-4 text-sm text-text-muted-light">
-							{{ item.supplier || "N/A" }}
+							{{ item.description || "-" }}
 						</td>
-						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
-							${{ (item.price || 0).toFixed(2) }}
-							<div v-if="item.ext_price">${{ (item.ext_price || 0).toFixed(2) }}</div>
+						<td class="px-6 py-4 text-sm text-text-main-light">
+							{{ item.category || "-" }}
 						</td>
-						<td class="px-6 py-4 text-sm font-medium text-text-main-light">total</td>
+						<td class="px-6 py-4 text-sm text-text-main-light">
+							{{ item.supplier || "-" }}
+						</td>
 						<td class="px-6 py-4">
 							<div class="flex items-center gap-2">
 								<span
@@ -100,67 +73,69 @@
 									class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium">
 									{{ item.lcsc_part }}
 								</span>
+								<span v-else class="text-sm text-text-muted-light">-</span>
 								<button
 									v-if="item.lcsc_part"
-									@click="$emit('open-lcsc-preview', item.lcsc_part)"
-									class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-									title="Ver en LCSC">
-									<GlobeAltIcon class="w-4 h-4 text-blue-600" />
+									@click="openLcscPreview(item.lcsc_part)"
+									class="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors">
+									<GlobeAltIcon class="w-4 h-4" />
 								</button>
 								<button
 									v-if="item.lcsc_part"
-									@click="$emit('open-lcsc-purchase', item.lcsc_part)"
-									class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-									title="Comprar en LCSC">
-									<ShoppingCartIcon class="w-4 h-4 text-green-600" />
+									@click="openLcscPurchase(item.lcsc_part)"
+									class="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors">
+									<ShoppingCartIcon class="w-4 h-4" />
 								</button>
-								<span v-else class="text-xs text-text-muted-light"> N/A </span>
 							</div>
 						</td>
-						<td class="px-6 py-4 text-sm text-text-muted-light">
-							{{ item.package || "N/A" }}
+						<td class="px-6 py-4 text-sm text-text-main-light">
+							{{ item.price ? `$${item.price}` : "-" }}
 						</td>
-						<td class="px-6 py-4 text-sm text-text-muted-light">
-							{{ item.manufacturer || "N/A" }}
+						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
+							{{
+								item.price && item.quantity ? `$${(item.price * (item.quantity || 0)).toFixed(2)}` : "-"
+							}}
 						</td>
-
-						<td class="px-6 py-4 text-sm text-text-muted-light">
-							{{ item.project_name || "N/A" }}
+						<td class="px-6 py-4 text-sm text-text-main-light">
+							{{ item.quantity || 0 }}
 						</td>
 						<td class="px-6 py-4">
 							<div class="flex items-center gap-2">
+								<div
+									class="w-2 h-2 rounded-full"
+									:class="
+										item.min_stock && item.in_stock !== undefined && item.in_stock <= item.min_stock
+											? 'bg-amber-500'
+											: item.in_stock !== undefined && item.in_stock > (item.min_stock || 0)
+											? 'bg-green-500'
+											: 'bg-gray-300'
+									"></div>
+								<span class="text-sm text-text-main-light">{{ item.in_stock || 0 }}</span>
+							</div>
+						</td>
+						<td class="px-6 py-4 text-sm text-text-main-light">
+							{{ item.min_stock || 0 }}
+						</td>
+						<td class="px-6 py-4 text-sm text-text-main-light">
+							{{ item.project_name || "-" }}
+						</td>
+						<td class="px-6 py-4 text-sm font-medium">
+							<div class="flex items-center gap-2">
 								<button
 									@click="$emit('edit-item', item)"
-									class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-									<PencilIcon class="w-4 h-4 text-blue-600" />
+									class="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors">
+									<PencilIcon class="w-4 h-4" />
 								</button>
 								<button
-									@click="$emit('delete-item', item.id)"
-									class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-									<TrashIcon class="w-4 h-4 text-red-600" />
+									@click="$emit('remove-item', item.id)"
+									class="p-1 text-red-600 hover:bg-red-100 rounded transition-colors">
+									<TrashIcon class="w-4 h-4" />
 								</button>
 							</div>
 						</td>
 					</tr>
 				</tbody>
 			</table>
-		</div>
-		<div class="flex justify-between items-center px-6 py-4 bg-gray-50" v-if="selectedItems.length > 0">
-			<p class="text-sm text-text-main-light">{{ selectedItems.length }} items seleccionados</p>
-			<button
-				@click="deleteSelectedItems"
-				class="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
-				<TrashIcon class="w-4 h-4" />
-				<span>Eliminar seleccionados ({{ selectedItems.length }})</span>
-			</button>
-		</div>
-		<div class="flex justify-center items-center mt-4 mb-10" v-if="items.length === 0">
-			<button
-				@click="$emit('add-first-item')"
-				class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
-				<ArrowDownTrayIcon class="w-4 h-4" />
-				<span>Agregar primer componente</span>
-			</button>
 		</div>
 	</div>
 </template>
@@ -175,18 +150,22 @@ import {
 	ArrowDownTrayIcon,
 } from "@heroicons/vue/24/outline";
 import { ref, watch } from "vue";
+import { useNotifications } from "@/composables/useNotifications";
 
 interface InventoryItem {
 	id: string;
 	name: string;
-	part_number?: string;
+	description?: string;
+	quantity?: number; // Cantidad comprada inicial
+	unit?: string;
 	category?: string;
-	// in_stock?: number; // Eliminado porque ya no se usa
+	in_stock?: number; // Stock actual
 	min_stock?: number;
 	supplier?: string;
-	price?: number;
-	unit?: string;
+	part_number?: string;
 	lcsc_part?: string;
+	price?: number;
+	notes?: string;
 	manufacturer?: string;
 	customer_no?: string;
 	package?: string;
@@ -205,8 +184,8 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits<{
 	"edit-item": [item: InventoryItem];
-	"delete-item": [id: string];
-	"delete-selected-items": [ids: string[]];
+	"remove-item": [id: string];
+	"remove-items": [ids: string[]];
 	"open-lcsc-preview": [partNumber: string];
 	"open-lcsc-purchase": [partNumber: string];
 	"add-first-item": [];
@@ -223,12 +202,43 @@ const toggleSelectAll = () => {
 	}
 };
 
+const toggleSelect = (id: string) => {
+	if (selectedItems.value.includes(id)) {
+		selectedItems.value = selectedItems.value.filter((i) => i !== id);
+	} else {
+		selectedItems.value = [...selectedItems.value, id];
+	}
+};
+
 const deleteSelectedItems = () => {
 	// Emitir un evento para que el componente padre maneje la eliminación de múltiples items
 	const itemsToDelete = [...selectedItems.value];
 	selectedItems.value = [];
 	selectAll.value = false;
-	emit("delete-selected-items", itemsToDelete);
+	emit("remove-items", itemsToDelete);
+};
+
+const openLcscPreview = (partNumber: string) => {
+	emit("open-lcsc-preview", partNumber);
+};
+
+const openLcscPurchase = (partNumber: string) => {
+	emit("open-lcsc-purchase", partNumber);
+};
+
+// Initialize notifications composable
+const { success, error: showError, warning, info } = useNotifications();
+
+const copyToClipboard = (value: string) => {
+	navigator.clipboard.writeText(value).then(
+		() => {
+			info("Copiado", "LCSC Part Number copiado al portapapeles");
+		},
+		(err) => {
+			console.error("Failed to copy: ", err);
+			showError("Error", "No se pudo copiar al portapapeles");
+		},
+	);
 };
 
 // Actualizar selectAll cuando cambia el número de elementos seleccionados
@@ -239,4 +249,7 @@ watch(
 	},
 	{ immediate: true },
 );
+
+// Por ahora la prop para mostrar checkboxes siempre está en true, si cambiamos este valor no muestra nada.
+const showSelect = ref(true);
 </script>

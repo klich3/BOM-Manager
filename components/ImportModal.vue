@@ -101,6 +101,7 @@
 															<option value="partNumber">Número de parte</option>
 															<option value="lcscPart">Referencia LCSC</option>
 															<option value="price">Precio Ud.</option>
+															<option value="inStock">Stock actual</option>
 															<option value="minStock">Stock mínimo</option>
 															<option value="notes">Notas</option>
 															<option value="manufacturer">Fabricante</option>
@@ -212,6 +213,11 @@
 											Cantidad
 										</th>
 										<th
+											v-if="mappedItems.some((item) => item.inStock !== undefined)"
+											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+											Stock Actual
+										</th>
+										<th
 											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 											Proveedor
 										</th>
@@ -241,6 +247,11 @@
 										<td class="px-3 py-2 text-sm text-gray-900">
 											{{ item.quantity }}
 										</td>
+										<td
+											v-if="mappedItems.some((item) => item.inStock !== undefined)"
+											class="px-3 py-2 text-sm text-gray-900">
+											{{ item.inStock || 0 }}
+										</td>
 										<td class="px-3 py-2 text-sm text-gray-900">
 											{{ item.supplier || "-" }}
 										</td>
@@ -258,7 +269,9 @@
 										</td>
 									</tr>
 									<tr v-if="mappedItems.length > 10">
-										<td :colspan="8" class="px-3 py-2 text-sm text-center text-gray-500">
+										<td
+											:colspan="mappedItems.some((item) => item.inStock !== undefined) ? 9 : 8"
+											class="px-3 py-2 text-sm text-center text-gray-500">
 											+ {{ mappedItems.length - 10 }} items más...
 										</td>
 									</tr>
@@ -654,6 +667,7 @@ const getFieldName = (field: string): string => {
 		partNumber: "Número de parte",
 		lcscPart: "Referencia LCSC",
 		price: "Precio",
+		inStock: "Stock actual",
 		minStock: "Stock mínimo",
 		notes: "Notas",
 		manufacturer: "Fabricante",

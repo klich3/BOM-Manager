@@ -68,6 +68,7 @@ export const useImportStore = defineStore('import', {
             { key: "partNumber", label: "Número de parte" },
             { key: "lcscPart", label: "Referencia LCSC" }, // numero LSSC referencia del item
             { key: "price", label: "Precio" }, // precio por item
+            { key: "inStock", label: "Stock actual" }, // stock actual
 
             { key: "minStock", label: "Stock mínimo" }, // cantidad minima de stock para poner alarma
             { key: "notes", label: "Notas" },

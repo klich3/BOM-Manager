@@ -4,14 +4,14 @@ export interface BOMItem {
   id: string;
   name: string;
   description?: string;
-  quantity: number;
+  quantity: number; // cantidad inicial comprada
   unit?: string;
   category?: string;
   supplier?: string;
   partNumber?: string;
   lcscPart?: string;// ref number
   price?: number; // precio por item
-  // inStock: number; // Eliminado porque ya no se usa
+  inStock?: number; // stock actual
   minStock?: number; // minima cantidad para lanzar alerta
   notes?: string;
 

@@ -242,11 +242,6 @@ import ImportModal from "@/components/ImportModal.vue";
 import ListsManagementModal from "@/components/ListsManagementModal.vue";
 import InventoryTable from "@/components/inventory/InventoryTable.vue";
 
-definePageMeta({
-	name: "inventory",
-	layout: "default",
-});
-
 const db = useDatabase();
 const { exportAllInventory } = useExport();
 const { parseFile } = useFileParser();
@@ -348,7 +343,7 @@ const lowStockCount = computed(() => {
 });
 
 const totalValue = computed(() => {
-	return items.value.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0).toFixed(2);
+	return items.value.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0);
 });
 
 // Methods

@@ -40,13 +40,26 @@ export const useLCSC = () => {
         }
     };
 
-    // Función para obtener la URL de la imagen del componente
+    /**
+     * Función para obtener la URL de la imagen del componente
+     * @param partNumber 
+     * @returns string url
+     * 
+     */
     const getComponentImage = (partNumber: string): string => {
         // En la implementación real, esta URL vendría de la API de LCSC
-        return `https://assets.lcsc.com/images/lcsc/900x900/${partNumber}_front.jpg`;
-        //return `https://assets.lcsc.com/images/lcsc/900x900/${partNumber}_back.jpg`;
-        //return `https://assets.lcsc.com/images/lcsc/900x900/${partNumber}_blank.jpg`;
-        //https://assets.lcsc.com/images/lcsc/900x900/20221020_onsemi-QRE1113GR_C232862_front.jpg
+
+        (async () => {
+            const { data, error } = await useFetch("/api/images", {
+                query: { url: `https://lcsc.com/product-detail/${partNumber}.html` },
+            });
+
+            console.log("---DDD", data.value);
+            console.log("--->", error);
+
+        })()
+
+        //return `https://assets.lcsc.com/images/lcsc/900x900/${partNumber}_front.jpg`;
     };
 
     // Función para obtener el link de compra directa
