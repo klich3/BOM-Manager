@@ -12,20 +12,9 @@ Docs: documentation
 import { getQuery, createError, defineEventHandler } from 'h3';
 import type { H3Event } from 'h3';
 import * as cheerio from 'cheerio';
+import { joinURL } from 'ufo';
 
-/**
- * Extracts background image URL from CSS style string
- */
-function extractBgUrl(style: string): string | null {
-    if (!style) return null;
 
-    // Handle HTML entities like &quot; etc.
-    style = style.replace(/&quot;/g, '"').replace(/&#34;/g, '"');
-
-    // Extract URL from background-image: url("...") / url('...') / url(...)
-    const match = style.match(/background-image\s*:\s*url\(\s*(['"]?)(.*?)\1\s*\)/i);
-    return match?.[2] ?? null;
-}
 
 /**
  * API route to extract images from a given URL
@@ -59,14 +48,48 @@ export default defineEventHandler(async (event: H3Event) => {
 
         const $ = cheerio.load(html);
 
-        // Extract image URLs from elements with specific classes
-        const urls = $('.v-image__image.v-image__image--contain')
-            .map((_, el) => extractBgUrl($(el).attr('style') || ''))
-            .get()
-            .filter(Boolean) as string[];
+        // Extract main image URL from og:image meta tag
+        let mainImageUrl = '';
+        const ogImage = $('meta[property="og:image"], meta[name="og:image"]').attr('content');
+        if (ogImage) {
+            mainImageUrl = ogImage;
+        }
+
+        // If we found a main image, try to generate variant URLs
+        const imageUrls: string[] = [];
+
+        if (mainImageUrl) {
+            // Add the main image
+            imageUrls.push(mainImageUrl);
+
+            // Extract base name from the main image URL to generate variants
+            const urlParts = mainImageUrl.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+            const fileNameParts = fileName.split('.');
+            if (fileNameParts.length >= 2) {
+                const baseName = fileNameParts[0]; // e.g., "CRCW0402200RFKEDHP_C313368_front"
+                const extension = fileNameParts[fileNameParts.length - 1]; // e.g., "jpg"
+
+                // Extract the base part without the variant (front/back/blank)
+                const variantRegex = /(.+?)_(front|back|blank)$/;
+                const match = baseName.match(variantRegex);
+
+                if (match) {
+                    const basePart = match[1]; // e.g., "CRCW0402200RFKEDHP_C313368"
+
+                    // Generate URLs for all possible variants
+                    ['front', 'back', 'blank'].forEach(variant => {
+                        const variantUrl = mainImageUrl.replace(`${basePart}_front`, `${basePart}_${variant}`);
+                        if (!imageUrls.includes(variantUrl)) {
+                            imageUrls.push(variantUrl);
+                        }
+                    });
+                }
+            }
+        }
 
         // Return up to 3 unique image URLs
-        const unique = [...new Set(urls)].slice(0, 3);
+        const unique = imageUrls.slice(0, 3);
 
         return {
             count: unique.length,

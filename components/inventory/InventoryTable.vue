@@ -68,17 +68,19 @@
 						</td>
 						<td class="px-6 py-4">
 							<div class="flex items-center gap-2">
-								<span
+								<button
 									v-if="item.lcsc_part"
-									class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium">
+									@click="copyToClipboard(item.lcsc_part)"
+									class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium hover:bg-green-200 transition-colors"
+									title="Copiar al portapapeles">
 									{{ item.lcsc_part }}
-								</span>
+								</button>
 								<span v-else class="text-sm text-text-muted-light">-</span>
 								<button
 									v-if="item.lcsc_part"
 									@click="openLcscPreview(item.lcsc_part)"
 									class="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors">
-									<GlobeAltIcon class="w-4 h-4" />
+									<DocumentTextIcon class="w-4 h-4" />
 								</button>
 								<button
 									v-if="item.lcsc_part"
@@ -148,6 +150,7 @@ import {
 	GlobeAltIcon,
 	ShoppingCartIcon,
 	ArrowDownTrayIcon,
+	DocumentTextIcon,
 } from "@heroicons/vue/24/outline";
 import { ref, watch } from "vue";
 import { useNotifications } from "@/composables/useNotifications";

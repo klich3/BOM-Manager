@@ -28,15 +28,28 @@
 
 			<div v-else-if="lcscData" class="p-6">
 				<div class="flex flex-col md:flex-row gap-6">
-					<div class="md:w-1/3 flex justify-center">
+					<div class="md:w-1/3 flex flex-col items-center">
+						<!-- Mostrar múltiples imágenes si existen -->
+						<div v-if="lcscData.images && lcscData.images.length > 0" class="flex flex-col gap-2">
+							<img
+								v-for="(img, index) in lcscData.images"
+								:key="`img-${index}`"
+								:src="img"
+								:alt="`${lcscData.name || lcscData.partNumber} - Imagen ${Number(index) + 1}`"
+								class="max-h-48 object-contain"
+								@error="handleImageError(index as number)"
+								:class="{ 'opacity-50': imageErrorIndexes.includes(index as number) }" />
+						</div>
+						<!-- Mostrar imagen única si no hay múltiples imágenes -->
 						<img
-							v-if="lcscData.image"
+							v-else-if="lcscData.image"
 							:src="lcscData.image"
 							:alt="lcscData.name || lcscData.partNumber"
 							class="max-h-48 object-contain"
 							@error="imageError = true" />
+						<!-- Mostrar placeholder si no hay imágenes -->
 						<div
-							v-else-if="imageError"
+							v-else-if="!lcscData.image && (!lcscData.images || lcscData.images.length === 0)"
 							class="bg-gray-200 border-2 border-dashed rounded-xl w-48 h-48 flex items-center justify-center text-gray-500">
 							Sin imagen
 						</div>
@@ -149,6 +162,7 @@ const props = defineProps<Props>();
 const emit = defineEmits(["close"]);
 
 const imageError = ref(false);
+const imageErrorIndexes = ref<number[]>([]);
 const { isLoading, error, searchComponent, getPurchaseLink } = useLCSC();
 const lcscData = ref<any>(null);
 
@@ -169,5 +183,9 @@ watch(
 const closePreview = () => {
 	showPreview.value = false;
 	emit("close");
+};
+
+const handleImageError = (index: number) => {
+	imageErrorIndexes.value.push(index);
 };
 </script>

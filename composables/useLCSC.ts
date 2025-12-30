@@ -5,6 +5,7 @@ interface LCSCComponent {
     name?: string;
     description?: string;
     image?: string;
+    images?: string[];
     datasheet?: string;
     price?: number;
     stock?: number;
@@ -41,25 +42,26 @@ export const useLCSC = () => {
     };
 
     /**
-     * Función para obtener la URL de la imagen del componente
+     * Función para obtener las URLs de las imágenes del componente
      * @param partNumber 
-     * @returns string url
+     * @returns Promise<string[]> array de URLs de imágenes
      * 
      */
-    const getComponentImage = (partNumber: string): string => {
-        // En la implementación real, esta URL vendría de la API de LCSC
-
-        (async () => {
-            const { data, error } = await useFetch("/api/images", {
+    const getComponentImages = async (partNumber: string): Promise<string[]> => {
+        // En la implementación real, estas URLs vendrían de la API de LCSC
+        try {
+            const result: { count: number, images: string[] } = await $fetch('/api/images', {
                 query: { url: `https://lcsc.com/product-detail/${partNumber}.html` },
             });
 
-            console.log("---DDD", data.value);
-            console.log("--->", error);
-
-        })()
-
-        //return `https://assets.lcsc.com/images/lcsc/900x900/${partNumber}_front.jpg`;
+            if (result && result.images) {
+                return result.images;
+            }
+            return [];
+        } catch (err) {
+            console.error('Error fetching component images:', err);
+            return [];
+        }
     };
 
     // Función para obtener el link de compra directa
@@ -85,7 +87,8 @@ export const useLCSC = () => {
             partNumber,
             name: `Componente ${partNumber}`,
             description: `Descripción del componente ${partNumber} desde LCSC`,
-            image: getComponentImage(partNumber),
+            image: '', // Placeholder for single image
+            images: await getComponentImages(partNumber),
             datasheet: `https://datasheet.lcsc.com/${partNumber}.pdf`,
             price: Math.random() * 10, // Precio aleatorio para simulación
             stock: Math.floor(Math.random() * 1000), // Stock aleatorio para simulación
@@ -103,7 +106,7 @@ export const useLCSC = () => {
         isLoading,
         error,
         searchComponent,
-        getComponentImage,
+        getComponentImages,
         getPurchaseLink,
         validatePartNumber
     };
