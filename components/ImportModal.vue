@@ -442,19 +442,10 @@ const optionalFields = [
 	{ key: "partNumber", label: "Número de parte" },
 	{ key: "lcscPart", label: "Referencia LCSC" },
 	{ key: "price", label: "Precio" },
-	//{ key: "inStock", label: "Stock actual" },
 	{ key: "minStock", label: "Stock mínimo" },
 	{ key: "notes", label: "Notas" },
 	{ key: "manufacturer", label: "Fabricante" },
-	//{ key: "customerNo", label: "Número de Cliente" },
 	{ key: "package", label: "Empaquetado" },
-	//{ key: "rohs", label: "RoHS" },
-	//{ key: "extPrice", label: "Precio Extendido" },
-	//{ key: "leadTime", label: "Tiempo de Entrega" },
-	//{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
-	//{ key: "status", label: "Estado" },
-	//{ key: "createdAt", label: "Fecha de Creación" },
-	//{ key: "updatedAt", label: "Fecha de Actualización" },
 ];
 
 // Computed properties
@@ -606,16 +597,13 @@ const getFieldName = (field: string): string => {
 };
 
 const confirmImport = async () => {
-	console.log("1", importStore.selectedFile);
 	// Verificar que hay un archivo seleccionado antes de proceder
 	if (!importStore.selectedFile) {
 		showToastMessage("No hay archivo seleccionado para importar", "error");
 		return;
 	}
 
-	console.log("2");
 	importStore.setIsProcessing(true);
-	console.log("3");
 
 	try {
 		// Parsear el archivo usando el composable useFileParser
@@ -626,8 +614,6 @@ const confirmImport = async () => {
 			importStore.selectedProjectId,
 			parseFile,
 		);
-
-		console.log("4", result);
 
 		let message = `Importación completada: ${result.importedCount} items procesados.`;
 		if (result.errors.length > 0) {

@@ -59,28 +59,29 @@ export const useImportStore = defineStore('import', {
         },
         requiredFields: () => [
             { key: "name", label: "Nombre" },
-            { key: "quantity", label: "Cantidad" },
+            { key: "quantity", label: "Cantidad" }, //cantidad de items
         ],
         optionalFields: () => [
             { key: "description", label: "Descripción" },
             { key: "category", label: "Categoría" },
             { key: "supplier", label: "Proveedor" },
             { key: "partNumber", label: "Número de parte" },
-            { key: "lcscPart", label: "Referencia LCSC" },
-            { key: "price", label: "Precio" },
+            { key: "lcscPart", label: "Referencia LCSC" }, // numero LSSC referencia del item
+            { key: "price", label: "Precio" }, // precio por item
 
-            { key: "minStock", label: "Stock mínimo" },
+            { key: "minStock", label: "Stock mínimo" }, // cantidad minima de stock para poner alarma
             { key: "notes", label: "Notas" },
             { key: "manufacturer", label: "Fabricante" },
-            { key: "customerNo", label: "Número de Cliente" },
-            { key: "package", label: "Empaquetado" },
-            { key: "rohs", label: "RoHS" },
-            { key: "extPrice", label: "Precio Extendido" },
-            { key: "leadTime", label: "Tiempo de Entrega" },
-            { key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
+            { key: "package", label: "Empaquetado" }, // Empaquetado del componente
+
+            //{ key: "customerNo", label: "Número de Cliente" },
+            //{ key: "rohs", label: "RoHS" },
+            //{ key: "extPrice", label: "Precio Extendido" },
+            //{ key: "leadTime", label: "Tiempo de Entrega" },
+            //{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
             { key: "status", label: "Estado" },
-            { key: "createdAt", label: "Fecha de Creación" },
-            { key: "updatedAt", label: "Fecha de Actualización" },
+            //{ key: "createdAt", label: "Fecha de Creación" },
+            //{ key: "updatedAt", label: "Fecha de Actualización" },
         ],
     },
 

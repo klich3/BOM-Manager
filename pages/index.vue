@@ -199,8 +199,10 @@ const stockHealthPercentage = computed(() => {
 	return Math.round((healthyItems / stats.value.totalItems) * 100);
 });
 
-const formatValue = (value: number) => {
-	return value.toLocaleString("es-ES", {
+const formatValue = (value: number | String) => {
+	let v = value instanceof String ? parseFloat(value) : value;
+
+	return v.toLocaleString("es-ES", {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	});

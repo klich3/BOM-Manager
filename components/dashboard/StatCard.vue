@@ -37,7 +37,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
 	valueType: "number",
 	hasAlert: false,
-	formatValue: (value: number) => value.toString(),
+	formatValue: (value: number) => {
+		if (isNaN(value)) return "0";
+		return value.toString();
+	},
 });
 
 const iconComponent = computed(() => {
@@ -66,8 +69,13 @@ const formattedValue = computed(() => {
 		if (typeof props.value === "string" && props.value.startsWith("$")) {
 			return props.value;
 		}
+		// Convertimos el valor a número y verificamos si es válido
+		const numericValue = Number(props.value);
+		if (isNaN(numericValue)) {
+			return "$0.00";
+		}
 		// Si es un número o string no formateado, lo formateamos como moneda
-		return `$${props.formatValue(Number(props.value))}`;
+		return `$${props.formatValue(numericValue)}`;
 	}
 	return props.value;
 });
