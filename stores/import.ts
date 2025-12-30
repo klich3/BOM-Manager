@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import type { BOMItem } from '@/types/bom';
 import type { ParseResult } from '@/composables/useFileParser';
+import { useActivityDatabase } from '@/composables/useActivityDatabase';
 
 export interface ImportState {
     step: number;
@@ -247,6 +248,7 @@ export const useImportStore = defineStore('import', {
 
         async confirmImport(db: any, selectedFile: File | null, importDestination: 'global' | 'project', selectedProjectId: string, parseFile: (file: File) => Promise<ParseResult>) {
             this.setIsProcessing(true);
+            const activityDb = useActivityDatabase();
 
             try {
                 // Usar los items ya procesados y mapeados en lugar de volver a parsear
@@ -263,6 +265,14 @@ export const useImportStore = defineStore('import', {
                             const success = await db.createItem(item);
                             if (success) {
                                 importedCount++;
+                                // Registrar la actividad de creación del item
+                                await activityDb.logActivity(
+                                    'CREATE',
+                                    'bom_items',
+                                    success.id || 'unknown',
+                                    `Item ${item.name} creado desde importación de archivo`,
+                                    'system'
+                                );
                             } else {
                                 errors.push(`Error al crear item ${item.name || "desconocido"} en el inventario`);
                             }
@@ -271,13 +281,29 @@ export const useImportStore = defineStore('import', {
                         // Importar a un proyecto específico
                         for (const item of itemsToImport) {
                             // Crear o actualizar el item en el inventario global
-                            const itemId = await db.createItem(item);
+                            const result = await db.createItem(item);
 
-                            if (itemId) {
+                            if (result) {
                                 // Agregar el item al proyecto
-                                const success = await db.addItemToProject(selectedProjectId, itemId, item.quantity || 1);
+                                const success = await db.addItemToProject(selectedProjectId, result, item.quantity || 1);
                                 if (success) {
                                     importedCount++;
+                                    // Registrar la actividad de creación del item
+                                    await activityDb.logActivity(
+                                        'CREATE',
+                                        'bom_items',
+                                        result.id || 'unknown',
+                                        `Item ${item.name} creado desde importación de archivo y asignado al proyecto`,
+                                        'system'
+                                    );
+                                    // Registrar la actividad de asignación al proyecto
+                                    await activityDb.logActivity(
+                                        'CREATE',
+                                        'project_items',
+                                        `${selectedProjectId}-${result.id || 'unknown'}`,
+                                        `Item ${item.name} asignado al proyecto ${selectedProjectId} desde importación`,
+                                        'system'
+                                    );
                                 } else {
                                     errors.push(`Error al agregar item ${item.name || "desconocido"} al proyecto`);
                                 }

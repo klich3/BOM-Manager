@@ -35,38 +35,41 @@
 							:title="'Stock Health'"
 							:status-text="'Inventario en niveles óptimos'" />
 
-						<GenericStatCard :stats="stats" type="projects">
+						<StatCard title="Items" :value="stats.totalItems" subtitle="Total" value-type="number">
+							<template #title>Items</template>
+							<template #subtitle>Total</template>
+						</StatCard>
+
+						<StatCard
+							title="Proyectos"
+							:value="stats.projects"
+							subtitle="Proyectos activos"
+							value-type="number">
 							<template #title>Proyectos</template>
 							<template #subtitle>Proyectos activos</template>
-						</GenericStatCard>
+						</StatCard>
 
-						<GenericStatCard
-							:stats="stats"
-							type="totalValue"
-							value-type="currency"
-							:format-value="formatValue">
+						<StatCard
+							title="Valor Total"
+							:value="formatValue(stats.totalValue)"
+							subtitle="Inversión en inventario"
+							value-type="currency">
 							<template #title>Valor Total</template>
 							<template #subtitle>Inversión en inventario</template>
-						</GenericStatCard>
-
-						<GenericStatCard :stats="stats" type="lowStock">
-							<template #title>Alertas</template>
-							<template #subtitle>Stock bajo</template>
-						</GenericStatCard>
+						</StatCard>
 					</div>
 
 					<!-- Quick Actions -->
 					<div class="grid grid-cols-3 gap-4">
-						<NuxtLink :to="{ name: 'inventory' }" class="block">
-							<button
-								class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow w-full">
-								<div class="flex justify-between items-start mb-2">
-									<DocumentArrowUpIcon class="w-5 h-5 text-text-muted-light" />
-								</div>
-								<div class="text-xs text-text-muted-light">Importar</div>
-								<div class="text-sm font-bold text-text-main-light mt-1">CSV/XLSX</div>
-							</button>
-						</NuxtLink>
+						<button
+							@click="showImportModal = true"
+							class="bg-card-light rounded-3xl p-4 shadow-sm hover:shadow-md transition-shadow w-full">
+							<div class="flex justify-between items-start mb-2">
+								<DocumentArrowUpIcon class="w-5 h-5 text-text-muted-light" />
+							</div>
+							<div class="text-xs text-text-muted-light">Importar</div>
+							<div class="text-sm font-bold text-text-main-light mt-1">CSV/XLSX</div>
+						</button>
 
 						<NuxtLink :to="{ name: 'inventory' }" class="block">
 							<button
@@ -124,6 +127,13 @@
 			</div>
 		</div>
 	</main>
+
+	<!-- Import Modal -->
+	<ImportModal
+		v-if="showImportModal"
+		@close="showImportModal = false"
+		@import-completed="handleImportCompleted"
+		@error="handleImportError" />
 </template>
 
 <script setup lang="ts">
@@ -145,7 +155,8 @@ import {
 import { useDatabase } from "@/composables/useDatabase";
 import { useRouter } from "vue-router";
 import StockHealthIndicator from "@/components/dashboard/StockHealthIndicator.vue";
-import GenericStatCard from "@/components/dashboard/GenericStatCard.vue";
+import StatCard from "@/components/dashboard/StatCard.vue";
+import ImportModal from "@/components/ImportModal.vue";
 
 definePageMeta({
 	name: "home",
@@ -156,6 +167,7 @@ const db = useDatabase();
 const router = useRouter();
 
 const loading = ref(true);
+const showImportModal = ref(false);
 const stats = ref({
 	totalItems: 0,
 	projects: 0,
@@ -200,11 +212,15 @@ const loadStats = async () => {
 		const items = await db.getAllItems();
 		stats.value.totalItems = items.length;
 
-		// Calcular stock bajo
-		stats.value.lowStock = items.filter((item) => item.in_stock < (item.min_stock || 0)).length;
+		// Calcular stock bajo - antes usábamos in_stock pero ahora usamos quantity
+		// Ahora calculamos cuántos items tienen quantity menor que min_stock
+		stats.value.lowStock = items.filter(
+			(item) => (item.quantity || 0) < (item.min_stock || 0) && (item.min_stock || 0) > 0,
+		).length;
 
-		// Calcular valor total
-		stats.value.totalValue = items.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0);
+		// Calcular valor total - antes usábamos in_stock pero ahora no existe
+		// Ahora calculamos el valor total basado en price y quantity
+		stats.value.totalValue = items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
 
 		// Cargar proyectos
 		const projects = await db.getAllProjects();
@@ -235,6 +251,23 @@ const loadRecentActivity = async () => {
 		console.error("Error cargando actividad reciente:", error);
 		recentActivity.value = [];
 	}
+};
+
+const handleImportCompleted = async () => {
+	// Actualizar las estadísticas después de la importación
+	await loadStats();
+	showToastMessage("Items importados exitosamente", "success");
+};
+
+const handleImportError = (message: string) => {
+	console.error("Error de importación:", message);
+	showToastMessage(`Error en la importación: ${message}`, "error");
+};
+
+// Función para mostrar mensajes de toast (si no existe)
+const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
+	// Aquí podríamos usar un sistema de notificaciones real
+	console.log(`${type}: ${message}`);
 };
 
 const formatDate = (date: Date) => {
