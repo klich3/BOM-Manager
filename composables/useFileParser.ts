@@ -262,7 +262,7 @@ export const useFileParser = () => {
                 skipEmptyLines: true,
                 complete: (results) => {
                     const parseResult = processData(results.data as any[], results.meta.fields || []);
-                    
+
                     // Añadir campos y valores de datos originales al resultado
                     parseResult.fields = results.meta.fields || [];
                     parseResult.dataValues = results.data as any[];
@@ -334,7 +334,7 @@ export const useFileParser = () => {
                     const headers = Object.keys(jsonData[0] || {});
 
                     const parseResult = processData(jsonData as any[], headers);
-                    
+
                     // Añadir campos y valores de datos originales al resultado
                     parseResult.fields = headers;
                     parseResult.dataValues = jsonData as any[];

@@ -67,296 +67,65 @@
 									<table class="w-full">
 										<thead class="bg-gray-50">
 											<tr>
-												<th class="px-6 py-4 w-12">
-													<input
-														type="checkbox"
-														@change="toggleSelectAllPreview"
-														class="rounded text-primary focus:ring-primary border-gray-300" />
-												</th>
 												<th
+													v-for="(header, headerIndex) in originalHeaders"
+													:key="'preview-header-' + headerIndex"
 													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Componente
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Categoría
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Stock
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Proveedor
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Precio
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													LCSC
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Empaquetado
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Fabricante
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Precio Ext.
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													RoHS
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Proyecto
-												</th>
-												<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													Acciones
+													{{ header }}
+													<span
+														v-if="getMappedField(header)"
+														class="block text-xs text-gray-500">
+														→ {{ getFieldName(getMappedField(header)) }}
+													</span>
 												</th>
 											</tr>
 											<!-- Row with field names and selectors -->
 											<tr class="bg-gray-100">
 												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													Seleccionar
-												</th>
-												<th
+													v-for="(header, headerIndex) in originalHeaders"
+													:key="'selector-header-' + headerIndex"
 													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 													<select
-														:value="getMappedHeader('name') || ''"
-														@change="(e: Event) => updateColumnMapping('name', (e.target as HTMLSelectElement).value)"
+														:value="getMappedField(header) || ''"
+														@change="(e: Event) => updateColumnMapping(header, (e.target as HTMLSelectElement).value)"
 														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Nombre...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
+														<option value="">Seleccionar campo...</option>
+														<optgroup label="Campos requeridos">
+															<option value="name">Nombre</option>
+															<option value="quantity">Cantidad</option>
+														</optgroup>
+														<optgroup label="Campos opcionales">
+															<option value="description">Descripción</option>
+															<option value="category">Categoría</option>
+															<option value="supplier">Proveedor</option>
+															<option value="partNumber">Número de parte</option>
+															<option value="lcscPart">Referencia LCSC</option>
+															<option value="price">Precio</option>
+															<option value="minStock">Stock mínimo</option>
+															<option value="notes">Notas</option>
+															<option value="manufacturer">Fabricante</option>
+															<option value="package">Empaquetado</option>
+															<option value="status">Estado</option>
+														</optgroup>
 													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('category') || ''"
-														@change="(e: Event) => updateColumnMapping('category', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Categoría...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('minStock') || ''"
-														@change="(e: Event) => updateColumnMapping('minStock', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Stock...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('supplier') || ''"
-														@change="(e: Event) => updateColumnMapping('supplier', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Proveedor...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('price') || ''"
-														@change="(e: Event) => updateColumnMapping('price', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Precio...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('lcscPart') || ''"
-														@change="(e: Event) => updateColumnMapping('lcscPart', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">LCSC...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('package') || ''"
-														@change="(e: Event) => updateColumnMapping('package', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Empaquetado...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('manufacturer') || ''"
-														@change="(e: Event) => updateColumnMapping('manufacturer', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Fabricante...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('extPrice') || ''"
-														@change="(e: Event) => updateColumnMapping('extPrice', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Precio Ext...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('rohs') || ''"
-														@change="(e: Event) => updateColumnMapping('rohs', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">RoHS...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedHeader('project_name') || ''"
-														@change="(e: Event) => updateColumnMapping('project_name', (e.target as HTMLSelectElement).value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Proyecto...</option>
-														<template v-for="header in originalHeaders" :key="header">
-															<option :value="header">{{ header }}</option>
-														</template>
-													</select>
-												</th>
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													Acciones
 												</th>
 											</tr>
 										</thead>
 										<tbody class="divide-y divide-gray-200">
 											<tr v-if="previewItems.length === 0">
-												<td colspan="13" class="px-6 py-12 text-center">
+												<td :colspan="originalHeaders.length" class="px-6 py-12 text-center">
 													<p class="text-text-muted-light">No hay datos para previsualizar</p>
 												</td>
 											</tr>
 											<tr
-												v-for="(item, index) in previewItems"
+												v-for="(row, index) in previewItems"
 												:key="index"
 												class="hover:bg-gray-50 transition-colors">
-												<td class="px-6 py-4">
-													<input
-														type="checkbox"
-														:value="index"
-														v-model="selectedPreviewItems"
-														class="rounded text-primary focus:ring-primary border-gray-300" />
-												</td>
-												<td class="px-6 py-4">
-													<div>
-														<p class="text-sm font-semibold text-text-main-light">
-															{{ item.name || "-" }}
-														</p>
-														<p class="text-xs text-text-muted-light">
-															{{ item.partNumber || item.part_number || "N/A" }}
-														</p>
-													</div>
-												</td>
-												<td class="px-6 py-4">
-													<span
-														class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium">
-														{{ item.category || "Sin categoría" }}
-													</span>
-												</td>
-												<td class="px-6 py-4">
-													<div class="flex items-center gap-2">
-														<div
-															class="w-2 h-2 rounded-full"
-															:class="
-																(item.minStock || item.min_stock || 0) > 0
-																	? 'bg-green-500'
-																	: 'bg-gray-300'
-															"></div>
-														<span class="text-sm text-text-main-light">
-															{{ item.minStock || item.min_stock || 0 }}
-														</span>
-													</div>
-												</td>
-												<td class="px-6 py-4 text-sm text-text-muted-light">
-													{{ item.supplier || "N/A" }}
-												</td>
-												<td class="px-6 py-4 text-sm font-medium text-text-main-light">
-													${{ (item.price || 0).toFixed(2) }}
-												</td>
-												<td class="px-6 py-4">
-													<div class="flex items-center gap-2">
-														<span
-															v-if="item.lcscPart || item.lcsc_part"
-															class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium">
-															{{ item.lcscPart || item.lcsc_part }}
-														</span>
-														<span v-else class="text-xs text-text-muted-light"> N/A </span>
-													</div>
-												</td>
-												<td class="px-6 py-4 text-sm text-text-muted-light">
-													{{ item.package || "N/A" }}
-												</td>
-												<td class="px-6 py-4 text-sm text-text-muted-light">
-													{{ item.manufacturer || "N/A" }}
-												</td>
-												<td class="px-6 py-4 text-sm font-medium text-text-main-light">
-													${{ (item.extPrice || item.ext_price || 0).toFixed(2) }}
-												</td>
-												<td class="px-6 py-4 text-sm text-text-muted-light">
-													{{ item.rohs || "N/A" }}
-												</td>
-												<td class="px-6 py-4 text-sm text-text-muted-light">
-													{{ item.project_name || "N/A" }}
-												</td>
-												<td class="px-6 py-4">
-													<div class="flex items-center gap-2">
-														<button
-															@click="editPreviewItem(index)"
-															class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-															<PencilIcon class="w-4 h-4 text-blue-600" />
-														</button>
-														<button
-															@click="deletePreviewItem(index)"
-															class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-															<TrashIcon class="w-4 h-4 text-red-600" />
-														</button>
-													</div>
+												<td
+													v-for="(header, headerIndex) in originalHeaders"
+													:key="'cell-' + index + '-' + headerIndex"
+													class="px-6 py-4 text-sm text-text-main-light">
+													{{ row[header] || "-" }}
 												</td>
 											</tr>
 										</tbody>
@@ -605,23 +374,18 @@ const selectedPreviewItems = ref<number[]>([]);
 const previewItems = computed(() => {
 	if (!sampleData.value?.rows || !originalHeaders.value) return [];
 
-	// Transform the raw data to match the inventory item structure based on column mapping
+	// Return the original data rows as they are from the CSV
 	return sampleData.value.rows.map((row) => {
 		const item: any = {};
 
-		// For each header in the original CSV
+		// For each header in the original CSV, map it to the corresponding value
 		originalHeaders.value.forEach((header, index) => {
 			if (header && row[index] !== undefined && row[index] !== null) {
-				// Check if this header is mapped to a specific field in our schema
-				const mappedField = Object.entries(columnMapping.value).find(([, value]) => value === header)?.[0];
-
-				if (mappedField) {
-					// If the header is mapped to a field, use the mapped field name
-					item[mappedField] = row[index];
-				} else {
-					// If no mapping found, use the header as field name
-					item[header] = row[index];
-				}
+				// Use the header as field name with its corresponding value
+				item[header] = row[index];
+			} else if (header) {
+				// If the value is undefined/null, still add the header with empty value
+				item[header] = "";
 			}
 		});
 
@@ -808,11 +572,17 @@ const showToastMessage = (message: string, type: "success" | "error" | "warning"
 	}
 };
 
-// Función para actualizar el mapeo de columnas - ahora recibe field y header en el orden correcto
-const updateColumnMapping = (field: string, header: string) => {
+// Función para obtener el campo del esquema mapeado a un header específico
+const getMappedField = (header: string): string => {
+	// Buscar en el mapping actual cuál campo del esquema está asociado a este header
+	return importStore.columnMapping[header] || "";
+};
+
+// Función para actualizar el mapeo de columnas - ahora recibe header y field en el orden correcto
+const updateColumnMapping = (header: string, field: string) => {
 	importStore.columnMapping = {
 		...importStore.columnMapping,
-		[field]: header,
+		[header]: field,
 	};
 };
 
