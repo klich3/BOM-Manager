@@ -28,9 +28,11 @@
 - [ ] - Integrar o mandar para comprar lcsc.com
 - [ ] - Visualizar y guardar el listado de los componentes
 - [ ] - Guardar en iCloud copia de seguridad
+- [ ] - Marcar los items que llegan casi a gastarse para notificar y poder encargar nuevos
+
 - [ ] - Hacer mix / reorder
 - [ ] - Load BOM y descontar items de un proyecto para tener el stock de items
-- [ ] - Marcar los items que llegan casi a gastarse para notificar y poder encargar nuevos
+- [ ] - al importar hay que pregunta si es nuevo proyecto, hay que cotejar las lscs referencias si hay y las unidades, si saltan marcar en rojo que hay que comprar, si estan marcar en verde y en blanco por pedir
 
 ### 3. Gestión de Proyectos
 - [x] Crear página `/pages/projects.vue`

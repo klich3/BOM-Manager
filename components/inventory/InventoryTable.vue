@@ -22,7 +22,10 @@
 							Proveedor
 						</th>
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Precio
+							Precio Unit.
+						</th>
+						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+							Precio Total
 						</th>
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">LCSC</th>
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
@@ -31,10 +34,7 @@
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Fabricante
 						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Precio Ext.
-						</th>
-						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">RoHS</th>
+
 						<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 							Proyecto
 						</th>
@@ -91,6 +91,9 @@
 						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
 							${{ (item.price || 0).toFixed(2) }}
 						</td>
+						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
+							${{ (item.ext_price || 0).toFixed(2) }}
+						</td>
 						<td class="px-6 py-4">
 							<div class="flex items-center gap-2">
 								<span
@@ -121,12 +124,7 @@
 						<td class="px-6 py-4 text-sm text-text-muted-light">
 							{{ item.manufacturer || "N/A" }}
 						</td>
-						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
-							${{ (item.ext_price || 0).toFixed(2) }}
-						</td>
-						<td class="px-6 py-4 text-sm text-text-muted-light">
-							{{ item.rohs || "N/A" }}
-						</td>
+
 						<td class="px-6 py-4 text-sm text-text-muted-light">
 							{{ item.project_name || "N/A" }}
 						</td>

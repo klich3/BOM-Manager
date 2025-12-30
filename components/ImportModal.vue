@@ -5,7 +5,7 @@
 			<!-- Header -->
 			<div class="flex items-center justify-between mb-6">
 				<h2 class="text-xl font-semibold text-text-main-light">Importar Archivo BOM</h2>
-				<button @click="$emit('close')" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+				<button @click="handleClose" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
 					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
@@ -279,7 +279,7 @@
 			<!-- Action buttons -->
 			<div class="flex justify-end items-center gap-4 mt-6 pt-6 border-t border-gray-200">
 				<button
-					@click="$emit('close')"
+					@click="handleClose"
 					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
 					Cancelar
 				</button>
@@ -462,27 +462,50 @@ const canProceed = computed(() => {
 	if (importStore.step === 1) {
 		return !!importStore.selectedFile;
 	} else if (importStore.step === 2) {
-		// For step 2, ensure required fields are mapped
 		const requiredFields = ["name", "quantity"];
-		return requiredFields.every((field) => Object.values(importStore.columnMapping).includes(field));
+		const missingFields = requiredFields.filter((field) => !Object.values(columnMapping.value).includes(field));
+		return missingFields.length === 0;
 	}
 	return true;
 });
 
+// Función para resetear los estados del modal al cerrarlo
+const resetModalState = () => {
+	importStore.resetImport();
+	originalHeaders.value = [];
+};
+
 // Funciones para manejar eventos
+const handleImportError = (error: string) => {
+	// Emitir el evento de error
+	emit("error", error);
+};
+
 const handleFileImport = async (file: File) => {
 	try {
 		// Process the file using the store
 		await importStore.processFile(file, parseFile, detectColumnMapping);
+
+		// Verificar si el archivo fue procesado correctamente
+		if (!importStore.parseResult.success) {
+			const errorMessage =
+				importStore.parseResult.errors.length > 0
+					? importStore.parseResult.errors[0]
+					: "No se pudo procesar el archivo correctamente";
+			showError("Error al procesar el archivo", errorMessage);
+		} else if (importStore.parseResult.items.length === 0) {
+			showError("Archivo sin datos", "El archivo no contiene datos válidos para importar");
+		}
 	} catch (error) {
 		console.error("Error parsing file:", error);
+		showError("Error al procesar el archivo", `Error al procesar el archivo: ${(error as Error).message}`);
 		emit("error", `Error al procesar el archivo: ${(error as Error).message}`);
 	}
 };
 
-const handleImportError = (error: string) => {
-	// Emitir el evento de error
-	emit("error", error);
+const handleClose = () => {
+	resetModalState();
+	emit("close");
 };
 
 // Additional methods
@@ -492,8 +515,18 @@ const resetImport = () => {
 
 // Additional methods
 const nextStep = () => {
-	if (importStore.canProceed) {
+	if (canProceed.value) {
 		importStore.goToNextStep();
+	} else {
+		// Mostrar notificación de error si no se puede avanzar
+		if (importStore.step === 2) {
+			const requiredFields = ["name", "quantity"];
+			const missingFields = requiredFields.filter((field) => !Object.values(columnMapping.value).includes(field));
+
+			if (missingFields.length > 0) {
+				showError("Campos requeridos faltantes", `Faltan campos requeridos: ${missingFields.join(", ")}`);
+			}
+		}
 	}
 };
 
@@ -553,29 +586,10 @@ const getColumnMappingLabel = (header: string): string | null => {
 	return null;
 };
 
-const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
-	// Usar el composable de notificaciones
-	switch (type) {
-		case "success":
-			success("Éxito", message);
-			break;
-		case "error":
-			showError("Error", message);
-			break;
-		case "warning":
-			warning("Advertencia", message);
-			break;
-		case "info":
-		default:
-			info("Información", message);
-			break;
-	}
-};
-
 // Función para obtener el campo del esquema mapeado a un header específico
 const getMappedField = (header: string): string => {
 	// Buscar en el mapping actual cuál campo del esquema está asociado a este header
-	return importStore.columnMapping[header] || "";
+	return columnMapping.value[header] || "";
 };
 
 // Función para actualizar el mapeo de columnas - ahora recibe header y field en el orden correcto
@@ -637,10 +651,12 @@ const getFieldName = (field: string): string => {
 	return fieldLabels[field] || field;
 };
 
+// Función para manejar errores en el procesamiento del archivo
+
 const confirmImport = async () => {
 	// Verificar que hay un archivo seleccionado antes de proceder
 	if (!importStore.selectedFile) {
-		showToastMessage("No hay archivo seleccionado para importar", "error");
+		showError("No hay archivo seleccionado para importar", "");
 		return;
 	}
 
@@ -663,11 +679,20 @@ const confirmImport = async () => {
 		}
 		// Emitir evento de importación completada para que el componente padre pueda actualizar la vista
 		emit("import-completed", { importedCount: result.importedCount, errors: result.errors });
+
+		// Reiniciar el estado del modal antes de cerrar
+		resetModalState();
+
 		emit("close");
-		showToastMessage(message, result.importedCount > 0 ? "success" : "error");
+		if (result.importedCount > 0) {
+			success("Importación completada", message);
+		} else {
+			showError("Importación fallida", message);
+		}
 	} catch (error) {
 		console.error("Error al procesar la importación:", error);
-		emit("error", "Error al procesar la importación");
+		showError("Error en la importación", `Error al procesar la importación: ${(error as Error).message}`);
+		emit("error", `Error al procesar la importación: ${(error as Error).message}`);
 	} finally {
 		importStore.setIsProcessing(false);
 	}
