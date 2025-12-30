@@ -203,12 +203,22 @@ export const useImportStore = defineStore('import', {
 
                 if (result.success && result.items.length > 0) {
                     // Get original headers from the parsed data
-                    // We need to get the original headers from the file, not from the processed items
-                    const originalHeaders = Object.keys(result.items[0] || {});
+                    // Now we can use the original headers from the parser result
+                    const originalHeaders = result.fields || Object.keys(result.items[0] || {});
 
                     const sampleData = {
                         headers: originalHeaders,
-                        rows: result.items.slice(0, 50).map((item: any) => {
+                        rows: result.dataValues ? result.dataValues.slice(0, 50).map((item: any) => {
+                            if (item && typeof item === "object") {
+                                // Ensure we're extracting values in the same order as headers
+                                return originalHeaders.map((header) => {
+                                    const value = item[header];
+                                    return value !== undefined && value !== null ? value : "";
+                                });
+                            } else {
+                                return [];
+                            }
+                        }) : result.items.slice(0, 50).map((item: any) => {
                             if (item && typeof item === "object") {
                                 // Ensure we're extracting values in the same order as headers
                                 return originalHeaders.map((header) => {

@@ -1,6 +1,5 @@
 - [ ] - user settings -> https://v2.tauri.app/plugin/window-state/
-- [ ] home hay que modificar el items cuentas
-
+- [x] home hay que modificar el items cuentas
 
 ### 1. Importación de Archivos CSV/XLSX
 - [x] Instalar `papaparse` para CSV
@@ -10,13 +9,13 @@
 - [x] Validación de datos importados
 - [x] Import: modal de importacion al subir el archivo lo ha de leer y tiene que pasar por proceso de parsing de columnas
 -> - [ ] - import mapeo no es preciso hay que poner las columnas que hay en csv y mostrarlas completamente
--> - [ ] - import definir al cual Proyecto pertenece el BOM
+- [x] - import definir al cual Proyecto pertenece el BOM
 - [x] - Cargar CSV
 - [ ] - Cargar XLSX
 - [ ] - Import - Leer -> Templates de easyeda.com
 - [ ] - Import -> cuadrar las columnas 
 - [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir
-- [ ]   - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
+- [ ] - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
 
 ### 2. Vista de Inventario
 - [x] Crear página `/pages/inventory.vue`
@@ -38,6 +37,8 @@
 - [x] Lista de proyectos
 - [x] Detalle de proyecto con items asociados
 - [x] Calculadora de costos
+- [ ] cargar gerber para saber cuantas partes se usan por pcb
+- [ ] al cargar gerber hacer un ayudante en donde van los compoenentes marcando el sitio, puede ser como figma una panel libre una pizzara...
 
 
 ### 4. Integración LCSC

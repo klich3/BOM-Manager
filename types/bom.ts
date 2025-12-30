@@ -15,8 +15,8 @@ export interface BOMItem {
   minStock?: number; // minima cantidad para lanzar alerta
   notes?: string;
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string;  // Fecha en formato string
+  updatedAt: string;  // Fecha en formato string
 
   manufacturer?: string; // fabricante
   package?: string; //empaquetado

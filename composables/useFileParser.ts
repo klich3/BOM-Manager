@@ -36,6 +36,8 @@ export interface ParseResult {
     items: Partial<BOMItem>[];
     errors: string[];
     warnings: string[];
+    fields?: string[];  // Campos del archivo original
+    dataValues?: any[]; // Valores de datos originales
 }
 
 export interface ColumnMapping {
@@ -99,6 +101,98 @@ export const useFileParser = () => {
         });
 
         return mapping;
+    };
+
+    /**
+     * Procesa los datos parseados y los mapea a items BOM
+     */
+    const processData = (data: any[], headers: string[]): ParseResult => {
+        const result: ParseResult = {
+            success: true,
+            items: [],
+            errors: [],
+            warnings: []
+        };
+
+        if (!data || data.length === 0) {
+            result.success = false;
+            result.errors.push('El archivo está vacío');
+            return result;
+        }
+
+        // Detectar mapeo de columnas
+        const mapping = detectColumnMapping(headers);
+
+        // Verificar que al menos tengamos los campos esenciales
+        const hasName = Object.values(mapping).includes('name');
+        const hasQuantity = Object.values(mapping).includes('quantity');
+        // No verificamos unidad ya que ya no es requerida
+        // const hasUnit = Object.values(mapping).includes('unit');
+
+        if (!hasName) {
+            result.warnings.push('No se detectó una columna de "nombre". Verifica el mapeo.');
+        }
+        if (!hasQuantity) {
+            result.warnings.push('No se detectó una columna de "cantidad". Se usará 0 por defecto.');
+        }
+        // No mostramos advertencia para unidad ya que ya no es requerida
+        // if (!hasUnit) {
+        //     result.warnings.push('No se detectó una columna de "unidad". Se usará "pcs" por defecto.');
+        // }
+
+        // Procesar cada fila
+        data.forEach((row, index) => {
+            try {
+                const item: any = {
+                    quantity: 0,
+                    // No inicializamos unidad ya que ya no es requerida
+                    // inStock: 0 // Eliminado porque ya no se usa
+                };
+
+                // Mapear datos según el mapping detectado
+                Object.entries(mapping).forEach(([header, field]) => {
+                    if (field && row[header] !== undefined && row[header] !== '') {
+                        const value = row[header];
+
+                        // Convertir valores numéricos
+                        const numericFields = ['quantity', 'price', 'minStock', 'extPrice', 'leadTime']; // inStock eliminado porque ya no se usa
+                        if (numericFields.includes(field)) {
+                            const numValue = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.-]/g, ''));
+                            item[field] = isNaN(numValue) ? (field === 'leadTime' || field === 'extPrice' ? undefined : 0) : numValue;
+                        } else {
+                            item[field] = String(value).trim();
+                        }
+                    }
+                });
+
+                // Validar con Zod
+                const validation = BOMItemSchema.safeParse(item);
+
+                if (validation.success) {
+                    result.items.push(validation.data);
+                } else {
+                    const errorMessages = validation.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`);
+                    result.errors.push(`Fila ${index + 2}: ${errorMessages.join(', ')}`);
+                }
+            } catch (error: any) {
+                result.errors.push(`Fila ${index + 2}: ${error.message}`);
+            }
+        });
+
+        // Si hay errores pero también items válidos, considerarlo éxito parcial
+        if (result.items.length > 0 && result.errors.length > 0) {
+            result.warnings.push(`Se procesaron ${result.items.length} items correctamente, pero ${result.errors.length} filas tuvieron errores.`);
+        }
+
+        // Si no hay items válidos, marcar como fallo
+        if (result.items.length === 0) {
+            result.success = false;
+            if (result.errors.length === 0) {
+                result.errors.push('No se pudo procesar ningún item válido del archivo');
+            }
+        }
+
+        return result;
     };
 
     /**
@@ -168,6 +262,10 @@ export const useFileParser = () => {
                 skipEmptyLines: true,
                 complete: (results) => {
                     const parseResult = processData(results.data as any[], results.meta.fields || []);
+                    
+                    // Añadir campos y valores de datos originales al resultado
+                    parseResult.fields = results.meta.fields || [];
+                    parseResult.dataValues = results.data as any[];
 
                     /*
                     console.log("--->", results)
@@ -182,7 +280,9 @@ export const useFileParser = () => {
                         success: false,
                         items: [],
                         errors: [`Error al parsear CSV: ${error.message}`],
-                        warnings: []
+                        warnings: [],
+                        fields: [],
+                        dataValues: []
                     });
                 }
             });
@@ -208,7 +308,9 @@ export const useFileParser = () => {
                             success: false,
                             items: [],
                             errors: ['El archivo Excel no contiene hojas'],
-                            warnings: []
+                            warnings: [],
+                            fields: [],
+                            dataValues: []
                         });
                         return;
                     }
@@ -218,7 +320,9 @@ export const useFileParser = () => {
                             success: false,
                             items: [],
                             errors: ['No se pudo leer la hoja del archivo'],
-                            warnings: []
+                            warnings: [],
+                            fields: [],
+                            dataValues: []
                         });
                         return;
                     }
@@ -230,13 +334,20 @@ export const useFileParser = () => {
                     const headers = Object.keys(jsonData[0] || {});
 
                     const parseResult = processData(jsonData as any[], headers);
+                    
+                    // Añadir campos y valores de datos originales al resultado
+                    parseResult.fields = headers;
+                    parseResult.dataValues = jsonData as any[];
+
                     resolve(parseResult);
                 } catch (error: any) {
                     resolve({
                         success: false,
                         items: [],
                         errors: [`Error al parsear Excel: ${error.message}`],
-                        warnings: []
+                        warnings: [],
+                        fields: [],
+                        dataValues: []
                     });
                 }
             };
@@ -246,110 +357,14 @@ export const useFileParser = () => {
                     success: false,
                     items: [],
                     errors: ['Error al leer el archivo'],
-                    warnings: []
+                    warnings: [],
+                    fields: [],
+                    dataValues: []
                 });
             };
 
             reader.readAsBinaryString(file);
         });
-    };
-
-    /**
-     * Procesa los datos parseados y los mapea a items BOM
-     */
-    const processData = (data: any[], headers: string[]): ParseResult => {
-        const result: ParseResult = {
-            success: true,
-            items: [],
-            errors: [],
-            warnings: []
-        };
-
-        if (!data || data.length === 0) {
-            result.success = false;
-            result.errors.push('El archivo está vacío');
-            return result;
-        }
-
-        // Detectar mapeo de columnas
-        const mapping = detectColumnMapping(headers);
-
-        // Verificar que al menos tengamos los campos esenciales
-        const hasName = Object.values(mapping).includes('name');
-        const hasQuantity = Object.values(mapping).includes('quantity');
-        // No verificamos unidad ya que ya no es requerida
-        // const hasUnit = Object.values(mapping).includes('unit');
-
-        if (!hasName) {
-            result.warnings.push('No se detectó una columna de "nombre". Verifica el mapeo.');
-        }
-        if (!hasQuantity) {
-            result.warnings.push('No se detectó una columna de "cantidad". Se usará 0 por defecto.');
-        }
-        // No mostramos advertencia para unidad ya que ya no es requerida
-        // if (!hasUnit) {
-        //     result.warnings.push('No se detectó una columna de "unidad". Se usará "pcs" por defecto.');
-        // }
-
-        // Procesar cada fila
-        data.forEach((row, index) => {
-            try {
-                const item: any = {
-                    quantity: 0,
-                    // No inicializamos unidad ya que ya no es requerida
-                    // inStock: 0 // Eliminado porque ya no se usa
-                };
-
-                // Mapear datos según el mapping detectado
-                Object.entries(mapping).forEach(([header, field]) => {
-                    if (field && row[header] !== undefined && row[header] !== '') {
-                        const value = row[header];
-
-                        // Convertir valores numéricos
-                        const numericFields = ['quantity', 'price', 'minStock', 'extPrice', 'leadTime']; // inStock eliminado porque ya no se usa
-                        if (numericFields.includes(field)) {
-                            const numValue = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.-]/g, ''));
-                            item[field] = isNaN(numValue) ? (field === 'leadTime' || field === 'extPrice' ? undefined : 0) : numValue;
-                        } else {
-                            item[field] = String(value).trim();
-                        }
-                    }
-                });
-
-                // Validar con Zod
-                const validation = BOMItemSchema.safeParse(item);
-
-                if (validation.success) {
-                    // Convertir strings de fecha a objetos Date si están presentes
-                    const itemWithDates = {
-                        ...validation.data,
-                        createdAt: validation.data.createdAt ? new Date(validation.data.createdAt) : undefined,
-                        updatedAt: validation.data.updatedAt ? new Date(validation.data.updatedAt) : undefined,
-                    };
-                    result.items.push(itemWithDates);
-                } else {
-                    const errorMessages = validation.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`);
-                    result.errors.push(`Fila ${index + 2}: ${errorMessages.join(', ')}`);
-                }
-            } catch (error: any) {
-                result.errors.push(`Fila ${index + 2}: ${error.message}`);
-            }
-        });
-
-        // Si hay errores pero también items válidos, considerarlo éxito parcial
-        if (result.items.length > 0 && result.errors.length > 0) {
-            result.warnings.push(`Se procesaron ${result.items.length} items correctamente, pero ${result.errors.length} filas tuvieron errores.`);
-        }
-
-        // Si no hay items válidos, marcar como fallo
-        if (result.items.length === 0) {
-            result.success = false;
-            if (result.errors.length === 0) {
-                result.errors.push('No se pudo procesar ningún item válido del archivo');
-            }
-        }
-
-        return result;
     };
 
     /**
