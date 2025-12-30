@@ -8,18 +8,20 @@ const BOMItemSchema = z.object({
     name: z.string().min(1, 'El nombre es requerido'),
     description: z.string().optional(),
     quantity: z.number().min(0, 'La cantidad debe ser mayor o igual a 0'),
-    unit: z.string().optional(), // Cambiado a opcional ya que se eliminó la columna
     category: z.string().optional(),
     supplier: z.string().optional(),
     partNumber: z.string().optional(),
     lcscPart: z.string().optional(),
     price: z.number().min(0).optional(),
-    // inStock: z.number().min(0).default(0), // Eliminado porque ya no se usa
     minStock: z.number().min(0).optional(),
     notes: z.string().optional(),
     manufacturer: z.string().optional(),
-    customerNo: z.string().optional(),
     package: z.string().optional(),
+
+
+    unit: z.string().optional(), // Cambiado a opcional ya que se eliminó la columna
+    // inStock: z.number().min(0).default(0), // Eliminado porque ya no se usa
+    customerNo: z.string().optional(),
     rohs: z.string().optional(),
     extPrice: z.number().optional(),
     leadTime: z.number().optional(),
@@ -101,6 +103,62 @@ export const useFileParser = () => {
 
     /**
      * Parsea un archivo CSV
+     * @param file 
+     * @returns 
+     * @Sample
+    parseResult -> {
+        "success": true,
+        "items": [
+            {
+                "name": "HGC0402R5106M100NTEJ",
+                "description": "10uF ±20% 10V Ceramic Capacitor X5R 0402",
+                "quantity": 200,
+                "supplier": "Chinocera",
+                "price": 1.26,
+                "package": "402",
+                "unit": "0.0063",
+                "customerNo": "C7472949",
+                "rohs": "YES",
+                "dateCodeLotNo": "null",
+                "status": "-"
+            }...
+        ],
+        "errors": [],
+        "warnings": []
+    }
+
+    results.data -> [
+    {
+        "LCSC Part Number": "C7472949",
+        "Manufacture Part Number": "HGC0402R5106M100NTEJ",
+        "Manufacturer": "Chinocera",
+        "Customer NO.": "C7472949",
+        "Package": 402,
+        "Description": "10uF ±20% 10V Ceramic Capacitor X5R 0402",
+        "RoHS": "YES",
+        "Quantity": 200,
+        "Unit Price($)": 0.0063,
+        "Ext.Price($)": 1.26,
+        "Estimated lead time (business days)": null,
+        "Date Code / Lot No.": null,
+        "Status": "-"
+    }...]
+
+    results.meta.fields -> [
+        "LCSC Part Number",
+        "Manufacture Part Number",
+        "Manufacturer",
+        "Customer NO.",
+        "Package",
+        "Description",
+        "RoHS",
+        "Quantity",
+        "Unit Price($)",
+        "Ext.Price($)",
+        "Estimated lead time (business days)",
+        "Date Code / Lot No.",
+        "Status"
+    ]
      */
     const parseCSV = (file: File): Promise<ParseResult> => {
         return new Promise((resolve) => {
@@ -110,6 +168,13 @@ export const useFileParser = () => {
                 skipEmptyLines: true,
                 complete: (results) => {
                     const parseResult = processData(results.data as any[], results.meta.fields || []);
+
+                    /*
+                    console.log("--->", results)
+                    console.log("--->2", results.data)
+                    console.log("--->2", results.meta.fields)
+                    */
+
                     resolve(parseResult);
                 },
                 error: (error) => {
