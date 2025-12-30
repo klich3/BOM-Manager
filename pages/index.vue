@@ -51,9 +51,10 @@
 
 						<StatCard
 							title="Valor Total"
-							:value="formatValue(stats.totalValue)"
+							:value="stats.totalValue"
 							subtitle="Inversión en inventario"
-							value-type="currency">
+							value-type="currency"
+							:format-value="formatValue">
 							<template #title>Valor Total</template>
 							<template #subtitle>Inversión en inventario</template>
 						</StatCard>
@@ -199,8 +200,8 @@ const stockHealthPercentage = computed(() => {
 	return Math.round((healthyItems / stats.value.totalItems) * 100);
 });
 
-const formatValue = (value: number | String) => {
-	let v = value instanceof String ? parseFloat(value) : value;
+const formatValue = (value: number | string) => {
+	let v = typeof value === "string" ? parseFloat(value) : value;
 
 	return v.toLocaleString("es-ES", {
 		minimumFractionDigits: 2,

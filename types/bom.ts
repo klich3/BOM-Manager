@@ -9,16 +9,19 @@ export interface BOMItem {
   category?: string;
   supplier?: string;
   partNumber?: string;
-  lcscPart?: string;
-  price?: number;
+  lcscPart?: string;// ref number
+  price?: number; // precio por item
   // inStock: number; // Eliminado porque ya no se usa
-  minStock?: number;
+  minStock?: number; // minima cantidad para lanzar alerta
   notes?: string;
+
   createdAt: string;
   updatedAt: string;
-  manufacturer?: string;
+
+  manufacturer?: string; // fabricante
+  package?: string; //empaquetado
+
   customerNo?: string;
-  package?: string;
   rohs?: string;
   extPrice?: number;
   leadTime?: number;
