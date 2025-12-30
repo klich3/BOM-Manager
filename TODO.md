@@ -18,6 +18,9 @@
 -> - [ ] - Import stock min si se elecciona hay que poner un campo para poner un valor en la pantalla 3, tambien poner una nota informativa arriba
 -> - [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir
 -> - [ ] - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
+-> - [ ] - hay que hacer check si  ya hay un item con misma ref hay que sumar in_stock
+- [ ] - Load BOM y descontar items de un proyecto para tener el stock de items
+- [ ] - al importar hay que pregunta si es nuevo proyecto, hay que cotejar las lscs referencias si hay y las unidades, si saltan marcar en rojo que hay que comprar, si estan marcar en verde y en blanco por pedir
 
 ### 2. Vista de Inventario
 - [x] Crear página `/pages/inventory.vue`
@@ -31,10 +34,7 @@
 - [ ] - Visualizar y guardar el listado de los componentes
 - [ ] - Guardar en iCloud copia de seguridad
 - [ ] - Marcar los items que llegan casi a gastarse para notificar y poder encargar nuevos
-
 - [ ] - Hacer mix / reorder
-- [ ] - Load BOM y descontar items de un proyecto para tener el stock de items
-- [ ] - al importar hay que pregunta si es nuevo proyecto, hay que cotejar las lscs referencias si hay y las unidades, si saltan marcar en rojo que hay que comprar, si estan marcar en verde y en blanco por pedir
 
 ### 3. Gestión de Proyectos
 - [x] Crear página `/pages/projects.vue`
@@ -43,12 +43,14 @@
 - [x] Calculadora de costos
 - [ ] cargar gerber para saber cuantas partes se usan por pcb
 - [ ] al cargar gerber hacer un ayudante en donde van los compoenentes marcando el sitio, puede ser como figma una panel libre una pizzara...
-
+- [ ] en tarjeta poner $ coste por piezas
+- [ ] en tarjeta poner $ coste por pcb
+- [ ] en detalle de proyecto poner coste de PCB
 
 ### 4. Integración LCSC
-- [ ] Investigar API de LCSC
-- [ ] Preview de componentes
-- [ ] Link directo para compra
+- [x] Investigar API de LCSC
+- [x] Preview de componentes
+- [-] Link directo para compra
 
 ### 5. Sistema de Notificaciones
 - [x] Alertas de stock bajo

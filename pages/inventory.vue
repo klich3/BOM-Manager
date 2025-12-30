@@ -144,7 +144,8 @@
 				@delete-selected-items="deleteSelectedItemsConfirm"
 				@open-lcsc-preview="openLcscPreview"
 				@open-lcsc-purchase="openLcscPurchase"
-				@add-first-item="showAddModal = true" />
+				@add-first-item="showAddModal = true"
+				@items-assigned-to-project="loadItems" />
 
 			<!-- Pagination -->
 			<div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">

@@ -86,7 +86,7 @@
 									v-if="item.lcsc_part"
 									@click="openLcscPurchase(item.lcsc_part)"
 									class="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors">
-									<ShoppingCartIcon class="w-4 h-4" />
+									<GlobeAltIcon class="w-4 h-4" />
 								</button>
 							</div>
 						</td>
@@ -129,7 +129,7 @@
 									<PencilIcon class="w-4 h-4" />
 								</button>
 								<button
-									@click="$emit('remove-item', item.id)"
+									@click="$emit('delete-item', item.id)"
 									class="p-1 text-red-600 hover:bg-red-100 rounded transition-colors">
 									<TrashIcon class="w-4 h-4" />
 								</button>
@@ -139,7 +139,29 @@
 				</tbody>
 			</table>
 		</div>
+		<div v-if="selectedItems.length > 0" class="border-t border-gray-200 p-4 bg-gray-50">
+			<div class="flex justify-end gap-3">
+				<button
+					@click="deleteSelectedItems"
+					class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none">
+					Eliminar Seleccionados
+				</button>
+				<button
+					@click="showAssignProjectModal = true"
+					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none">
+					Asignar a Proyecto
+				</button>
+			</div>
+		</div>
 	</div>
+
+	<!-- Modal para asignar a proyecto -->
+	<AssignProjectModal
+		v-if="showAssignProjectModal"
+		:show="showAssignProjectModal"
+		:selected-items="selectedItems"
+		@close="showAssignProjectModal = false"
+		@assigned="onItemsAssignedToProject" />
 </template>
 
 <script setup lang="ts">
@@ -154,6 +176,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { ref, watch } from "vue";
 import { useNotifications } from "@/composables/useNotifications";
+import AssignProjectModal from "@/components/AssignProjectModal.vue";
 
 interface InventoryItem {
 	id: string;
@@ -192,12 +215,17 @@ const emit = defineEmits<{
 	"open-lcsc-preview": [partNumber: string];
 	"open-lcsc-purchase": [partNumber: string];
 	"add-first-item": [];
+	"delete-item": [id: string];
+	"delete-selected-items": [ids: string[]];
+	"items-assigned-to-project": [projectId: string];
 }>();
 
 const selectedItems = ref<string[]>([]);
 const selectAll = ref(false);
+const showAssignProjectModal = ref(false);
 
 const toggleSelectAll = () => {
+	selectAll.value = !selectAll.value;
 	if (selectAll.value) {
 		selectedItems.value = props.items.map((item) => item.id);
 	} else {
@@ -211,6 +239,9 @@ const toggleSelect = (id: string) => {
 	} else {
 		selectedItems.value = [...selectedItems.value, id];
 	}
+
+	// Actualizar el estado de selectAll según la selección actual
+	selectAll.value = selectedItems.value.length === props.items.length && props.items.length > 0;
 };
 
 const deleteSelectedItems = () => {
@@ -219,6 +250,19 @@ const deleteSelectedItems = () => {
 	selectedItems.value = [];
 	selectAll.value = false;
 	emit("remove-items", itemsToDelete);
+	emit("delete-selected-items", itemsToDelete);
+};
+
+const onItemsAssignedToProject = (projectId: string) => {
+	showAssignProjectModal.value = false;
+	// Mostrar notificación de éxito
+	const { success } = useNotifications();
+	success("Éxito", `Items asignados al proyecto`);
+	// Limpiar selección después de asignar
+	selectedItems.value = [];
+	selectAll.value = false;
+	// Emitir evento para que el componente padre actualice los datos
+	emit("items-assigned-to-project", projectId);
 };
 
 const openLcscPreview = (partNumber: string) => {
@@ -248,7 +292,7 @@ const copyToClipboard = (value: string) => {
 watch(
 	selectedItems,
 	(newSelected, oldSelected) => {
-		selectAll.value = newSelected.length === props.items.length && props.items.length > 0;
+		// Esta lógica ahora está en toggleSelect
 	},
 	{ immediate: true },
 );
