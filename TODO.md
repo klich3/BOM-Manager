@@ -8,14 +8,16 @@
 - [x] Implementar parseo y mapeo de columnas
 - [x] Validación de datos importados
 - [x] Import: modal de importacion al subir el archivo lo ha de leer y tiene que pasar por proceso de parsing de columnas
--> - [ ] - import mapeo no es preciso hay que poner las columnas que hay en csv y mostrarlas completamente
+- [x] - import mapeo no es preciso hay que poner las columnas que hay en csv y mostrarlas completamente
 - [x] - import definir al cual Proyecto pertenece el BOM
 - [x] - Cargar CSV
+
 - [ ] - Cargar XLSX
 - [ ] - Import - Leer -> Templates de easyeda.com
-- [ ] - Import -> cuadrar las columnas 
-- [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir
-- [ ] - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
+- [x] - Import -> cuadrar las columnas 
+- [ ] - Import stock min si se elecciona hay que poner un campo para poner un valor en la pantalla 3, tambien poner una nota informativa arriba
+-> - [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir
+-> - [ ] - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
 
 ### 2. Vista de Inventario
 - [x] Crear página `/pages/inventory.vue`
@@ -24,7 +26,7 @@
 - [x] Exportar a CSV/XLSX
 - [x] tablas poner seleccionar todos o unos cuantos para eliminar
 -> - [ ] - seleccion varios, opcion modal asignar a un proyecto
-- [ ] - Preview de items de lcsc (en listado de componentes)
+- [x] - Preview de items de lcsc (en listado de componentes)
 - [ ] - Integrar o mandar para comprar lcsc.com
 - [ ] - Visualizar y guardar el listado de los componentes
 - [ ] - Guardar en iCloud copia de seguridad

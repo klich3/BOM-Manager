@@ -90,10 +90,9 @@
 						</td>
 						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
 							${{ (item.price || 0).toFixed(2) }}
+							<div v-if="item.ext_price">${{ (item.ext_price || 0).toFixed(2) }}</div>
 						</td>
-						<td class="px-6 py-4 text-sm font-medium text-text-main-light">
-							${{ (item.ext_price || 0).toFixed(2) }}
-						</td>
+						<td class="px-6 py-4 text-sm font-medium text-text-main-light">total</td>
 						<td class="px-6 py-4">
 							<div class="flex items-center gap-2">
 								<span

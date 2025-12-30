@@ -1,36 +1,23 @@
 <template>
-	<div
-		v-if="showPreview"
-		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-	>
-		<div
-			class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-		>
+	<div v-if="showPreview" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
 			<div class="flex items-center justify-between mb-4 p-6 pb-4">
 				<h2 class="text-xl font-semibold text-gray-900">
 					Vista Previa - {{ lcscData?.partNumber || "Componente LCSC" }}
 				</h2>
 				<button @click="closePreview" class="text-gray-500 hover:text-gray-700">
-					<svg
-						class="w-6 h-6"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M6 18L18 6M6 6l12 12"
-						></path>
+							d="M6 18L18 6M6 6l12 12"></path>
 					</svg>
 				</button>
 			</div>
 
 			<div v-if="isLoading" class="flex items-center justify-center p-8">
-				<div
-					class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"
-				></div>
+				<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
 			</div>
 
 			<div v-else-if="error" class="p-6">
@@ -47,12 +34,10 @@
 							:src="lcscData.image"
 							:alt="lcscData.name || lcscData.partNumber"
 							class="max-h-48 object-contain"
-							@error="imageError = true"
-						/>
+							@error="imageError = true" />
 						<div
 							v-else-if="imageError"
-							class="bg-gray-200 border-2 border-dashed rounded-xl w-48 h-48 flex items-center justify-center text-gray-500"
-						>
+							class="bg-gray-200 border-2 border-dashed rounded-xl w-48 h-48 flex items-center justify-center text-gray-500">
 							Sin imagen
 						</div>
 					</div>
@@ -119,20 +104,13 @@
 								v-if="lcscData.datasheet"
 								:href="lcscData.datasheet"
 								target="_blank"
-								class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-							>
-								<svg
-									class="w-4 h-4 mr-1"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
+								class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+								<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-									></path>
+										d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
 								</svg>
 								Datasheet
 							</a>
@@ -140,20 +118,13 @@
 							<a
 								:href="getPurchaseLink(lcscData.partNumber)"
 								target="_blank"
-								class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-							>
-								<svg
-									class="w-4 h-4 mr-1"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
+								class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">
+								<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 11-4 0v-6m4 0V9a2 2 0 10-4 0v4.01"
-									></path>
+										d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 11-4 0v-6m4 0V9a2 2 0 10-4 0v4.01"></path>
 								</svg>
 								Comprar
 							</a>
@@ -192,7 +163,7 @@ watch(
 			imageError.value = false;
 			lcscData.value = await searchComponent(props.partNumber);
 		}
-	}
+	},
 );
 
 const closePreview = () => {

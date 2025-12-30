@@ -100,7 +100,7 @@
 															<option value="supplier">Proveedor</option>
 															<option value="partNumber">Número de parte</option>
 															<option value="lcscPart">Referencia LCSC</option>
-															<option value="price">Precio</option>
+															<option value="price">Precio Ud.</option>
 															<option value="minStock">Stock mínimo</option>
 															<option value="notes">Notas</option>
 															<option value="manufacturer">Fabricante</option>
@@ -140,7 +140,7 @@
 					<!-- Step 3: Import Preview -->
 					<div class="mb-6">
 						<h3 class="text-lg font-medium text-gray-900 mb-4">Revisión de importación</h3>
-						<p class="text-gray-600 mb-4">Se importarán {{ parsedItems.length }} items.</p>
+						<p class="text-gray-600 mb-4">Se importarán {{ mappedItems.length }} items.</p>
 
 						<!-- Selección de destino de importación -->
 						<div class="mb-4 p-4 bg-gray-50 rounded-lg">
@@ -199,7 +199,7 @@
 							</ul>
 						</div>
 
-						<div v-if="parsedItems.length > 0" class="overflow-x-auto">
+						<div v-if="mappedItems.length > 0" class="overflow-x-auto">
 							<table class="min-w-full divide-y divide-gray-200">
 								<thead class="bg-gray-50">
 									<tr>
@@ -217,7 +217,7 @@
 										</th>
 										<th
 											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Precio
+											Precio Ud.
 										</th>
 										<th
 											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -231,14 +231,10 @@
 											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 											Precio Ext.
 										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											RoHS
-										</th>
 									</tr>
 								</thead>
 								<tbody class="bg-white divide-y divide-gray-200">
-									<tr v-for="(item, index) in parsedItems.slice(0, 10)" :key="index">
+									<tr v-for="(item, index) in mappedItems.slice(0, 10)" :key="index">
 										<td class="px-3 py-2 text-sm text-gray-900">
 											{{ item.name }}
 										</td>
@@ -260,13 +256,10 @@
 										<td class="px-3 py-2 text-sm text-gray-900">
 											{{ item.extPrice ? `$${item.extPrice}` : "-" }}
 										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.rohs || "-" }}
-										</td>
 									</tr>
-									<tr v-if="parsedItems.length > 10">
+									<tr v-if="mappedItems.length > 10">
 										<td :colspan="8" class="px-3 py-2 text-sm text-center text-gray-500">
-											+ {{ parsedItems.length - 10 }} items más...
+											+ {{ mappedItems.length - 10 }} items más...
 										</td>
 									</tr>
 								</tbody>
@@ -388,6 +381,30 @@ const previewItems = computed(() => {
 				item[header] = "";
 			}
 		});
+
+		return item;
+	});
+});
+
+// Computed property to get mapped items for the validation step
+const mappedItems = computed(() => {
+	if (!sampleData.value?.rows || !originalHeaders.value || !columnMapping.value) return [];
+
+	return sampleData.value.rows.map((row) => {
+		const item: any = {};
+
+		// Create a mapping from headers to values for this row
+		const rowValues: Record<string, any> = {};
+		originalHeaders.value.forEach((header, index) => {
+			rowValues[header] = row[index];
+		});
+
+		// Apply column mapping: for each field in the schema, find the corresponding header
+		for (const [header, field] of Object.entries(columnMapping.value)) {
+			if (field && rowValues[header] !== undefined && rowValues[header] !== null) {
+				item[field] = rowValues[header];
+			}
+		}
 
 		return item;
 	});
@@ -663,6 +680,10 @@ const confirmImport = async () => {
 	importStore.setIsProcessing(true);
 
 	try {
+		// Usar los items mapeados en lugar de los items procesados directamente
+		// Actualizar los parsedItems en el store con los items mapeados antes de confirmar la importación
+		importStore.setParsedItems(mappedItems.value as Partial<BOMItem>[]);
+
 		// Parsear el archivo usando el composable useFileParser
 		const result = await importStore.confirmImport(
 			db,
