@@ -21,11 +21,11 @@
 				</button>
 				-->
 				<button
-			@click="handleImportComponents"
-			class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
-			<ArrowDownTrayIcon class="w-4 h-4" />
-			<span>Importar Componentes</span>
-		</button>
+					@click="handleImportComponents"
+					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
+					<ArrowDownTrayIcon class="w-4 h-4" />
+					<span>Importar Componentes</span>
+				</button>
 				<button
 					@click="exportProject"
 					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
@@ -125,6 +125,13 @@
 		@add="addItemToProject"
 		@search="handleAddItemSearch" />
 
+	<!-- Edit Item in Project Modal -->
+	<EditItemInProjectModal
+		:show="showEditItemModal"
+		:item="editingItem"
+		@close="handleEditItemClose"
+		@save="handleEditItemSave" />
+
 	<!-- Toast Notification -->
 	<Toast :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
 
@@ -135,7 +142,8 @@
 		:projectId="route.params.id as string"
 		@close="importStore.setShowImportModal(false)"
 		@notification="(data) => showToastMessage(data.message, data.type)"
-		@file-selected-to-project="handleImportToProject" />
+		@file-selected-to-project="handleImportToProject"
+		@import-completed="handleImportCompleted" />
 </template>
 
 <script setup lang="ts">
@@ -169,6 +177,7 @@ import { useFileParser } from "@/composables/useFileParser";
 import { useRouter, useRoute } from "vue-router";
 import type { BOMItem, BOMProject } from "@/types/bom";
 import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
+import EditItemInProjectModal from "@/components/EditItemInProjectModal.vue";
 import ProjectItemsTable from "@/components/project/ProjectItemsTable.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import Toast from "@/components/Toast.vue";
@@ -194,6 +203,8 @@ const addItemSearchQuery = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 10;
 const showAddItemModal = ref(false);
+const showEditItemModal = ref(false);
+const editingItem = ref<any>(null);
 const costBreakdown = ref<any>(null);
 
 // Confirm Modal State
@@ -320,6 +331,8 @@ const updateItemQuantity = async (itemId: string, newQuantity: number) => {
 	}
 };
 
+;
+
 const removeItemFromProject = async (itemId: string) => {
 	const projectId = route.params.id as string;
 
@@ -378,9 +391,32 @@ const removeSelectedItemsFromProject = async (ids: string[]) => {
 };
 
 const editItem = (item: any) => {
-	// En la vista de proyecto, no hay edición directa de items
-	// La edición se hace en el inventario general
-	showToastMessage("La edición de componentes se realiza en el inventario general", "info");
+	// En la vista de proyecto, ahora se permite editar items directamente
+	editingItem.value = item;
+	showEditItemModal.value = true;
+};
+
+const handleEditItemSave = async (itemData: any) => {
+	try {
+		// Actualizar el item en el inventario global
+		await db.updateItem(editingItem.value.id, itemData);
+		
+		// Recargar los items del proyecto para reflejar los cambios
+		await loadProject();
+		calculateProjectCostMethod();
+		
+		showToastMessage("Componente actualizado exitosamente", "success");
+		showEditItemModal.value = false;
+		editingItem.value = null;
+	} catch (error) {
+		console.error("Error actualizando componente:", error);
+		showToastMessage("Error al actualizar el componente", "error");
+	}
+};
+
+const handleEditItemClose = () => {
+	showEditItemModal.value = false;
+	editingItem.value = null;
 };
 
 const addItemToProject = async (item: any) => {
@@ -491,6 +527,15 @@ const handleImportToProject = async (data: { file: File; projectId: string }) =>
 		console.error("Error al importar archivo al proyecto:", error);
 		showToastMessage("Error al importar archivo al proyecto", "error");
 	}
+};
+
+const handleImportCompleted = async (data: { importedCount: number; errors: string[]; destination: "global" | "project"; projectId?: string }) => {
+	// Actualizar items del proyecto si la importación fue a este proyecto específico
+	if (data.destination === 'project' && data.projectId === route.params.id) {
+		await loadProject();
+		calculateProjectCostMethod();
+	}
+	showToastMessage("Items importados exitosamente", "success");
 };
 
 const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {

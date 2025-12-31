@@ -256,9 +256,11 @@ const loadRecentActivity = async () => {
 	}
 };
 
-const handleImportCompleted = async () => {
-	// Actualizar las estadísticas después de la importación
-	await loadStats();
+const handleImportCompleted = async (data: { importedCount: number; errors: string[]; destination: "global" | "project"; projectId?: string }) => {
+	// Actualizar las estadísticas después de la importación si fue al inventario global
+	if (data.destination === 'global') {
+		await loadStats();
+	}
 	showToastMessage("Items importados exitosamente", "success");
 };
 
