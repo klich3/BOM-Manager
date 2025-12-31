@@ -200,84 +200,11 @@
 							</ul>
 						</div>
 
-						<div v-if="mappedItems.length > 0" class="overflow-x-auto">
-							<table class="min-w-full divide-y divide-gray-200">
-								<thead class="bg-gray-50">
-									<tr>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Nombre
-										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Cantidad
-										</th>
-										<th
-											v-if="mappedItems.some((item) => item.inStock !== undefined)"
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Stock Actual
-										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Proveedor
-										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Precio Ud.
-										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Empaquetado
-										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Fabricante
-										</th>
-										<th
-											class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-											Precio Ext.
-										</th>
-									</tr>
-								</thead>
-								<tbody class="bg-white divide-y divide-gray-200">
-									<tr v-for="(item, index) in mappedItems.slice(0, 10)" :key="index">
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.name }}
-										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.quantity }}
-										</td>
-										<td
-											v-if="mappedItems.some((item) => item.inStock !== undefined)"
-											class="px-3 py-2 text-sm text-gray-900">
-											{{ item.inStock || 0 }}
-										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.supplier || "-" }}
-										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.price ? `$${item.price}` : "-" }}
-										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.package || "-" }}
-										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.manufacturer || "-" }}
-										</td>
-										<td class="px-3 py-2 text-sm text-gray-900">
-											{{ item.extPrice ? `$${item.extPrice}` : "-" }}
-										</td>
-									</tr>
-									<tr v-if="mappedItems.length > 10">
-										<td
-											:colspan="mappedItems.some((item) => item.inStock !== undefined) ? 9 : 8"
-											class="px-3 py-2 text-sm text-center text-gray-500">
-											+ {{ mappedItems.length - 10 }} items más...
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
+						<ImportPreviewTable
+							:items="editableItems"
+							:editable="true"
+							:field-mappings="columnMapping"
+							@update-item="updateEditableItem" />
 					</div>
 				</div>
 			</div>
@@ -328,6 +255,8 @@ import { useDatabase } from "@/composables/useDatabase";
 import { useImportStore } from "@/stores/import";
 import { storeToRefs } from "pinia";
 import { useNotifications } from "@/composables/useNotifications";
+import ImportPreviewTable from "@/components/ImportPreviewTable.vue";
+import { convertBomItemToSnake } from "@/composables/useDatabaseUtils";
 
 // Definir los eventos que emite este componente
 const emit = defineEmits<{
@@ -376,6 +305,7 @@ const originalHeaders = ref<string[]>([]);
 
 // Reactive variables for preview table
 const selectedPreviewItems = ref<number[]>([]);
+const editableItems = ref<any[]>([]);
 
 const previewItems = computed(() => {
 	if (!sampleData.value?.rows || !originalHeaders.value) return [];
@@ -422,6 +352,17 @@ const mappedItems = computed(() => {
 		return item;
 	});
 });
+
+// Initialize editable items when mappedItems changes
+watch(
+	mappedItems,
+	(newMappedItems) => {
+		if (newMappedItems && newMappedItems.length > 0) {
+			editableItems.value = JSON.parse(JSON.stringify(newMappedItems));
+		}
+	},
+	{ deep: true },
+);
 
 // Load existing components from database
 const loadExistingComponents = async () => {
@@ -481,10 +422,17 @@ const optionalFields = [
 	{ key: "partNumber", label: "Número de parte" },
 	{ key: "lcscPart", label: "Referencia LCSC" },
 	{ key: "price", label: "Precio" },
+	{ key: "inStock", label: "Stock actual" },
 	{ key: "minStock", label: "Stock mínimo" },
 	{ key: "notes", label: "Notas" },
 	{ key: "manufacturer", label: "Fabricante" },
 	{ key: "package", label: "Empaquetado" },
+	{ key: "status", label: "Estado" },
+	{ key: "customerNo", label: "Número de Cliente" },
+	{ key: "rohs", label: "RoHS" },
+	{ key: "extPrice", label: "Precio Extendido" },
+	{ key: "leadTime", label: "Tiempo de Entrega" },
+	{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
 ];
 
 // Computed properties
@@ -682,6 +630,13 @@ const getFieldName = (field: string): string => {
 	return fieldLabels[field] || field;
 };
 
+// Función para actualizar un campo editable
+const updateEditableItem = (data: { index: number; field: string; value: any }) => {
+	if (editableItems.value[data.index]) {
+		editableItems.value[data.index][data.field] = data.value;
+	}
+};
+
 // Función para manejar errores en el procesamiento del archivo
 
 const confirmImport = async () => {
@@ -694,9 +649,9 @@ const confirmImport = async () => {
 	importStore.setIsProcessing(true);
 
 	try {
-		// Usar los items mapeados en lugar de los items procesados directamente
-		// Actualizar los parsedItems en el store con los items mapeados antes de confirmar la importación
-		importStore.setParsedItems(mappedItems.value as Partial<BOMItem>[]);
+		// Usar los items editables en lugar de los items mapeados directamente
+		// Actualizar los parsedItems en el store con los items editables antes de confirmar la importación
+		importStore.setParsedItems(editableItems.value as Partial<BOMItem>[]);
 
 		// Parsear el archivo usando el composable useFileParser
 		const result = await importStore.confirmImport(

@@ -2,6 +2,7 @@ import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import type { BOMItem } from '@/types/bom';
 import type { Database } from '@/types/database';
+import { convertBomItemToSnake } from '@/composables/useDatabaseUtils';
 
 // Función para generar IDs únicos
 const generateId = (): string => {
@@ -55,34 +56,38 @@ export const useItemsDatabase = () => {
             const id = generateId();
             const now = new Date().toISOString();
 
+            // Convertir los campos de camelCase a snake_case para la base de datos
+            const itemForDb = convertBomItemToSnake(item);
+
             await database.execute(
                 `INSERT INTO bom_items (id, name, description, quantity, category, supplier, 
          part_number, lcsc_part, price, in_stock, min_stock, notes, created_at, updated_at, manufacturer, 
          customer_no, package, rohs, ext_price, lead_time, date_code_lot_no, status) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                ,
                 [
                     id,
-                    item.name || '',
-                    item.description || null,
-                    item.quantity || 0,
-                    item.category || null,
-                    item.supplier || null,
-                    item.partNumber || null,
-                    item.lcscPart || null,
-                    item.price || null,
-                    item.inStock || 0,
-                    item.minStock || null,
-                    item.notes || null,
+                    itemForDb.name || '',
+                    itemForDb.description || null,
+                    itemForDb.quantity || 0,
+                    itemForDb.category || null,
+                    itemForDb.supplier || null,
+                    itemForDb.part_number || null,
+                    itemForDb.lcsc_part || null,
+                    itemForDb.price || null,
+                    itemForDb.in_stock !== undefined && itemForDb.in_stock !== null ? itemForDb.in_stock : 0,
+                    itemForDb.min_stock || null,
+                    itemForDb.notes || null,
                     now,
                     now,
-                    item.manufacturer || null,
-                    item.customerNo || null,
-                    item.package || null,
-                    item.rohs || null,
-                    item.extPrice || null,
-                    item.leadTime || null,
-                    item.dateCodeLotNo || null,
-                    item.status || null
+                    itemForDb.manufacturer || null,
+                    itemForDb.customer_no || null,
+                    itemForDb.package || null,
+                    itemForDb.rohs || null,
+                    itemForDb.ext_price || null,
+                    itemForDb.lead_time || null,
+                    itemForDb.date_code_lot_no || null,
+                    itemForDb.status || null
                 ]
             );
 
@@ -103,32 +108,35 @@ export const useItemsDatabase = () => {
         try {
             const now = new Date().toISOString();
 
+            // Convertir los campos de camelCase a snake_case para la base de datos
+            const itemForDb = convertBomItemToSnake(item);
+
             await database.execute(
                 `UPDATE bom_items SET name = ?, description = ?, quantity = ?, category = ?,
          supplier = ?, part_number = ?, lcsc_part = ?, price = ?, in_stock = ?, min_stock = ?,
          notes = ?, updated_at = ?, manufacturer = ?, customer_no = ?, package = ?,
          rohs = ?, ext_price = ?, lead_time = ?, date_code_lot_no = ?, status = ? WHERE id = ?`,
                 [
-                    item.name,
-                    item.description,
-                    item.quantity,
-                    item.category,
-                    item.supplier,
-                    item.partNumber,
-                    item.lcscPart,
-                    item.price,
-                    item.inStock,
-                    item.minStock,
-                    item.notes,
+                    itemForDb.name,
+                    itemForDb.description,
+                    itemForDb.quantity,
+                    itemForDb.category,
+                    itemForDb.supplier,
+                    itemForDb.part_number,
+                    itemForDb.lcsc_part,
+                    itemForDb.price,
+                    itemForDb.in_stock,
+                    itemForDb.min_stock,
+                    itemForDb.notes,
                     now,
-                    item.manufacturer,
-                    item.customerNo,
-                    item.package,
-                    item.rohs,
-                    item.extPrice,
-                    item.leadTime,
-                    item.dateCodeLotNo,
-                    item.status,
+                    itemForDb.manufacturer,
+                    itemForDb.customer_no,
+                    itemForDb.package,
+                    itemForDb.rohs,
+                    itemForDb.ext_price,
+                    itemForDb.lead_time,
+                    itemForDb.date_code_lot_no,
+                    itemForDb.status,
                     id
                 ]
             );

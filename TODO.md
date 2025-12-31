@@ -28,7 +28,7 @@
 - [x] CRUD completo de items
 - [x] Exportar a CSV/XLSX
 - [x] tablas poner seleccionar todos o unos cuantos para eliminar
--> - [ ] - seleccion varios, opcion modal asignar a un proyecto
+- [x] - seleccion varios, opcion modal asignar a un proyecto
 - [x] - Preview de items de lcsc (en listado de componentes)
 - [ ] - Integrar o mandar para comprar lcsc.com
 - [ ] - Visualizar y guardar el listado de los componentes
