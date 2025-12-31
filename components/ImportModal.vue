@@ -649,9 +649,10 @@ const confirmImport = async () => {
 	importStore.setIsProcessing(true);
 
 	try {
-		// Usar los items editables en lugar de los items mapeados directamente
+		// Convertir los items editables de camelCase a snake_case antes de importar
+		const itemsToImport = editableItems.value.map((item) => convertBomItemToSnake(item));
 		// Actualizar los parsedItems en el store con los items editables antes de confirmar la importación
-		importStore.setParsedItems(editableItems.value as Partial<BOMItem>[]);
+		importStore.setParsedItems(itemsToImport as Partial<BOMItem>[]);
 
 		// Parsear el archivo usando el composable useFileParser
 		const result = await importStore.confirmImport(
