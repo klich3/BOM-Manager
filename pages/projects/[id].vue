@@ -253,7 +253,7 @@ const lowStockCount = computed(() => {
 });
 
 const totalValue = computed(() => {
-	return projectItems.value.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0).toFixed(2);
+	return projectItems.value.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0).toFixed(2);
 });
 
 const availableItems = computed(() => {
