@@ -94,9 +94,7 @@
 						</div>
 						<div>
 							<p class="text-xs text-text-muted-light">Valor Total</p>
-							<p class="text-2xl font-bold text-text-main-light">
-								${{ totalValue }}
-							</p>
+							<p class="text-2xl font-bold text-text-main-light">${{ totalValue }}</p>
 						</div>
 					</div>
 				</div>
@@ -106,12 +104,12 @@
 			<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
 				<div class="overflow-x-auto">
 					<ProjectItemsTable
-								:items="projectItems"
-								@edit-item="editItem"
-								@remove-item="removeItemFromProject"
-								@remove-selected-items="removeSelectedItemsFromProject"
-								@import-components="handleImportComponents"
-								@file-selected-to-project="handleImportToProject" />
+						:items="projectItems"
+						@edit-item="editItem"
+						@remove-item="removeItemFromProject"
+						@remove-selected-items="removeSelectedItemsFromProject"
+						@import-components="handleImportComponents"
+						@file-selected-to-project="handleImportToProject" />
 				</div>
 			</div>
 		</div>
@@ -232,7 +230,7 @@ const filteredItems = computed(() => {
 		(item) =>
 			item.name?.toLowerCase().includes(query) ||
 			item.category?.toLowerCase().includes(query) ||
-			item.part_number?.toLowerCase().includes(query)
+			item.part_number?.toLowerCase().includes(query),
 	);
 });
 
@@ -247,28 +245,20 @@ const totalPages = computed(() => {
 });
 
 const stockOK = computed(() => {
-	return projectItems.value.filter(
-		(item) => item.in_stock >= (item.min_stock || 0)
-	).length;
+	return projectItems.value.filter((item) => item.in_stock >= (item.min_stock || 0)).length;
 });
 
 const lowStockCount = computed(() => {
-	return projectItems.value.filter(
-		(item) => item.in_stock < (item.min_stock || 0)
-	).length;
+	return projectItems.value.filter((item) => item.in_stock < (item.min_stock || 0)).length;
 });
 
 const totalValue = computed(() => {
-	return projectItems.value
-		.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0)
-		.toFixed(2);
+	return projectItems.value.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0).toFixed(2);
 });
 
 const availableItems = computed(() => {
 	if (!addItemSearchQuery.value)
-		return allItems.value.filter(
-			(item) => !projectItems.value.some((pi) => pi.id === item.id)
-		);
+		return allItems.value.filter((item) => !projectItems.value.some((pi) => pi.id === item.id));
 
 	const query = addItemSearchQuery.value.toLowerCase();
 	return allItems.value.filter(
@@ -276,7 +266,7 @@ const availableItems = computed(() => {
 			!projectItems.value.some((pi) => pi.id === item.id) &&
 			(item.name?.toLowerCase().includes(query) ||
 				item.category?.toLowerCase().includes(query) ||
-				item.part_number?.toLowerCase().includes(query))
+				item.part_number?.toLowerCase().includes(query)),
 	);
 });
 
@@ -313,11 +303,7 @@ const updateItemQuantity = async (itemId: string, newQuantity: number) => {
 	const projectId = route.params.id as string;
 
 	try {
-		const success = await db.updateProjectItemQuantity(
-			projectId,
-			itemId,
-			newQuantity
-		);
+		const success = await db.updateProjectItemQuantity(projectId, itemId, newQuantity);
 		if (success) {
 			const item = projectItems.value.find((i) => i.id === itemId);
 			if (item) {
@@ -330,8 +316,6 @@ const updateItemQuantity = async (itemId: string, newQuantity: number) => {
 		console.error("Error actualizando cantidad de item:", error);
 	}
 };
-
-;
 
 const removeItemFromProject = async (itemId: string) => {
 	const projectId = route.params.id as string;
@@ -400,11 +384,11 @@ const handleEditItemSave = async (itemData: any) => {
 	try {
 		// Actualizar el item en el inventario global
 		await db.updateItem(editingItem.value.id, itemData);
-		
+
 		// Recargar los items del proyecto para reflejar los cambios
 		await loadProject();
 		calculateProjectCostMethod();
-		
+
 		showToastMessage("Componente actualizado exitosamente", "success");
 		showEditItemModal.value = false;
 		editingItem.value = null;
@@ -452,13 +436,10 @@ const closeAddItemModal = () => {
 
 const calculateProjectCostMethod = () => {
 	if (projectItems.value.length > 0) {
-		const quantities = projectItems.value.reduce(
-			(acc, item) => {
-				acc[item.id] = item.quantity || 1;
-				return acc;
-			},
-			{} as Record<string, number>
-		);
+		const quantities = projectItems.value.reduce((acc, item) => {
+			acc[item.id] = item.quantity || 1;
+			return acc;
+		}, {} as Record<string, number>);
 
 		costBreakdown.value = calculateProjectCost(projectItems.value, quantities);
 	}
@@ -469,8 +450,8 @@ const exportProject = () => {
 	// TODO: Implementar exportación del proyecto
 };
 
-const goBack = async() => {
-	await navigateTo({name:"projects"});
+const goBack = async () => {
+	await navigateTo({ name: "projects" });
 };
 
 const handleAddItemSearch = (query: string) => {
@@ -491,33 +472,33 @@ const handleImportToProject = async (data: { file: File; projectId: string }) =>
 		if (result.success && result.items.length > 0) {
 			let importedCount = 0;
 			const errors: string[] = [];
-			
+
 			// Agregar cada item parseado al proyecto
 			for (const item of result.items) {
 				// Crear o actualizar el item en el inventario global
 				const itemId = await db.createItem(item);
-				
+
 				if (itemId) {
 					// Agregar el item al proyecto
 					const success = await db.addItemToProject(data.projectId, itemId, item.quantity || 1);
 					if (success) {
 						importedCount++;
 					} else {
-						errors.push(`Error al agregar item ${item.name || 'desconocido'} al proyecto`);
+						errors.push(`Error al agregar item ${item.name || "desconocido"} al proyecto`);
 					}
 				} else {
-					errors.push(`Error al crear item ${item.name || 'desconocido'} en el inventario`);
+					errors.push(`Error al crear item ${item.name || "desconocido"} en el inventario`);
 				}
 			}
 
 			// Recargar los items del proyecto
 			await loadProject();
 			calculateProjectCostMethod();
-			
+
 			let message = `Importación completada: ${importedCount} items agregados al proyecto.`;
 			if (errors.length > 0) {
 				message += ` Errores: ${errors.length}.`;
-				console.error('Errores durante la importación:', errors);
+				console.error("Errores durante la importación:", errors);
 			}
 			showToastMessage(message, importedCount > 0 ? "success" : "error");
 		} else {
@@ -529,9 +510,14 @@ const handleImportToProject = async (data: { file: File; projectId: string }) =>
 	}
 };
 
-const handleImportCompleted = async (data: { importedCount: number; errors: string[]; destination: "global" | "project"; projectId?: string }) => {
+const handleImportCompleted = async (data: {
+	importedCount: number;
+	errors: string[];
+	destination: "global" | "project";
+	projectId?: string;
+}) => {
 	// Actualizar items del proyecto si la importación fue a este proyecto específico
-	if (data.destination === 'project' && data.projectId === route.params.id) {
+	if (data.destination === "project" && data.projectId === route.params.id) {
 		await loadProject();
 		calculateProjectCostMethod();
 	}

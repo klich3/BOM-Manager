@@ -465,9 +465,14 @@ const handleFileImport = async (file: File) => {
 	}
 };
 
-const handleImportCompleted = async (data: { importedCount: number; errors: string[]; destination: "global" | "project"; projectId?: string }) => {
+const handleImportCompleted = async (data: {
+	importedCount: number;
+	errors: string[];
+	destination: "global" | "project";
+	projectId?: string;
+}) => {
 	// Actualizar items solo si la importación fue al inventario global
-	if (data.destination === 'global') {
+	if (data.destination === "global") {
 		await loadItems();
 	}
 	showToastMessage("Items importados exitosamente", "success");

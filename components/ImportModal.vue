@@ -265,7 +265,9 @@ const emit = defineEmits<{
 	"file-selected-to-project": [data: { file: File; projectId: string }];
 	error: [error: string];
 	notification: [data: { message: string; type: "success" | "error" | "warning" | "info" }];
-	"import-completed": [data: { importedCount: number; errors: string[]; destination: "global" | "project"; projectId?: string }];
+	"import-completed": [
+		data: { importedCount: number; errors: string[]; destination: "global" | "project"; projectId?: string },
+	];
 }>();
 
 // Definir las props si es necesario
@@ -669,11 +671,11 @@ const confirmImport = async () => {
 			console.error("Errores durante la importación:", result.errors);
 		}
 		// Emitir evento de importación completada para que el componente padre pueda actualizar la vista
-		emit("import-completed", { 
-			importedCount: result.importedCount, 
+		emit("import-completed", {
+			importedCount: result.importedCount,
 			errors: result.errors,
 			destination: importStore.importDestination,
-			projectId: importStore.selectedProjectId
+			projectId: importStore.selectedProjectId,
 		});
 		// Reiniciar el estado del modal antes de cerrar
 		resetModalState();

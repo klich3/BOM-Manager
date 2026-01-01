@@ -74,7 +74,7 @@
 						<input
 							v-model.number="form.price"
 							type="number"
-							step="0.01"
+							step="0.0001"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 							placeholder="Precio" />
 					</div>
@@ -236,6 +236,6 @@ watch(
 			resetForm();
 		}
 	},
-	{ immediate: true }
+	{ immediate: true },
 );
 </script>

@@ -13,27 +13,32 @@
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 						Componente
 					</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Categoría</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Cantidad</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Stock</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Proveedor</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Precio</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 						Empaquetado
 					</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
 						Fabricante
 					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Categoría</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Precio Ext.
+						Cantidad Inicial
 					</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">RoHS</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						Stock con Estado
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Proveedor</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						Precio Ud.
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						Precio Total
+					</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Acciones</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-gray-200">
 				<tr v-if="items.length === 0">
-					<td colspan="12" class="px-6 py-12 text-center">
+					<td colspan="10" class="px-6 py-12 text-center">
 						<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
 						<p class="text-text-muted-light">No hay componentes en el proyecto</p>
 					</td>
@@ -60,6 +65,12 @@
 							</p>
 						</div>
 					</td>
+					<td class="px-6 py-4 text-sm text-text-muted-light">
+						{{ item.package || "N/A" }}
+					</td>
+					<td class="px-6 py-4 text-sm text-text-muted-light">
+						{{ item.manufacturer || "N/A" }}
+					</td>
 					<td class="px-6 py-4">
 						<span class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium">
 							{{ item.category || "Sin categoría" }}
@@ -72,8 +83,8 @@
 						<div class="flex items-center gap-2">
 							<div
 								class="w-2 h-2 rounded-full"
-								:class="(item.min_stock || 0) > 0 ? 'bg-green-500' : 'bg-gray-300'"></div>
-							<span class="text-sm text-text-main-light"> -- </span>
+								:class="getStockStatus(item.in_stock, item.min_stock)"></div>
+							<span class="text-sm text-text-main-light">{{ item.in_stock || 0 }}</span>
 						</div>
 					</td>
 					<td class="px-6 py-4 text-sm text-text-muted-light">
@@ -82,18 +93,7 @@
 					<td class="px-6 py-4 text-sm font-medium text-text-main-light">
 						${{ (item.price || 0).toFixed(2) }}
 					</td>
-					<td class="px-6 py-4 text-sm text-text-muted-light">
-						{{ item.package || "N/A" }}
-					</td>
-					<td class="px-6 py-4 text-sm text-text-muted-light">
-						{{ item.manufacturer || "N/A" }}
-					</td>
-					<td class="px-6 py-4 text-sm font-medium text-text-main-light">
-						${{ (item.ext_price || 0).toFixed(2) }}
-					</td>
-					<td class="px-6 py-4 text-sm text-text-muted-light">
-						{{ item.rohs || "N/A" }}
-					</td>
+					<td class="px-6 py-4 text-sm font-medium text-text-main-light">${{ calculateTotalPrice(item) }}</td>
 					<td class="px-6 py-4">
 						<div class="flex items-center gap-2">
 							<button
@@ -157,7 +157,7 @@ interface ProjectItem {
 	part_number?: string;
 	category?: string;
 	quantity?: number;
-	// in_stock?: number; // Eliminado porque ya no se usa
+	in_stock?: number;
 	min_stock?: number;
 	price?: number;
 	unit?: string;
@@ -219,5 +219,25 @@ const editItem = (item: ProjectItem) => {
 
 const removeItem = (id: string) => {
 	emit("remove-item", id);
+};
+
+const getStockStatus = (in_stock: number | undefined, min_stock: number | undefined) => {
+	const stock = in_stock || 0;
+	const min = min_stock || 0;
+
+	if (stock < min) {
+		return "bg-red-500";
+	} else if (stock === min) {
+		return "bg-yellow-500";
+	} else {
+		return "bg-green-500";
+	}
+};
+
+const calculateTotalPrice = (item: ProjectItem) => {
+	const quantity = item.quantity || 0;
+	const price = item.price || 0;
+
+	return (quantity * price).toFixed(2);
 };
 </script>

@@ -25,7 +25,7 @@
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">LCSC</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Precio
+							Precio Ud.
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">Total</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
