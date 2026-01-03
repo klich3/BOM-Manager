@@ -113,11 +113,32 @@ export const useProjectItemsDatabase = () => {
         }
     };
 
+    // Método para calcular el valor total de un proyecto
+    const getProjectTotalValue = async (projectId: string) => {
+        const database = await getDatabase();
+        if (!database) return 0;
+
+        try {
+            const result = await database.select<any[]>(`
+                SELECT SUM(bi.price * pi.quantity) as totalValue
+                FROM project_items pi
+                JOIN bom_items bi ON pi.item_id = bi.id
+                WHERE pi.project_id = ?
+            `, [projectId]);
+
+            return result[0]?.totalValue || 0;
+        } catch (error) {
+            console.error('Error calculando valor total del proyecto:', error);
+            return 0;
+        }
+    };
+
     return {
         getProjectItems,
         addItemToProject,
         removeItemFromProject,
         updateProjectItemQuantity,
-        checkLowStockAndNotify
+        checkLowStockAndNotify,
+        getProjectTotalValue
     };
 };

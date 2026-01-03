@@ -19,6 +19,7 @@
 -> - [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir
 -> - [ ] - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
 -> - [ ] - hay que hacer check si  ya hay un item con misma ref hay que sumar in_stock
+-> - [ ] - si se importa el mismo componente y no tienen precio o otra columna se completa con datos nuevos, si hay que preguntar si aumentar el stock o no
 - [ ] - Load BOM y descontar items de un proyecto para tener el stock de items
 - [ ] - al importar hay que pregunta si es nuevo proyecto, hay que cotejar las lscs referencias si hay y las unidades, si saltan marcar en rojo que hay que comprar, si estan marcar en verde y en blanco por pedir
 

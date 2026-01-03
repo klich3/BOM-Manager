@@ -55,7 +55,7 @@
 						</div>
 						<div>
 							<p class="text-xs text-text-muted-light">Valor Total</p>
-							<p class="text-3xl font-bold text-text-main-light">$0.00</p>
+							<p class="text-3xl font-bold text-text-main-light">{{ formatValue(totalValue) }}</p>
 						</div>
 					</div>
 				</div>
@@ -135,6 +135,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { unref } from "vue";
 import { useDatabase } from "@/composables/useDatabase";
+import { useProjectItemsDatabase } from "@/composables/useProjectItemsDatabase";
 import { useRouter } from "vue-router";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -142,13 +143,15 @@ import { useDialog } from "@/composables/useDialog";
 import ProjectModal from "@/components/project/ProjectModal.vue";
 import ProjectCard from "@/components/project/ProjectCard.vue";
 import { navigateTo } from "nuxt/app";
-
-definePageMeta({
-	name: "projects",
-	layout: "default",
-});
+// Definir metadatos de la página
+// Esta macro está disponible globalmente en Nuxt 3
+// definePageMeta({
+// 	name: "projects",
+// 	layout: "default",
+// });
 
 const db = useDatabase();
+const projectItemsDb = useProjectItemsDatabase();
 const { showConfirmation } = useDialog();
 
 // Definir metadatos de la página
@@ -160,6 +163,11 @@ const projects = ref<any[]>([]);
 const searchQuery = ref("");
 const showAddProjectModal = ref(false);
 const editingProject = ref<any>(null);
+
+// Computed
+const totalValue = computed(() => {
+	return projects.value.reduce((sum, project) => sum + (project.totalValue || 0), 0);
+});
 
 // Computed
 const filteredProjects = computed(() => {
@@ -174,7 +182,18 @@ const filteredProjects = computed(() => {
 // Methods
 const loadProjects = async () => {
 	try {
-		projects.value = await db.getAllProjects();
+		const allProjects = await db.getAllProjects();
+		// Calcular el valor total para cada proyecto
+		const projectsWithTotalValue = await Promise.all(
+			allProjects.map(async (project) => {
+				const totalValue = await projectItemsDb.getProjectTotalValue(project.id);
+				return {
+					...project,
+					totalValue,
+				};
+			}),
+		);
+		projects.value = projectsWithTotalValue;
 	} catch (error) {
 		console.error("Error cargando proyectos:", error);
 	}
@@ -231,6 +250,15 @@ const formatDate = (dateString: string) => {
 	} catch {
 		return dateString;
 	}
+};
+
+const formatValue = (value: number | string) => {
+	let v = typeof value === "string" ? parseFloat(value) : value;
+
+	return v.toLocaleString("es-ES", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	});
 };
 
 // Lifecycle

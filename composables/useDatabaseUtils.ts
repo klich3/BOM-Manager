@@ -89,6 +89,7 @@ export const BOM_ITEM_FIELD_MAPPING = {
     leadTime: 'lead_time',
     dateCodeLotNo: 'date_code_lot_no',
     status: 'status',
+    pcbDesignation: 'pcb_designation',
 } as const;
 
 /**

@@ -27,6 +27,7 @@ export interface BOMItem {
   leadTime?: number;
   dateCodeLotNo?: string;
   status?: string;
+  pcbDesignation?: string;
 }
 
 export interface BOMProject {

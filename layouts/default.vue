@@ -33,15 +33,18 @@
 
 			<div class="mt-auto flex flex-col items-center gap-4">
 				<button
+					@click="openSettings"
 					class="w-12 h-12 text-text-muted-light hover:bg-gray-100 rounded-xl flex items-center justify-center transition-colors">
 					<Cog6ToothIcon class="w-6 h-6" />
 				</button>
-				<div
+				<!--
+					<div
 					class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 overflow-hidden border-2 border-white">
 					<div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600">
 						<UserIcon class="w-6 h-6" />
 					</div>
 				</div>
+				-->
 			</div>
 		</aside>
 
@@ -49,6 +52,7 @@
 		<main class="ml-20 lg:ml-24 min-h-screen">
 			<slot />
 		</main>
+		<SettingsModal :show="showSettingsModal" @close="showSettingsModal = false" />
 	</div>
 </template>
 
@@ -61,4 +65,17 @@ import {
 	Cog6ToothIcon,
 	UserIcon,
 } from "@heroicons/vue/24/outline";
+import { useSettingsStore } from "@/stores/settings";
+import SettingsModal from "@/components/global/SettingsModal.vue";
+import { ref } from "vue";
+
+const settingsStore = useSettingsStore();
+const showSettingsModal = ref(false);
+
+// Cargar la configuración cuando se monte el componente
+settingsStore.loadSettings();
+
+const openSettings = () => {
+	showSettingsModal.value = true;
+};
 </script>

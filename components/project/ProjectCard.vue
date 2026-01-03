@@ -25,16 +25,22 @@
 
 		<div class="flex items-center justify-between text-xs text-text-muted-light">
 			<span>{{ formatDate(project.created_at) }}</span>
-			<div class="flex items-center gap-1">
-				<CubeIcon class="w-4 h-4" />
-				<span>{{ project.itemCount || 0 }} items</span>
+			<div class="flex items-center gap-2">
+				<div class="flex items-center gap-1">
+					<CubeIcon class="w-4 h-4" />
+					<span>{{ project.itemCount || 0 }} items</span>
+				</div>
+				<div class="flex items-center gap-1">
+					<CurrencyDollarIcon class="w-4 h-4 text-green-600" />
+					<span class="font-medium">{{ formatValue(project.totalValue || 0) }}</span>
+				</div>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { RectangleStackIcon, PencilIcon, TrashIcon, CubeIcon } from "@heroicons/vue/24/outline";
+import { RectangleStackIcon, PencilIcon, TrashIcon, CubeIcon, CurrencyDollarIcon } from "@heroicons/vue/24/outline";
 
 interface Project {
 	id: string;
@@ -42,6 +48,7 @@ interface Project {
 	description?: string;
 	created_at: string;
 	itemCount?: number;
+	totalValue?: number;
 }
 
 const props = defineProps<{
@@ -69,5 +76,14 @@ const onDeleteProject = () => {
 const formatDate = (dateString: string) => {
 	const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
 	return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+const formatValue = (value: number | string) => {
+	let v = typeof value === "string" ? parseFloat(value) : value;
+
+	return v.toLocaleString("es-ES", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	});
 };
 </script>

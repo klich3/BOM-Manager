@@ -2,7 +2,7 @@
 	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 		<div
 			:class="
-				step !== 2
+				step == 1
 					? 'bg-card-light rounded-2xl shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 ease-in-out'
 					: 'bg-card-light rounded-2xl shadow-xl w-[calc(100vw-2rem)] h-[calc(100vh-2rem)] p-6 overflow-hidden flex flex-col transition-all duration-300 ease-in-out'
 			">

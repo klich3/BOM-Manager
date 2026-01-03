@@ -200,6 +200,7 @@ interface InventoryItem {
 	lead_time?: number;
 	date_code_lot_no?: string;
 	status?: string;
+	pcb_designation?: string;
 	project_name?: string;
 }
 

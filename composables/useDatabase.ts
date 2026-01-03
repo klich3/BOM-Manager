@@ -3,6 +3,7 @@ import { useProjectsDatabase } from '@/composables/useProjectsDatabase';
 import { useProjectItemsDatabase } from '@/composables/useProjectItemsDatabase';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import { useNotificationsDatabase } from '@/composables/useNotificationsDatabase';
+import { useSettingsDatabase } from '@/composables/useSettingsDatabase';
 
 export const initDatabase = async () => {
   const itemsDb = useItemsDatabase();
@@ -26,6 +27,7 @@ export const useDatabase = () => {
   const projectItemsDb = useProjectItemsDatabase();
   const activityDb = useActivityDatabase();
   const notificationsDb = useNotificationsDatabase();
+  const settingsDb = useSettingsDatabase();
 
   return {
     // Métodos para items
@@ -66,6 +68,12 @@ export const useDatabase = () => {
     markNotificationAsRead: notificationsDb.markNotificationAsRead,
     markAllNotificationsAsRead: notificationsDb.markAllNotificationsAsRead,
     deleteNotification: notificationsDb.deleteNotification,
-    getUnreadNotificationsCount: notificationsDb.getUnreadNotificationsCount
+    getUnreadNotificationsCount: notificationsDb.getUnreadNotificationsCount,
+
+    // Métodos para configuración
+    getSetting: settingsDb.getSetting,
+    createSetting: settingsDb.createSetting,
+    updateSetting: settingsDb.updateSetting,
+    ensureDefaultSettings: settingsDb.ensureDefaultSettings
   };
 };
