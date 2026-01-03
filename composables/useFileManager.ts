@@ -7,9 +7,29 @@ const isTauri = typeof window !== "undefined" && !!(window as any).__TAURI_INTER
 const deleteTauriFile = async (filePath: string) => {
     if (!isTauri) return;
 
-    // En Tauri, los archivos se manejan como Data URLs, por lo que no hay archivos físicos que eliminar
-    // Solo registramos la intención de eliminación
-    console.debug('Archivo en Tauri (Data URL) marcado para eliminación:', filePath);
+    // Verificar si es una ruta de archivo real o una Data URL
+    if (filePath.startsWith('data:')) {
+        // Si es una Data URL, no hay archivo físico que eliminar, solo registrar
+        console.debug('Data URL en Tauri marcada para eliminación (no hay archivo físico):', filePath);
+    } else {
+        // Si es una ruta de archivo real, intentar eliminar usando el plugin de sistema de archivos
+        // Si el plugin está disponible, lo usamos; de lo contrario, solo registramos la intención
+        try {
+            // Intentar importar dinámicamente el plugin de Tauri
+            const fsModule = await import('@tauri-apps/plugin-fs');
+
+            // Usar la función remove si existe
+            if ('remove' in fsModule && typeof fsModule.remove === 'function') {
+                await fsModule.remove(filePath);
+                console.log('Archivo eliminado de Tauri:', filePath);
+            } else {
+                console.debug('Función de eliminación no disponible en el plugin de Tauri, registrando eliminación:', filePath);
+            }
+        } catch (error) {
+            console.debug('Plugin de sistema de archivos de Tauri no disponible, registrando eliminación:', filePath, error);
+            // Si el plugin no está disponible, solo registramos la intención de eliminación
+        }
+    }
 };
 
 export interface FileInfo {
@@ -54,8 +74,30 @@ export const useFileManager = () => {
     // Para Tauri: usar sistema de archivos del sistema operativo
     const saveFileToTauri = async (file: File, fileName: string): Promise<string> => {
         try {
-            // En Tauri, guardamos como Data URL para simplicidad
-            // En producción, se podría usar tauri-plugin-fs para guardar en directorio específico
+            // Intentar usar el plugin de sistema de archivos de Tauri
+            const fsModule = await import('@tauri-apps/plugin-fs');
+
+            // Convertir el archivo a texto si es posible
+            const textContent = await file.text();
+
+            // Verificar si la función writeTextFile existe
+            if ('writeTextFile' in fsModule && typeof fsModule.writeTextFile === 'function') {
+                await fsModule.writeTextFile(fileName, textContent);
+            } else if ('writeFile' in fsModule && typeof fsModule.writeFile === 'function') {
+                // Convertir el contenido a ArrayBuffer si writeTextFile no está disponible
+                const encoder = new TextEncoder();
+                const data = encoder.encode(textContent);
+                await fsModule.writeFile(fileName, data);
+            } else {
+                // Si ninguna función está disponible, lanzar un error para usar el fallback
+                throw new Error('Funciones de escritura no disponibles en el plugin de Tauri');
+            }
+
+            // Devolver la ruta del archivo guardado
+            return fileName;
+        } catch (error) {
+            console.error('Error saving file in Tauri:', error);
+            // Si el plugin no está disponible o no se puede leer como texto, usar Data URL como fallback
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -63,9 +105,6 @@ export const useFileManager = () => {
                 };
                 reader.readAsDataURL(file);
             });
-        } catch (error) {
-            console.error('Error saving file in Tauri:', error);
-            throw new Error('No se pudo guardar el archivo');
         }
     };
 
