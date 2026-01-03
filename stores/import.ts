@@ -82,6 +82,7 @@ export const useImportStore = defineStore('import', {
             //{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
             { key: "status", label: "Estado" },
             { key: "pcbDesignation", label: "Designación PCB" },
+            { key: "itemImage", label: "Imagen del Item" },
             //{ key: "createdAt", label: "Fecha de Creación" },
             //{ key: "updatedAt", label: "Fecha de Actualización" },
         ],

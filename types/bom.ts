@@ -28,6 +28,7 @@ export interface BOMItem {
   dateCodeLotNo?: string;
   status?: string;
   pcbDesignation?: string;
+  itemImage?: string;
 }
 
 export interface BOMProject {

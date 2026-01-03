@@ -62,8 +62,8 @@ export const useItemsDatabase = () => {
             await database.execute(
                 `INSERT INTO bom_items (id, name, description, quantity, category, supplier, 
          part_number, lcsc_part, price, in_stock, min_stock, notes, created_at, updated_at, manufacturer, 
-         customer_no, package, rohs, ext_price, lead_time, date_code_lot_no, status, pcb_designation) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         customer_no, package, rohs, ext_price, lead_time, date_code_lot_no, status, pcb_designation, item_image) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ,
                 [
                     id,
@@ -88,7 +88,8 @@ export const useItemsDatabase = () => {
                     itemForDb.lead_time || null,
                     itemForDb.date_code_lot_no || null,
                     itemForDb.status || null,
-                    itemForDb.pcb_designation || null
+                    itemForDb.pcb_designation || null,
+                    itemForDb.item_image || null
                 ]
             );
 
@@ -116,7 +117,7 @@ export const useItemsDatabase = () => {
                 `UPDATE bom_items SET name = ?, description = ?, quantity = ?, category = ?,
          supplier = ?, part_number = ?, lcsc_part = ?, price = ?, in_stock = ?, min_stock = ?,
          notes = ?, updated_at = ?, manufacturer = ?, customer_no = ?, package = ?,
-         rohs = ?, ext_price = ?, lead_time = ?, date_code_lot_no = ?, status = ?, pcb_designation = ? WHERE id = ?`,
+         rohs = ?, ext_price = ?, lead_time = ?, date_code_lot_no = ?, status = ?, pcb_designation = ?, item_image = ? WHERE id = ?`,
                 [
                     itemForDb.name,
                     itemForDb.description,
@@ -139,6 +140,7 @@ export const useItemsDatabase = () => {
                     itemForDb.date_code_lot_no,
                     itemForDb.status,
                     itemForDb.pcb_designation,
+                    itemForDb.item_image,
                     id
                 ]
             );

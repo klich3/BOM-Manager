@@ -172,6 +172,7 @@ interface ProjectItem {
 	date_code_lot_no?: string;
 	status?: string;
 	pcb_designation?: string;
+	item_image?: string;
 }
 
 const props = defineProps<{ items: ProjectItem[] }>();

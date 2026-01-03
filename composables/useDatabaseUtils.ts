@@ -90,6 +90,7 @@ export const BOM_ITEM_FIELD_MAPPING = {
     dateCodeLotNo: 'date_code_lot_no',
     status: 'status',
     pcbDesignation: 'pcb_designation',
+    itemImage: 'item_image', 
 } as const;
 
 /**
