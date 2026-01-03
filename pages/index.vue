@@ -156,6 +156,7 @@ const db = useDatabase();
 const showImportModal = ref(false);
 const unreadNotificationsCount = ref(0);
 const recentActivity = ref<any[]>([]);
+const loading = ref(true);
 
 const stats = ref({
 	totalItems: 0,

@@ -26,14 +26,14 @@
 - [x] Crear página `/pages/inventory.vue`
 - [x] Componente de tabla con búsqueda y filtros
 - [x] CRUD completo de items
-- [x] Exportar a CSV/XLSX
+- [x] Exportar a XLSX
 - [x] tablas poner seleccionar todos o unos cuantos para eliminar
 - [x] - seleccion varios, opcion modal asignar a un proyecto
 - [x] - Preview de items de lcsc (en listado de componentes)
 - [ ] - Integrar o mandar para comprar lcsc.com
 - [ ] - Visualizar y guardar el listado de los componentes
 - [ ] - Guardar en iCloud copia de seguridad
-- [ ] - Marcar los items que llegan casi a gastarse para notificar y poder encargar nuevos
+-> - [ ] - Marcar los items que llegan casi a gastarse para notificar y poder encargar nuevos
 - [ ] - Hacer mix / reorder
 
 ### 3. Gestión de Proyectos
@@ -59,7 +59,7 @@
 
 
 ### 6. Export
-- [ ] Posibilidad de exportar la DB -> para importar en osx o otro device
+- [x] Posibilidad de exportar la DB -> para importar en osx o otro device
 
 ### 7. Local storage
 - [ ] cuando se cargan imagenes de lscs -> hay que guardarlas en carpeta tmp para que sea offline
