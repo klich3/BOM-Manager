@@ -56,6 +56,7 @@ import {
 	GlobeAltIcon,
 } from "@heroicons/vue/24/outline";
 import { useFileManager } from "@/composables/useFileManager";
+import { useFilesDatabase } from "@/composables/useFilesDatabase";
 import { computed } from "vue";
 
 interface Project {
@@ -65,33 +66,13 @@ interface Project {
 	created_at: string;
 	itemCount?: number;
 	totalValue?: number;
-	thumb?: string;
 	git?: string;
 	web?: string;
-	pdf?: string;
 }
 
 const props = defineProps<{
 	project: Project;
 }>();
-
-// Computed para manejar la URL de la imagen según el entorno
-const projectThumbUrl = computed(() => {
-	if (!props.project.thumb) return null;
-
-	// En Tauri, las imágenes ya vienen como data URLs
-	if (useFileManager().isTauri) {
-		return props.project.thumb;
-	}
-
-	// En web, verificar si es una URL de OPFS o necesita reconstruirse
-	if (props.project.thumb.startsWith("blob:")) {
-		return props.project.thumb;
-	}
-
-	// Para otros casos, retornar tal cual (podría ser una URL externa)
-	return props.project.thumb;
-});
 
 const emit = defineEmits<{
 	viewProject: [id: string];

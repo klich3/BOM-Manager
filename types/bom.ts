@@ -35,10 +35,8 @@ export interface BOMProject {
   id: string;
   name: string;
   description?: string;
-  thumb?: string;
   git?: string;
   web?: string;
-  pdf?: string;
   createdAt: Date;
   updatedAt: Date;
 }

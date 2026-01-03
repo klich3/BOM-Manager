@@ -61,6 +61,8 @@
 
 ### 6. Export
 - [x] Posibilidad de exportar la DB -> para importar en osx o otro device
+- [ ] se tienen que crear un zip con files de OPFS en web para export 
+- [ ] import del zip para archivos temp
 
 ### 7. Local storage
 - [ ] cuando se cargan imagenes de lscs -> hay que guardarlas en carpeta tmp para que sea offline

@@ -4,6 +4,7 @@ import { useProjectItemsDatabase } from '@/composables/useProjectItemsDatabase';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import { useNotificationsDatabase } from '@/composables/useNotificationsDatabase';
 import { useSettingsDatabase } from '@/composables/useSettingsDatabase';
+import { useFilesDatabase } from '@/composables/useFilesDatabase';
 
 export const initDatabase = async () => {
   const itemsDb = useItemsDatabase();
@@ -28,6 +29,7 @@ export const useDatabase = () => {
   const activityDb = useActivityDatabase();
   const notificationsDb = useNotificationsDatabase();
   const settingsDb = useSettingsDatabase();
+  const filesDb = useFilesDatabase();
 
   return {
     // Métodos para items
@@ -74,6 +76,14 @@ export const useDatabase = () => {
     getSetting: settingsDb.getSetting,
     createSetting: settingsDb.createSetting,
     updateSetting: settingsDb.updateSetting,
-    ensureDefaultSettings: settingsDb.ensureDefaultSettings
+    ensureDefaultSettings: settingsDb.ensureDefaultSettings,
+
+    // Métodos para archivos
+    createFile: filesDb.createFile,
+    getFileById: filesDb.getFileById,
+    getFilesByProjectId: filesDb.getFilesByProjectId,
+    updateFile: filesDb.updateFile,
+    deleteFile: filesDb.deleteFile,
+    deleteFilesByProjectId: filesDb.deleteFilesByProjectId
   };
 };

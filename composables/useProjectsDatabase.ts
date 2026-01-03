@@ -1,5 +1,6 @@
 import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
+import { useFilesDatabase } from '@/composables/useFilesDatabase';
 import type { BOMProject } from '@/types/bom';
 import type { Database } from '@/types/database';
 
@@ -56,8 +57,8 @@ export const useProjectsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                'INSERT INTO projects (id, name, description, thumb, git, web, pdf, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [id, project.name || '', project.description || null, project.thumb ?? null, project.git ?? null, project.web ?? null, project.pdf ?? null, now, now]
+                'INSERT INTO projects (id, name, description, git, web, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [id, project.name || '', project.description || null, project.git ?? null, project.web ?? null, now, now]
             );
 
             // Registrar actividad
@@ -78,8 +79,8 @@ export const useProjectsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                'UPDATE projects SET name = ?, description = ?, thumb = ?, git = ?, web = ?, pdf = ?, updated_at = ? WHERE id = ?',
-                [project.name, project.description, project.thumb ?? null, project.git ?? null, project.web ?? null, project.pdf ?? null, now, id]
+                'UPDATE projects SET name = ?, description = ?, git = ?, web = ?, updated_at = ? WHERE id = ?',
+                [project.name, project.description, project.git ?? null, project.web ?? null, now, id]
             );
 
             // Registrar actividad
@@ -96,9 +97,15 @@ export const useProjectsDatabase = () => {
         const database = await getDatabase();
         if (!database) return false;
 
+        const { deleteFilesByProjectId } = useFilesDatabase();
+
         try {
             // Registrar actividad antes de eliminar
             const project = await getProjectById(id);
+
+            // Eliminar archivos asociados al proyecto (eliminación en cascada)
+            await deleteFilesByProjectId(id);
+
             await database.execute('DELETE FROM projects WHERE id = ?', [id]);
 
             // Registrar actividad

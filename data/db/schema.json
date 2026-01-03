@@ -10,7 +10,11 @@
 		},
 		{
 			"name": "projects",
-			"definition": "CREATE TABLE IF NOT EXISTS projects (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  description TEXT,\n  thumb TEXT,\n  git TEXT,\n  web TEXT,\n  pdf TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+			"definition": "CREATE TABLE IF NOT EXISTS projects (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  description TEXT,\n  git TEXT,\n  web TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+		},
+		{
+			"name": "files",
+			"definition": "CREATE TABLE IF NOT EXISTS files (\n  id TEXT PRIMARY KEY,\n  project_id TEXT,\n  filename TEXT NOT NULL,\n  filepath TEXT NOT NULL,\n  file_type TEXT,\n  size INTEGER,\n  title TEXT,\n  description TEXT,\n  created_at TEXT NOT NULL,\n  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE\n)"
 		},
 		{
 			"name": "project_items",

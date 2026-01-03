@@ -150,6 +150,7 @@ import { XMarkIcon, PhotoIcon, DocumentTextIcon } from "@heroicons/vue/24/outlin
 import { useFileManager } from "@/composables/useFileManager";
 import { useActivityDatabase } from "@/composables/useActivityDatabase";
 import { useProjectsDatabase } from "@/composables/useProjectsDatabase";
+import { useFilesDatabase } from "@/composables/useFilesDatabase";
 
 interface Project {
 	id?: string;
@@ -179,10 +180,11 @@ const emit = defineEmits<{
 
 const thumbInputRef = ref<HTMLInputElement | null>(null);
 const pdfInputRef = ref<HTMLInputElement | null>(null);
-const thumbUrl = ref('');
+const thumbUrl = ref("");
 const { saveFile, deleteFile, getFileByName } = useFileManager();
 const { logActivity } = useActivityDatabase();
 const { getProjectById } = useProjectsDatabase();
+const { createFile, getFilesByProjectId, deleteFilesByProjectId } = useFilesDatabase();
 
 const projectForm = ref({
 	name: "",
@@ -199,14 +201,34 @@ const loadProjectData = async () => {
 		try {
 			const projectData = await getProjectById(props.editingProject.id);
 			if (projectData) {
+				// Cargar datos del proyecto
 				projectForm.value = {
 					name: projectData.name,
 					description: projectData.description || "",
-					thumb: projectData.thumb || "",
+					thumb: "", // Inicializar como vacío, se llenará después con archivos
 					git: projectData.git || "",
 					web: projectData.web || "",
-					pdf: projectData.pdf || "",
+					pdf: "", // Inicializar como vacío, se llenará después con archivos
 				};
+
+				// Cargar archivos asociados al proyecto (thumbnails y PDFs)
+				try {
+					const projectFiles = await getFilesByProjectId(props.editingProject.id);
+
+					// Buscar thumbnail
+					const thumbFile = projectFiles.find((f) => f.filename.startsWith("thumb-prj-"));
+					if (thumbFile) {
+						projectForm.value.thumb = thumbFile.filepath;
+					}
+
+					// Buscar PDF
+					const pdfFile = projectFiles.find((f) => f.filename.startsWith("pdf-prj-"));
+					if (pdfFile) {
+						projectForm.value.pdf = pdfFile.filepath;
+					}
+				} catch (error) {
+					console.error("Error cargando archivos del proyecto:", error);
+				}
 			}
 		} catch (error) {
 			console.error("Error cargando datos del proyecto:", error);
@@ -222,10 +244,10 @@ const loadProjectData = async () => {
 			pdf: "",
 		};
 	}
-	
+
 	// Forzar actualización del watcher de thumb
 	const currentThumb = projectForm.value.thumb;
-	projectForm.value.thumb = '';
+	projectForm.value.thumb = "";
 	// Usar nextTick para asegurar que se procese el cambio vacío antes de asignar el valor real
 	setTimeout(() => {
 		projectForm.value.thumb = currentThumb;
@@ -250,25 +272,80 @@ watch(
 watch(
 	() => projectForm.value.thumb,
 	async (newThumb) => {
-		if (newThumb && !newThumb.startsWith('data:') && !newThumb.startsWith('blob:')) {
-			// Si es una ruta de archivo (nombre de archivo), intentar cargarlo usando getFileByName
-			try {
-				const fileName = newThumb.split('/').pop()?.split('\\').pop() || '';
-				if (fileName) {
+		if (newThumb && !newThumb.startsWith("data:")) {
+			if (newThumb.startsWith("blob:")) {
+				// Si es una URL blob, intentar cargar el archivo desde OPFS
+				try {
+					const fileName = newThumb.split("/").pop()?.split("\\").pop() || "";
 					const fileUrl = await getFileByName(fileName);
 					if (fileUrl) {
 						thumbUrl.value = fileUrl;
 					} else {
 						thumbUrl.value = newThumb; // Si no se puede cargar, usar la URL original
 					}
+				} catch (error) {
+					console.error("Error al cargar thumbnail desde OPFS:", error);
+					thumbUrl.value = newThumb;
 				}
-			} catch (error) {
-				console.error('Error al cargar thumbnail por nombre:', error);
-				thumbUrl.value = newThumb;
+			} else {
+				// Si es una ruta de archivo (nombre de archivo), intentar cargarlo usando getFileByName
+				try {
+					const fileName = newThumb.split("/").pop()?.split("\\").pop() || "";
+					if (fileName) {
+						const fileUrl = await getFileByName(fileName);
+						if (fileUrl) {
+							thumbUrl.value = fileUrl;
+						} else {
+							thumbUrl.value = newThumb; // Si no se puede cargar, usar la URL original
+						}
+					}
+				} catch (error) {
+					console.error("Error al cargar thumbnail por nombre:", error);
+					thumbUrl.value = newThumb;
+				}
 			}
 		} else {
-			// Si ya es una data URL o blob URL, usar directamente
+			// Si ya es una data URL, usar directamente
 			thumbUrl.value = newThumb;
+		}
+	},
+	{ immediate: true },
+);
+
+// Watch para actualizar la URL del PDF cuando cambia
+watch(
+	() => projectForm.value.pdf,
+	async (newPdf) => {
+		if (newPdf && !newPdf.startsWith("data:")) {
+			if (newPdf.startsWith("blob:")) {
+				// Si es una URL blob, intentar cargar el archivo desde OPFS
+				try {
+					const fileName = newPdf.split("/").pop()?.split("\\").pop() || "";
+					const fileUrl = await getFileByName(fileName);
+					if (fileUrl) {
+						// No necesitamos una variable específica para PDF como thumbUrl
+						// El PDF se manejará directamente en projectForm.value.pdf
+						// Pero mantenemos esta lógica para consistencia si en el futuro se necesita
+					} else {
+						// Si no se puede cargar, dejar como está
+					}
+				} catch (error) {
+					console.error("Error al cargar PDF desde OPFS:", error);
+				}
+			} else {
+				// Si es una ruta de archivo (nombre de archivo), intentar cargarlo usando getFileByName
+				try {
+					const fileName = newPdf.split("/").pop()?.split("\\").pop() || "";
+					if (fileName) {
+						const fileUrl = await getFileByName(fileName);
+						if (!fileUrl) {
+							// Si no se puede cargar, dejar como está
+						}
+					}
+				} catch (error) {
+					console.error("Error al cargar PDF por nombre:", error);
+				}
+			}
 		}
 	},
 	{ immediate: true },
@@ -314,6 +391,26 @@ const handleImageFile = async (file: File) => {
 		}
 
 		const fileUrl = await saveFile(file, fileName);
+
+		// Si tenemos un proyecto existente, crear registro en la tabla de archivos
+		if (props.editingProject?.id) {
+			try {
+				await createFile({
+					project_id: props.editingProject.id,
+					filename: fileName,
+					filepath: fileUrl,
+					file_type: file.type,
+					size: file.size,
+					title: `Thumbnail para ${projectForm.value.name || "proyecto"}`,
+					description: `Imagen de thumbnail para el proyecto ${
+						projectForm.value.name || props.editingProject.id
+					}`,
+				});
+			} catch (error) {
+				console.error("Error creando registro de archivo:", error);
+			}
+		}
+
 		projectForm.value.thumb = fileUrl;
 	} catch (error) {
 		console.error("Error saving image:", error);
@@ -326,6 +423,21 @@ const removeThumb = async () => {
 		try {
 			// Eliminar archivo del sistema de archivos
 			await deleteFile(projectForm.value.thumb);
+
+			// Si tenemos un proyecto existente, buscar y eliminar el registro de archivo correspondiente
+			if (props.editingProject?.id) {
+				try {
+					// Buscar archivos asociados al proyecto
+					const projectFiles = await getFilesByProjectId(props.editingProject.id);
+					// Encontrar el archivo que coincide con la ruta actual
+					const fileToRemove = projectFiles.find((f) => f.filepath === projectForm.value.thumb);
+					if (fileToRemove) {
+						await useFilesDatabase().deleteFile(fileToRemove.id);
+					}
+				} catch (error) {
+					console.error("Error eliminando registro de archivo:", error);
+				}
+			}
 
 			// Registrar actividad de eliminación
 			const projectId = props.editingProject?.id || "new_project";
@@ -372,6 +484,24 @@ const handlePdfFile = async (file: File) => {
 		}
 
 		const fileUrl = await saveFile(file, fileName);
+
+		// Si tenemos un proyecto existente, crear registro en la tabla de archivos
+		if (props.editingProject?.id) {
+			try {
+				await createFile({
+					project_id: props.editingProject.id,
+					filename: fileName,
+					filepath: fileUrl,
+					file_type: file.type,
+					size: file.size,
+					title: `PDF para ${projectForm.value.name || "proyecto"}`,
+					description: `Documento PDF para el proyecto ${projectForm.value.name || props.editingProject.id}`,
+				});
+			} catch (error) {
+				console.error("Error creando registro de archivo:", error);
+			}
+		}
+
 		projectForm.value.pdf = fileUrl;
 	} catch (error) {
 		console.error("Error saving PDF:", error);
@@ -384,6 +514,21 @@ const removePdf = async () => {
 		try {
 			// Eliminar archivo del sistema de archivos
 			await deleteFile(projectForm.value.pdf);
+
+			// Si tenemos un proyecto existente, buscar y eliminar el registro de archivo correspondiente
+			if (props.editingProject?.id) {
+				try {
+					// Buscar archivos asociados al proyecto
+					const projectFiles = await getFilesByProjectId(props.editingProject.id);
+					// Encontrar el archivo que coincide con la ruta actual
+					const fileToRemove = projectFiles.find((f) => f.filepath === projectForm.value.pdf);
+					if (fileToRemove) {
+						await useFilesDatabase().deleteFile(fileToRemove.id);
+					}
+				} catch (error) {
+					console.error("Error eliminando registro de archivo:", error);
+				}
+			}
 
 			// Registrar actividad de eliminación
 			const projectId = props.editingProject?.id || "new_project";
@@ -429,7 +574,7 @@ const saveProject = async () => {
 		}
 
 		// Incluir el ID del proyecto en los datos si está editando
-		const projectData = {
+		const { thumb, pdf, ...projectData } = {
 			...projectForm.value,
 			id: props.editingProject?.id || undefined,
 		};

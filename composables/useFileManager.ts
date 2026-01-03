@@ -140,10 +140,10 @@ export const useFileManager = () => {
                 const fileHandle = await opfsRoot.getFileHandle(fileName);
                 const file = await fileHandle.getFile();
                 const url = URL.createObjectURL(file);
-                
+
                 // Guardar mapeo URL -> nombre de archivo para futuras referencias
                 fileUrlMap.set(url, fileName);
-                
+
                 return url;
             } catch (error) {
                 console.error('Error getting file by name from OPFS:', error);
