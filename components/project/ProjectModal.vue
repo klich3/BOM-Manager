@@ -1,59 +1,129 @@
 <template>
-	<div
-		v-if="show"
-		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-	>
+	<div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 		<div class="bg-card-light rounded-2xl shadow-xl max-w-lg w-full p-6">
 			<div class="flex items-center justify-between mb-6">
 				<h2 class="text-xl font-semibold text-text-main-light">
 					{{ editingProject ? "Editar Proyecto" : "Nuevo Proyecto" }}
 				</h2>
-				<button
-					@click="closeModal"
-					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-				>
+				<button @click="closeModal" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
 					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
 			</div>
 
 			<form @submit.prevent="saveProject" class="space-y-4">
 				<div>
-					<label class="block text-sm font-medium text-text-main-light mb-2">
-						Nombre del Proyecto *
-					</label>
+					<label class="block text-sm font-medium text-text-main-light mb-2"> Nombre del Proyecto * </label>
 					<input
 						v-model="projectForm.name"
 						type="text"
 						required
 						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-						placeholder="ej. PCB Main Controller v2.4"
-					/>
+						placeholder="ej. PCB Main Controller v2.4" />
 				</div>
 
 				<div>
-					<label class="block text-sm font-medium text-text-main-light mb-2">
-						Descripción
-					</label>
+					<label class="block text-sm font-medium text-text-main-light mb-2"> Descripción </label>
 					<textarea
 						v-model="projectForm.description"
 						rows="4"
 						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light resize-none"
-						placeholder="Describe el proyecto..."
-					></textarea>
+						placeholder="Describe el proyecto..."></textarea>
+				</div>
+
+				<!-- Thumbnail Upload -->
+				<div>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
+						Imagen del Proyecto (Thumbnail)
+					</label>
+					<div
+						class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+						@click="triggerThumbUpload"
+						@drop.prevent="handleThumbDrop"
+						@dragover.prevent>
+						<input
+							ref="thumbInputRef"
+							type="file"
+							accept="image/*"
+							@change="handleThumbSelect"
+							class="hidden" />
+						<div v-if="!projectForm.thumb" class="space-y-2">
+							<PhotoIcon class="w-12 h-12 text-gray-400 mx-auto" />
+							<p class="text-gray-500">Arrastra una imagen o haz clic para seleccionar</p>
+							<p class="text-xs text-gray-400">Formatos: JPG, PNG, WEBP</p>
+						</div>
+						<div v-else class="relative">
+							<img
+								:src="projectForm.thumb"
+								:alt="projectForm.name || 'Thumbnail'"
+								class="w-32 h-32 object-cover rounded-lg mx-auto" />
+							<button
+								type="button"
+								@click.stop="removeThumb"
+								class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+								<XMarkIcon class="w-4 h-4" />
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Links Section -->
+				<div class="border-t border-gray-200 pt-4">
+					<h3 class="text-md font-medium text-text-main-light mb-3">Enlaces del Proyecto</h3>
+
+					<div class="space-y-3">
+						<div>
+							<label class="block text-sm font-medium text-text-main-light mb-1"> Repositorio Git </label>
+							<input
+								v-model="projectForm.git"
+								type="url"
+								class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+								placeholder="https://github.com/user/project" />
+						</div>
+
+						<div>
+							<label class="block text-sm font-medium text-text-main-light mb-1"> Sitio Web </label>
+							<input
+								v-model="projectForm.web"
+								type="url"
+								class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+								placeholder="https://project-website.com" />
+						</div>
+
+						<div>
+							<label class="block text-sm font-medium text-text-main-light mb-1"> Documento PDF </label>
+							<div class="flex gap-2">
+								<input
+									v-model="projectForm.pdf"
+									type="url"
+									class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+									placeholder="https://documento.pdf" />
+								<input
+									ref="pdfInputRef"
+									type="file"
+									accept=".pdf"
+									@change="handlePdfSelect"
+									class="hidden" />
+								<button
+									type="button"
+									@click="triggerPdfUpload"
+									class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm transition-colors">
+									Subir PDF
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<div class="flex gap-3 pt-4">
 					<button
 						type="button"
 						@click="closeModal"
-						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
-					>
+						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors">
 						Cancelar
 					</button>
 					<button
 						type="submit"
-						class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium"
-					>
+						class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium">
 						{{ editingProject ? "Guardar" : "Crear" }}
 					</button>
 				</div>
@@ -63,13 +133,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { XMarkIcon } from "@heroicons/vue/24/outline";
+import { ref, watch, onMounted } from "vue";
+import { XMarkIcon, PhotoIcon } from "@heroicons/vue/24/outline";
+import { useFileManager } from "@/composables/useFileManager";
+import { useActivityDatabase } from "@/composables/useActivityDatabase";
+import { useProjectsDatabase } from "@/composables/useProjectsDatabase";
 
 interface Project {
 	id?: string;
 	name: string;
 	description?: string;
+	thumb?: string;
+	git?: string;
+	web?: string;
+	pdf?: string;
 	createdAt?: string;
 	updatedAt?: string;
 }
@@ -88,36 +165,207 @@ const emit = defineEmits<{
 	save: [project: Project];
 }>();
 
+const thumbInputRef = ref<HTMLInputElement | null>(null);
+const pdfInputRef = ref<HTMLInputElement | null>(null);
+const { saveFile, deleteFile } = useFileManager();
+const { logActivity } = useActivityDatabase();
+const { getProjectById } = useProjectsDatabase();
+
 const projectForm = ref({
 	name: "",
 	description: "",
+	thumb: "",
+	git: "",
+	web: "",
+	pdf: "",
+});
+
+// Cargar datos del proyecto al montar el componente o cuando cambia el proyecto
+const loadProjectData = async () => {
+	if (props.editingProject?.id) {
+		try {
+			const projectData = await getProjectById(props.editingProject.id);
+			if (projectData) {
+				projectForm.value = {
+					name: projectData.name,
+					description: projectData.description || "",
+					thumb: projectData.thumb || "",
+					git: projectData.git || "",
+					web: projectData.web || "",
+					pdf: projectData.pdf || "",
+				};
+			}
+		} catch (error) {
+			console.error("Error cargando datos del proyecto:", error);
+		}
+	} else {
+		// Reiniciar formulario para nuevo proyecto
+		projectForm.value = {
+			name: "",
+			description: "",
+			thumb: "",
+			git: "",
+			web: "",
+			pdf: "",
+		};
+	}
+};
+
+// Cargar datos cuando se monta el componente
+onMounted(() => {
+	loadProjectData();
 });
 
 // Watch para actualizar el formulario cuando cambia editingProject
 watch(
 	() => props.editingProject,
-	(newEditingProject) => {
-		if (newEditingProject) {
-			projectForm.value = {
-				name: newEditingProject.name,
-				description: newEditingProject.description || "",
-			};
-		} else {
-			// Reiniciar formulario si no hay edición
-			projectForm.value = {
-				name: "",
-				description: "",
-			};
-		}
+	() => {
+		loadProjectData();
 	},
-	{ immediate: true }
+	{ immediate: false },
 );
+
+// Thumbnail handling functions
+const triggerThumbUpload = () => {
+	if (thumbInputRef.value) {
+		thumbInputRef.value.click();
+	}
+};
+
+const handleThumbDrop = (event: DragEvent) => {
+	const files = event.dataTransfer?.files;
+	if (files && files.length > 0) {
+		handleImageFile(files[0]);
+	}
+};
+
+const handleThumbSelect = (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	if (input.files && input.files.length > 0) {
+		handleImageFile(input.files[0]);
+	}
+};
+
+const handleImageFile = async (file: File) => {
+	if (!file.type.startsWith("image/")) {
+		alert("Por favor selecciona un archivo de imagen válido");
+		return;
+	}
+
+	try {
+		// Guardar imagen y obtener URL
+		// Usar ID del proyecto o timestamp si es nuevo proyecto
+		const projectId = props.editingProject?.id || `new_${Date.now()}`;
+		const extension = file.name.split(".").pop() || "jpg";
+		const fileName = `thumb-prj-${projectId}.${extension}`;
+
+		// Si ya existe un thumb anterior, eliminarlo primero
+		if (projectForm.value.thumb) {
+			await deleteFile(projectForm.value.thumb);
+		}
+
+		const fileUrl = await saveFile(file, fileName);
+		projectForm.value.thumb = fileUrl;
+	} catch (error) {
+		console.error("Error saving image:", error);
+		alert("Error al guardar la imagen");
+	}
+};
+
+const removeThumb = async () => {
+	if (projectForm.value.thumb) {
+		try {
+			// Eliminar archivo del sistema de archivos
+			await deleteFile(projectForm.value.thumb);
+
+			// Registrar actividad de eliminación
+			const projectId = props.editingProject?.id || "new_project";
+			await logActivity("DELETE", "projects", projectId, "Thumbnail eliminado", undefined);
+		} catch (error) {
+			console.error("Error eliminando thumbnail:", error);
+		}
+	}
+	projectForm.value.thumb = "";
+	if (thumbInputRef.value) {
+		thumbInputRef.value.value = "";
+	}
+};
+
+// PDF handling functions
+const triggerPdfUpload = () => {
+	if (pdfInputRef.value) {
+		pdfInputRef.value.click();
+	}
+};
+
+const handlePdfSelect = (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	if (input.files && input.files.length > 0) {
+		handlePdfFile(input.files[0]);
+	}
+};
+
+const handlePdfFile = async (file: File) => {
+	if (file.type !== "application/pdf") {
+		alert("Por favor selecciona un archivo PDF válido");
+		return;
+	}
+
+	try {
+		// Guardar PDF y obtener URL
+		// Usar ID del proyecto o timestamp si es nuevo proyecto
+		const projectId = props.editingProject?.id || `new_${Date.now()}`;
+		const fileName = `pdf-prj-${projectId}.pdf`;
+
+		// Si ya existe un PDF anterior, eliminarlo primero
+		if (projectForm.value.pdf && projectForm.value.pdf.startsWith("blob:")) {
+			await deleteFile(projectForm.value.pdf);
+		}
+
+		const fileUrl = await saveFile(file, fileName);
+		projectForm.value.pdf = fileUrl;
+	} catch (error) {
+		console.error("Error saving PDF:", error);
+		alert("Error al guardar el PDF");
+	}
+};
 
 const closeModal = () => {
 	emit("close");
 };
 
-const saveProject = () => {
-	emit("save", { ...projectForm.value });
+const saveProject = async () => {
+	// Validar campos requeridos
+	if (!projectForm.value.name.trim()) {
+		alert("El nombre del proyecto es obligatorio");
+		return;
+	}
+
+	try {
+		const projectData = { ...projectForm.value };
+
+		// Registrar actividad de creación/edición
+		const action = props.editingProject ? "UPDATE" : "CREATE";
+		const projectId = props.editingProject?.id || "new_project";
+		const description = props.editingProject
+			? `Proyecto "${projectForm.value.name}" actualizado`
+			: `Proyecto "${projectForm.value.name}" creado`;
+
+		await logActivity(action, "projects", projectId, description);
+
+		// Registrar actividad por cada archivo adjunto
+		if (projectForm.value.thumb) {
+			await logActivity("UPLOAD", "projects", projectId, "Thumbnail subido", undefined);
+		}
+
+		if (projectForm.value.pdf) {
+			await logActivity("UPLOAD", "projects", projectId, "Documento PDF adjuntado", undefined);
+		}
+
+		emit("save", projectData);
+	} catch (error) {
+		console.error("Error guardando proyecto:", error);
+		alert("Error al guardar el proyecto");
+	}
 };
 </script>
