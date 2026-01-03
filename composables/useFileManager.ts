@@ -1,4 +1,16 @@
 import { ref } from 'vue';
+import { FileRecord } from '@/composables/useFilesDatabase';
+
+const isTauri = typeof window !== "undefined" && !!(window as any).__TAURI_INTERNALS__;
+
+// Función para eliminar archivos en Tauri
+const deleteTauriFile = async (filePath: string) => {
+    if (!isTauri) return;
+
+    // En Tauri, los archivos se manejan como Data URLs, por lo que no hay archivos físicos que eliminar
+    // Solo registramos la intención de eliminación
+    console.debug('Archivo en Tauri (Data URL) marcado para eliminación:', filePath);
+};
 
 export interface FileInfo {
     id: string;
@@ -65,17 +77,40 @@ export const useFileManager = () => {
         }
     };
 
-    const deleteFile = async (fileUrl: string): Promise<void> => {
+    const deleteFile = async (fileInfo: string | FileRecord): Promise<void> => {
         try {
+            // Determinar la URL o filepath a partir del parámetro
+            let fileUrl: string;
+            let fileNameToUse: string | undefined;
+
+            if (typeof fileInfo === 'string') {
+                fileUrl = fileInfo;
+            } else {
+                // Si es un objeto FileRecord, determinar qué usar basado en si filepath es blob o no
+                if (fileInfo.filepath.startsWith('blob:')) {
+                    // Si filepath es una URL blob, usamos filepath para buscar en el mapa y filename para eliminar
+                    fileUrl = fileInfo.filepath;
+                    fileNameToUse = fileInfo.filename;
+                } else {
+                    // Si filepath no es blob, usamos filepath normalmente
+                    fileUrl = fileInfo.filepath;
+                }
+            }
+
             // Liberar el objeto URL
             URL.revokeObjectURL(fileUrl);
 
-            if (!isTauri) {
+            if (isTauri) {
+                // En Tauri, para eliminar archivos temporales, usamos la función específica
+                // Solo liberamos la URL ya que los archivos en Tauri se manejan como Data URLs
+                // y no se almacenan en el sistema de archivos como en web/OPFS
+                await deleteTauriFile(fileUrl);
+            } else {
                 // @ts-ignore - OPFS support
                 const opfsRoot = await navigator.storage.getDirectory();
 
                 // Obtener el nombre del archivo del mapa
-                const fileName = fileUrlMap.get(fileUrl);
+                const fileName = fileUrlMap.get(fileUrl) || fileNameToUse;
 
                 if (fileName) {
                     try {
@@ -90,7 +125,26 @@ export const useFileManager = () => {
                         fileUrlMap.delete(fileUrl);
                     }
                 } else {
-                    console.warn('No se encontró el nombre del archivo para la URL:', fileUrl);
+                    // Si no encontramos el nombre en el mapa, intentar encontrarlo por coincidencia
+                    // Esto es útil cuando se recibe una URL blob directamente
+                    console.debug('No se encontró el nombre del archivo para la URL:', fileUrl);
+
+                    // Intentar encontrar el archivo por su nombre en el mapa buscando coincidencias
+                    for (const [url, name] of fileUrlMap.entries()) {
+                        if (url === fileUrl) {
+                            try {
+                                await opfsRoot.removeEntry(name);
+                                // Eliminar del mapa
+                                fileUrlMap.delete(url);
+                                console.log('Archivo eliminado de OPFS (por coincidencia):', name);
+                                break;
+                            } catch (error) {
+                                console.debug('File not found in OPFS (by name):', name);
+                                // Limpiar el mapa igualmente
+                                fileUrlMap.delete(url);
+                            }
+                        }
+                    }
                 }
             }
         } catch (error) {
@@ -134,15 +188,19 @@ export const useFileManager = () => {
             return null;
         } else {
             // En web con OPFS, intentamos recuperar el archivo por nombre
+            // Pero primero verificamos si fileName es una URL blob o una ruta, y extraemos solo el nombre real
             try {
+                // Extraer el nombre real del archivo si fileName es una ruta completa o URL
+                const cleanFileName = fileName.split('/').pop()?.split('\\').pop() || fileName;
+
                 // @ts-ignore - OPFS support
                 const opfsRoot = await navigator.storage.getDirectory();
-                const fileHandle = await opfsRoot.getFileHandle(fileName);
+                const fileHandle = await opfsRoot.getFileHandle(cleanFileName);
                 const file = await fileHandle.getFile();
                 const url = URL.createObjectURL(file);
 
                 // Guardar mapeo URL -> nombre de archivo para futuras referencias
-                fileUrlMap.set(url, fileName);
+                fileUrlMap.set(url, cleanFileName);
 
                 return url;
             } catch (error) {

@@ -195,6 +195,10 @@ const projectForm = ref({
 	pdf: "",
 });
 
+// Variables para almacenar los filepaths originales cuando se tienen URLs blob
+const originalThumbPath = ref("");
+const originalPdfPath = ref("");
+
 // Cargar datos del proyecto al montar el componente o cuando cambia el proyecto
 const loadProjectData = async () => {
 	if (props.editingProject?.id) {
@@ -215,16 +219,44 @@ const loadProjectData = async () => {
 				try {
 					const projectFiles = await getFilesByProjectId(props.editingProject.id);
 
+					/*
+					{
+						"id": "file_1767477887302_1npcwrr7r",
+						"project_id": "id-mjyq5dal-74pcsqr2m",
+						"filename": "thumb-prj-id-mjyq5dal-74pcsqr2m.png",
+						"filepath": "blob:http://localhost:3000/da80688b-3153-4004-a35e-845aafa4b074",
+						"file_type": "image/png",
+						"size": 36622,
+						"title": "Thumbnail para openHPA trigger board sensors",
+						"description": "Imagen de thumbnail para el proyecto openHPA trigger board sensors",
+						"created_at": "2026-01-03T22:04:47.302Z"
+					}
+					*/
+
 					// Buscar thumbnail
 					const thumbFile = projectFiles.find((f) => f.filename.startsWith("thumb-prj-"));
 					if (thumbFile) {
-						projectForm.value.thumb = thumbFile.filepath;
+						// Almacenar el filepath original para su posterior eliminación
+						originalThumbPath.value = thumbFile.filepath;
+						// Si el filepath es una URL blob, usamos el filename para recuperar el archivo desde OPFS
+						if (thumbFile.filepath.startsWith("blob:")) {
+							projectForm.value.thumb = thumbFile.filename;
+						} else {
+							projectForm.value.thumb = thumbFile.filepath;
+						}
 					}
 
 					// Buscar PDF
 					const pdfFile = projectFiles.find((f) => f.filename.startsWith("pdf-prj-"));
 					if (pdfFile) {
-						projectForm.value.pdf = pdfFile.filepath;
+						// Almacenar el filepath original para su posterior eliminación
+						originalPdfPath.value = pdfFile.filepath;
+						// Si el filepath es una URL blob, usamos el filename para recuperar el archivo desde OPFS
+						if (pdfFile.filepath.startsWith("blob:")) {
+							projectForm.value.pdf = pdfFile.filename;
+						} else {
+							projectForm.value.pdf = pdfFile.filepath;
+						}
 					}
 				} catch (error) {
 					console.error("Error cargando archivos del proyecto:", error);
@@ -245,12 +277,15 @@ const loadProjectData = async () => {
 		};
 	}
 
-	// Forzar actualización del watcher de thumb
+	// Forzar actualización del watcher de thumb y pdf
 	const currentThumb = projectForm.value.thumb;
+	const currentPdf = projectForm.value.pdf;
 	projectForm.value.thumb = "";
+	projectForm.value.pdf = "";
 	// Usar nextTick para asegurar que se procese el cambio vacío antes de asignar el valor real
 	setTimeout(() => {
 		projectForm.value.thumb = currentThumb;
+		projectForm.value.pdf = currentPdf;
 	}, 0);
 };
 
@@ -274,9 +309,10 @@ watch(
 	async (newThumb) => {
 		if (newThumb && !newThumb.startsWith("data:")) {
 			if (newThumb.startsWith("blob:")) {
-				// Si es una URL blob, intentar cargar el archivo desde OPFS
+				// Si es una URL blob, intentar cargar el archivo desde OPFS usando el nombre de archivo
+				// Extraer el nombre real del archivo de la URL
+				const fileName = newThumb.split("/").pop()?.split("\\").pop() || newThumb;
 				try {
-					const fileName = newThumb.split("/").pop()?.split("\\").pop() || "";
 					const fileUrl = await getFileByName(fileName);
 					if (fileUrl) {
 						thumbUrl.value = fileUrl;
@@ -312,25 +348,28 @@ watch(
 	{ immediate: true },
 );
 
+// Variable reactiva para la URL del PDF
+const pdfUrl = ref("");
+
 // Watch para actualizar la URL del PDF cuando cambia
 watch(
 	() => projectForm.value.pdf,
 	async (newPdf) => {
 		if (newPdf && !newPdf.startsWith("data:")) {
 			if (newPdf.startsWith("blob:")) {
-				// Si es una URL blob, intentar cargar el archivo desde OPFS
+				// Si es una URL blob, intentar cargar el archivo desde OPFS usando el nombre de archivo
+				// Extraer el nombre real del archivo de la URL
+				const fileName = newPdf.split("/").pop()?.split("\\").pop() || newPdf;
 				try {
-					const fileName = newPdf.split("/").pop()?.split("\\").pop() || "";
 					const fileUrl = await getFileByName(fileName);
 					if (fileUrl) {
-						// No necesitamos una variable específica para PDF como thumbUrl
-						// El PDF se manejará directamente en projectForm.value.pdf
-						// Pero mantenemos esta lógica para consistencia si en el futuro se necesita
+						pdfUrl.value = fileUrl;
 					} else {
-						// Si no se puede cargar, dejar como está
+						pdfUrl.value = newPdf; // Si no se puede cargar, usar la URL original
 					}
 				} catch (error) {
 					console.error("Error al cargar PDF desde OPFS:", error);
+					pdfUrl.value = newPdf;
 				}
 			} else {
 				// Si es una ruta de archivo (nombre de archivo), intentar cargarlo usando getFileByName
@@ -338,14 +377,20 @@ watch(
 					const fileName = newPdf.split("/").pop()?.split("\\").pop() || "";
 					if (fileName) {
 						const fileUrl = await getFileByName(fileName);
-						if (!fileUrl) {
-							// Si no se puede cargar, dejar como está
+						if (fileUrl) {
+							pdfUrl.value = fileUrl;
+						} else {
+							pdfUrl.value = newPdf; // Si no se puede cargar, usar la URL original
 						}
 					}
 				} catch (error) {
 					console.error("Error al cargar PDF por nombre:", error);
+					pdfUrl.value = newPdf;
 				}
 			}
+		} else {
+			// Si ya es una data URL, usar directamente
+			pdfUrl.value = newPdf;
 		}
 	},
 	{ immediate: true },
@@ -421,22 +466,35 @@ const handleImageFile = async (file: File) => {
 const removeThumb = async () => {
 	if (projectForm.value.thumb) {
 		try {
-			// Eliminar archivo del sistema de archivos
-			await deleteFile(projectForm.value.thumb);
-
-			// Si tenemos un proyecto existente, buscar y eliminar el registro de archivo correspondiente
+			// Si tenemos un proyecto existente, buscar el filepath original para eliminarlo del sistema de archivos
 			if (props.editingProject?.id) {
 				try {
 					// Buscar archivos asociados al proyecto
 					const projectFiles = await getFilesByProjectId(props.editingProject.id);
-					// Encontrar el archivo que coincide con la ruta actual
-					const fileToRemove = projectFiles.find((f) => f.filepath === projectForm.value.thumb);
+					// Encontrar el archivo que coincide con el nombre actual
+					const fileToRemove = projectFiles.find(
+						(f) => f.filename === projectForm.value.thumb || f.filepath === projectForm.value.thumb,
+					);
 					if (fileToRemove) {
+						// Eliminar archivo del sistema de archivos pasando el objeto completo
+						await deleteFile(fileToRemove);
+						// Eliminar el registro de archivo de la base de datos
 						await useFilesDatabase().deleteFile(fileToRemove.id);
+					} else {
+						// Si no se encuentra en la base de datos, intentar eliminar usando el path original o directamente
+						const originalPath = originalThumbPath.value || projectForm.value.thumb;
+						await deleteFile(originalPath);
 					}
 				} catch (error) {
 					console.error("Error eliminando registro de archivo:", error);
+					// Si falla la búsqueda en la base de datos, intentar eliminar usando el path original o directamente
+					const originalPath = originalThumbPath.value || projectForm.value.thumb;
+					await deleteFile(originalPath);
 				}
+			} else {
+				// Si es un proyecto nuevo, eliminar directamente
+				const originalPath = originalThumbPath.value || projectForm.value.thumb;
+				await deleteFile(originalPath);
 			}
 
 			// Registrar actividad de eliminación
@@ -447,6 +505,8 @@ const removeThumb = async () => {
 		}
 	}
 	projectForm.value.thumb = "";
+	thumbUrl.value = "";
+	originalThumbPath.value = "";
 	if (thumbInputRef.value) {
 		thumbInputRef.value.value = "";
 	}
@@ -512,22 +572,35 @@ const handlePdfFile = async (file: File) => {
 const removePdf = async () => {
 	if (projectForm.value.pdf) {
 		try {
-			// Eliminar archivo del sistema de archivos
-			await deleteFile(projectForm.value.pdf);
-
-			// Si tenemos un proyecto existente, buscar y eliminar el registro de archivo correspondiente
+			// Si tenemos un proyecto existente, buscar el filepath original para eliminarlo del sistema de archivos
 			if (props.editingProject?.id) {
 				try {
 					// Buscar archivos asociados al proyecto
 					const projectFiles = await getFilesByProjectId(props.editingProject.id);
-					// Encontrar el archivo que coincide con la ruta actual
-					const fileToRemove = projectFiles.find((f) => f.filepath === projectForm.value.pdf);
+					// Encontrar el archivo que coincide con el nombre actual
+					const fileToRemove = projectFiles.find(
+						(f) => f.filename === projectForm.value.pdf || f.filepath === projectForm.value.pdf,
+					);
 					if (fileToRemove) {
+						// Eliminar archivo del sistema de archivos pasando el objeto completo
+						await deleteFile(fileToRemove);
+						// Eliminar el registro de archivo de la base de datos
 						await useFilesDatabase().deleteFile(fileToRemove.id);
+					} else {
+						// Si no se encuentra en la base de datos, intentar eliminar usando el path original o directamente
+						const originalPath = originalPdfPath.value || projectForm.value.pdf;
+						await deleteFile(originalPath);
 					}
 				} catch (error) {
 					console.error("Error eliminando registro de archivo:", error);
+					// Si falla la búsqueda en la base de datos, intentar eliminar usando el path original o directamente
+					const originalPath = originalPdfPath.value || projectForm.value.pdf;
+					await deleteFile(originalPath);
 				}
+			} else {
+				// Si es un proyecto nuevo, eliminar directamente
+				const originalPath = originalPdfPath.value || projectForm.value.pdf;
+				await deleteFile(originalPath);
 			}
 
 			// Registrar actividad de eliminación
@@ -538,6 +611,8 @@ const removePdf = async () => {
 		}
 	}
 	projectForm.value.pdf = "";
+	pdfUrl.value = "";
+	originalPdfPath.value = "";
 	if (pdfInputRef.value) {
 		pdfInputRef.value.value = "";
 	}
