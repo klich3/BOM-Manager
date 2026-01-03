@@ -273,11 +273,7 @@
 						<span v-else>{{ item.dateCodeLotNo || "-" }}</span>
 					</td>
 				</tr>
-				<tr v-if="items.length > 10">
-					<td :colspan="19" class="px-3 py-2 text-sm text-center text-gray-500">
-						+ {{ items.length - 10 }} items más...
-					</td>
-				</tr>
+				<!-- Se eliminó el límite de 10 items para mostrar todos los registros -->
 			</tbody>
 		</table>
 	</div>
@@ -291,6 +287,7 @@ interface Props {
 	items: any[];
 	editable?: boolean;
 	fieldMappings?: Record<string, string>;
+	selectedRows?: Record<number, boolean>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -313,5 +310,12 @@ const isFieldMapped = (field: string): boolean => {
 	// El fieldMappings podría tener la estructura { 'Nombre Original': 'nombre_campo' }
 	const mappedFields = Object.values(props.fieldMappings);
 	return mappedFields.includes(field);
+};
+
+// Función para verificar si una columna está seleccionada para importar
+const isColumnSelected = (field: string): boolean => {
+	// En ImportPreviewTable no tenemos información sobre selección de columnas
+	// Por lo tanto, devolvemos true por defecto
+	return true;
 };
 </script>

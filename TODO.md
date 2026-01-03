@@ -11,9 +11,8 @@
 - [x] - import mapeo no es preciso hay que poner las columnas que hay en csv y mostrarlas completamente
 - [x] - import definir al cual Proyecto pertenece el BOM
 - [x] - Cargar CSV
-
-- [ ] - Cargar XLSX
-- [ ] - Import - Leer -> Templates de easyeda.com
+- [x] - Cargar XLSX
+- [x] - Import - Leer -> Templates de easyeda.com
 - [x] - Import -> cuadrar las columnas 
 - [x] - Import stock min si se elecciona hay que poner un campo para poner un valor en la pantalla 3, tambien poner una nota informativa arriba
 -> - [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir

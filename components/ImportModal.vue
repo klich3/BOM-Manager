@@ -66,11 +66,18 @@
 						<!-- Preview of final table in InventoryTable style -->
 						<div>
 							<h3 class="text-lg font-medium text-gray-900 mb-4">Vista previa de la tabla final</h3>
+							<p class="text-gray-600 mb-4">
+								{{ countSelectedRowsStep2 }} de {{ sampleData?.rows?.length || 0 }} filas seleccionadas
+							</p>
 							<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
 								<div class="overflow-x-auto">
 									<table class="w-full">
 										<thead class="bg-gray-50">
 											<tr>
+												<th
+													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase w-[40px]">
+													Seleccionar
+												</th>
 												<th
 													v-for="(header, headerIndex) in originalHeaders"
 													:key="'preview-header-' + headerIndex"
@@ -85,6 +92,10 @@
 											</tr>
 											<!-- Row with field names and selectors -->
 											<tr class="bg-gray-100">
+												<th
+													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40px]">
+													<!-- Empty header for the checkbox column -->
+												</th>
 												<th
 													v-for="(header, headerIndex) in originalHeaders"
 													:key="'selector-header-' + headerIndex"
@@ -118,19 +129,28 @@
 										</thead>
 										<tbody class="divide-y divide-gray-200">
 											<tr v-if="previewItems.length === 0">
-												<td :colspan="originalHeaders.length" class="px-6 py-12 text-center">
+												<td
+													:colspan="originalHeaders.length + 1"
+													class="px-6 py-12 text-center">
 													<p class="text-text-muted-light">No hay datos para previsualizar</p>
 												</td>
 											</tr>
 											<tr
-												v-for="(row, index) in previewItems"
+												v-for="(row, index) in sampleData?.rows"
 												:key="index"
 												class="hover:bg-gray-50 transition-colors">
+												<td class="px-6 py-4 text-sm text-gray-900 w-[40px]">
+													<input
+														type="checkbox"
+														:checked="isRowSelectedStep2(index)"
+														@change="toggleRowSelectionStep2(index)"
+														class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
+												</td>
 												<td
 													v-for="(header, headerIndex) in originalHeaders"
 													:key="'cell-' + index + '-' + headerIndex"
 													class="px-6 py-4 text-sm text-text-main-light">
-													{{ row[header] || "-" }}
+													{{ row[headerIndex] || "-" }}
 												</td>
 											</tr>
 										</tbody>
@@ -308,6 +328,7 @@ const rowComponentMatches = ref<Record<number, string>>({});
 const columnComponentMatches = ref<Record<number, string>>({});
 const existingComponents = ref<any[]>([]);
 const originalHeaders = ref<string[]>([]);
+const selectedRowsStep2 = ref<Record<number, boolean>>({}); // Track which rows are selected for import in step 2
 
 // Reactive variables for preview table
 const selectedPreviewItems = ref<number[]>([]);
@@ -317,47 +338,55 @@ const previewItems = computed(() => {
 	if (!sampleData.value?.rows || !originalHeaders.value) return [];
 
 	// Return the original data rows as they are from the CSV
-	return sampleData.value.rows.map((row) => {
-		const item: any = {};
+	return sampleData.value.rows
+		.map((row, index) => ({ row, index }))
+		.filter(({ index }) => selectedRowsStep2.value[index] !== false)
+		.map(({ row }) => {
+			const item: any = {};
 
-		// For each header in the original CSV, map it to the corresponding value
-		originalHeaders.value.forEach((header, index) => {
-			if (header && row[index] !== undefined && row[index] !== null) {
-				// Use the header as field name with its corresponding value
-				item[header] = row[index];
-			} else if (header) {
-				// If the value is undefined/null, still add the header with empty value
-				item[header] = "";
-			}
+			// For each header in the original CSV, map it to the corresponding value
+			originalHeaders.value.forEach((header, index) => {
+				if (header && row[index] !== undefined && row[index] !== null) {
+					// Use the header as field name with its corresponding value
+					item[header] = row[index];
+				} else if (header) {
+					// If the value is undefined/null, still add the header with empty value
+					item[header] = "";
+				}
+			});
+
+			return item;
 		});
-
-		return item;
-	});
 });
 
 // Computed property to get mapped items for the validation step
 const mappedItems = computed(() => {
 	if (!sampleData.value?.rows || !originalHeaders.value || !columnMapping.value) return [];
 
-	return sampleData.value.rows.map((row) => {
-		const item: any = {};
+	return sampleData.value.rows
+		.map((row, index) => ({ row, index }))
+		.filter(({ index }) => selectedRowsStep2.value[index] !== false)
+		.map(({ row }) => {
+			const item: any = {};
 
-		// Create a mapping from headers to values for this row
-		const rowValues: Record<string, any> = {};
-		originalHeaders.value.forEach((header, index) => {
-			rowValues[header] = row[index];
-		});
+			// Create a mapping from headers to values for this row
+			const rowValues: Record<string, any> = {};
+			originalHeaders.value.forEach((header, index) => {
+				rowValues[header] = row[index];
+			});
 
-		// Apply column mapping: for each field in the schema, find the corresponding header
-		for (const [header, field] of Object.entries(columnMapping.value)) {
-			if (field && rowValues[header] !== undefined && rowValues[header] !== null) {
-				item[field] = rowValues[header];
+			// Apply column mapping: for each field in the schema, find the corresponding header
+			for (const [header, field] of Object.entries(columnMapping.value)) {
+				if (field && rowValues[header] !== undefined && rowValues[header] !== null) {
+					item[field] = rowValues[header];
+				}
 			}
-		}
 
-		return item;
-	});
+			return item;
+		});
 });
+
+// Computed property to count selected items
 
 // Initialize editable items when mappedItems changes
 watch(
@@ -390,6 +419,12 @@ watch(
 			// Set original headers from sample data
 			if (newSampleData.headers && newSampleData.headers.length > 0) {
 				originalHeaders.value = [...newSampleData.headers];
+				// Initialize row selections for step 2 - all rows selected by default
+				const initialSelections: Record<number, boolean> = {};
+				for (let i = 0; i < newSampleData.rows.length; i++) {
+					initialSelections[i] = true;
+				}
+				selectedRowsStep2.value = initialSelections;
 			}
 		}
 	},
@@ -588,6 +623,25 @@ const updateColumnMapping = (header: string, field: string) => {
 const getMappedHeader = (field: string): string => {
 	return Object.entries(importStore.columnMapping).find(([, value]) => value === field)?.[0] || "";
 };
+
+// Función para alternar la selección de una fila en el paso 2
+const toggleRowSelectionStep2 = (index: number) => {
+	selectedRowsStep2.value = {
+		...selectedRowsStep2.value,
+		[index]: !selectedRowsStep2.value[index],
+	};
+};
+
+// Función para verificar si una fila está seleccionada en el paso 2
+const isRowSelectedStep2 = (index: number): boolean => {
+	return selectedRowsStep2.value[index] !== false;
+};
+
+// Función para contar filas seleccionadas en el paso 2
+const countSelectedRowsStep2 = computed(() => {
+	if (!selectedRowsStep2.value || !sampleData.value?.rows) return 0;
+	return sampleData.value.rows.filter((row, index) => selectedRowsStep2.value[index] !== false).length;
+});
 
 // Función para seleccionar/deseleccionar todos los elementos en la vista previa
 const toggleSelectAllPreview = () => {

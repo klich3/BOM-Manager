@@ -160,10 +160,16 @@ export const useFileParser = () => {
                             const numValue = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.-]/g, ''));
                             item[field] = isNaN(numValue) ? (field === 'leadTime' || field === 'extPrice' ? undefined : 0) : numValue;
                         } else {
-                            item[field] = String(value).trim();
+                            // Manejar valores undefined/null convirtiéndolos a string vacío
+                            item[field] = value !== undefined && value !== null ? String(value).trim() : '';
                         }
                     }
                 });
+
+                // Asegurar que el campo name siempre tenga un valor
+                if (!item.name || item.name === '') {
+                    item.name = 'Componente sin nombre';
+                }
 
                 // Validar con Zod
                 const validation = BOMItemSchema.safeParse(item);

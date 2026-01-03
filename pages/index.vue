@@ -139,48 +139,30 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import {
-	CpuChipIcon,
-	Squares2X2Icon,
-	CubeIcon,
-	RectangleStackIcon,
-	Cog6ToothIcon,
-	UserIcon,
-	BellIcon,
-	BuildingOfficeIcon,
-	CheckCircleIcon,
-	CurrencyDollarIcon,
-	ExclamationTriangleIcon,
-	DocumentArrowUpIcon,
-} from "@heroicons/vue/24/outline";
 import { useDatabase } from "@/composables/useDatabase";
-import { useRouter } from "vue-router";
-import StockHealthIndicator from "@/components/dashboard/StockHealthIndicator.vue";
+import { CubeIcon, DocumentArrowUpIcon, RectangleStackIcon, BellIcon, Squares2X2Icon } from "@heroicons/vue/24/outline";
 import StatCard from "@/components/dashboard/StatCard.vue";
+import StockHealthIndicator from "@/components/dashboard/StockHealthIndicator.vue";
 import ImportModal from "@/components/ImportModal.vue";
 
+// Definir metadatos de la página
 definePageMeta({
 	name: "home",
 	layout: "default",
 });
 
+// State
 const db = useDatabase();
-const router = useRouter();
-
-const loading = ref(true);
 const showImportModal = ref(false);
+const unreadNotificationsCount = ref(0);
+const recentActivity = ref<any[]>([]);
+
 const stats = ref({
 	totalItems: 0,
-	projects: 0,
 	lowStock: 0,
 	totalValue: 0,
+	projects: 0,
 });
-
-// Variable para contar notificaciones no leídas
-const unreadNotificationsCount = ref(0);
-
-// Nueva variable para la actividad reciente
-const recentActivity = ref<{ id: string; description: string; date: string }[]>([]);
 
 const currentDate = computed(() => {
 	const now = new Date();
@@ -265,7 +247,9 @@ const handleImportCompleted = async (data: {
 	// Actualizar las estadísticas después de la importación si fue al inventario global
 	if (data.destination === "global") {
 		await loadStats();
+		await loadRecentActivity(); // Refrescar también la actividad reciente
 	}
+	// Si fue a un proyecto específico, podríamos refrescar esa información también
 	showToastMessage("Items importados exitosamente", "success");
 };
 

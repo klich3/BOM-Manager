@@ -480,6 +480,11 @@ const handleImportCompleted = async (data: {
 	// Actualizar items solo si la importación fue al inventario global
 	if (data.destination === "global") {
 		await loadItems();
+		// Resetear filtros y paginación para mostrar todos los items nuevos
+		searchQuery.value = "";
+		filterCategory.value = "";
+		filterStock.value = "";
+		currentPage.value = 1;
 	}
 	showToastMessage("Items importados exitosamente", "success");
 };

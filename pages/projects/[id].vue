@@ -520,8 +520,15 @@ const handleImportCompleted = async (data: {
 	if (data.destination === "project" && data.projectId === route.params.id) {
 		await loadProject();
 		calculateProjectCostMethod();
+		// Mostrar mensaje específico para importación a proyecto
+		let message = `Importación completada: ${data.importedCount} items agregados al proyecto.`;
+		if (data.errors.length > 0) {
+			message += ` Errores: ${data.errors.length}.`;
+		}
+		showToastMessage(message, data.importedCount > 0 ? "success" : "error");
+	} else {
+		showToastMessage("Items importados exitosamente", "success");
 	}
-	showToastMessage("Items importados exitosamente", "success");
 };
 
 const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
