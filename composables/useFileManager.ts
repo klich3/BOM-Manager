@@ -125,11 +125,39 @@ export const useFileManager = () => {
         return 'storage' in navigator && 'getDirectory' in navigator.storage;
     };
 
+    // Función para obtener un archivo por su nombre
+    const getFileByName = async (fileName: string): Promise<string | null> => {
+        if (isTauri) {
+            // En Tauri, no podemos recuperar archivos por nombre ya que se convierten a Data URLs
+            // Esta funcionalidad dependerá de cómo se implemente el almacenamiento persistente en Tauri
+            console.warn('getFileByName no está completamente implementado para Tauri');
+            return null;
+        } else {
+            // En web con OPFS, intentamos recuperar el archivo por nombre
+            try {
+                // @ts-ignore - OPFS support
+                const opfsRoot = await navigator.storage.getDirectory();
+                const fileHandle = await opfsRoot.getFileHandle(fileName);
+                const file = await fileHandle.getFile();
+                const url = URL.createObjectURL(file);
+                
+                // Guardar mapeo URL -> nombre de archivo para futuras referencias
+                fileUrlMap.set(url, fileName);
+                
+                return url;
+            } catch (error) {
+                console.error('Error getting file by name from OPFS:', error);
+                return null;
+            }
+        }
+    };
+
     return {
         saveFile,
         deleteFile,
         getStorageInfo,
         isOPFSAvailable,
-        isTauri
+        isTauri,
+        getFileByName
     };
 };

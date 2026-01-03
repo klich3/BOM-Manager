@@ -53,7 +53,7 @@
 						</div>
 						<div v-else class="relative">
 							<img
-								:src="projectForm.thumb"
+								:src="thumbUrl || projectForm.thumb"
 								:alt="projectForm.name || 'Thumbnail'"
 								class="w-32 h-32 object-cover rounded-lg mx-auto" />
 							<button
@@ -179,7 +179,8 @@ const emit = defineEmits<{
 
 const thumbInputRef = ref<HTMLInputElement | null>(null);
 const pdfInputRef = ref<HTMLInputElement | null>(null);
-const { saveFile, deleteFile } = useFileManager();
+const thumbUrl = ref('');
+const { saveFile, deleteFile, getFileByName } = useFileManager();
 const { logActivity } = useActivityDatabase();
 const { getProjectById } = useProjectsDatabase();
 
@@ -221,6 +222,14 @@ const loadProjectData = async () => {
 			pdf: "",
 		};
 	}
+	
+	// Forzar actualización del watcher de thumb
+	const currentThumb = projectForm.value.thumb;
+	projectForm.value.thumb = '';
+	// Usar nextTick para asegurar que se procese el cambio vacío antes de asignar el valor real
+	setTimeout(() => {
+		projectForm.value.thumb = currentThumb;
+	}, 0);
 };
 
 // Cargar datos cuando se monta el componente
@@ -235,6 +244,34 @@ watch(
 		loadProjectData();
 	},
 	{ immediate: false },
+);
+
+// Watch para actualizar la URL del thumbnail cuando cambia
+watch(
+	() => projectForm.value.thumb,
+	async (newThumb) => {
+		if (newThumb && !newThumb.startsWith('data:') && !newThumb.startsWith('blob:')) {
+			// Si es una ruta de archivo (nombre de archivo), intentar cargarlo usando getFileByName
+			try {
+				const fileName = newThumb.split('/').pop()?.split('\\').pop() || '';
+				if (fileName) {
+					const fileUrl = await getFileByName(fileName);
+					if (fileUrl) {
+						thumbUrl.value = fileUrl;
+					} else {
+						thumbUrl.value = newThumb; // Si no se puede cargar, usar la URL original
+					}
+				}
+			} catch (error) {
+				console.error('Error al cargar thumbnail por nombre:', error);
+				thumbUrl.value = newThumb;
+			}
+		} else {
+			// Si ya es una data URL o blob URL, usar directamente
+			thumbUrl.value = newThumb;
+		}
+	},
+	{ immediate: true },
 );
 
 // Thumbnail handling functions
