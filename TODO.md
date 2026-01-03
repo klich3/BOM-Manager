@@ -68,7 +68,8 @@
 - [ ] import del zip para archivos temp
 
 ### 7. Local storage
--> - [ ] cuando se cargan imagenes de lscs -> hay que guardarlas en carpeta tmp para que sea offline
+- [x] cuando se cargan imagenes de lscs -> hay que guardarlas en carpeta tmp para que sea offline
+-> - [ ] hay que cargar desde local si esta el file si no -> descargar
 -> - [ ] lo mismo cuando se carga los detalles de productos tambien seria bueno guardar + doc/pdf
 
 

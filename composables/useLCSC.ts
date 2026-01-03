@@ -69,8 +69,8 @@ export const useLCSC = () => {
                         // Crear nombre de archivo único para cada imagen
                         // Incluimos índice para identificar cada imagen individualmente
                         const imageIndex = i + 1;
-                        const fileName = itemId ? 
-                            `lcsc-image-${partNumber}-${itemId}-${imageIndex}.jpg` : 
+                        const fileName = itemId ?
+                            `lcsc-image-${partNumber}-${itemId}-${imageIndex}.jpg` :
                             `lcsc-image-${partNumber}-${imageIndex}.jpg`;
 
                         // Descargar la imagen
