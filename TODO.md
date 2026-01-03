@@ -46,6 +46,7 @@
 - [ ] en tarjeta poner $ coste por piezas
 - [ ] en tarjeta poner $ coste por pcb
 - [ ] en detalle de proyecto poner coste de PCB
+- [ ] en el bg hay que implementar el thumb
 
 ### 4. Integración LCSC
 - [x] Investigar API de LCSC

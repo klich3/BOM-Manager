@@ -56,8 +56,8 @@ export const useProjectsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                'INSERT INTO projects (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-                [id, project.name || '', project.description || null, now, now]
+                'INSERT INTO projects (id, name, description, thumb, git, web, pdf, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [id, project.name || '', project.description || null, project.thumb ?? null, project.git ?? null, project.web ?? null, project.pdf ?? null, now, now]
             );
 
             // Registrar actividad
@@ -78,8 +78,8 @@ export const useProjectsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                'UPDATE projects SET name = ?, description = ?, updated_at = ? WHERE id = ?',
-                [project.name, project.description, now, id]
+                'UPDATE projects SET name = ?, description = ?, thumb = ?, git = ?, web = ?, pdf = ?, updated_at = ? WHERE id = ?',
+                [project.name, project.description, project.thumb ?? null, project.git ?? null, project.web ?? null, project.pdf ?? null, now, id]
             );
 
             // Registrar actividad

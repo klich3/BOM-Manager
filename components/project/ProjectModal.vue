@@ -92,23 +92,35 @@
 						<div>
 							<label class="block text-sm font-medium text-text-main-light mb-1"> Documento PDF </label>
 							<div class="flex gap-2">
-								<input
-									v-model="projectForm.pdf"
-									type="url"
-									class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-									placeholder="https://documento.pdf" />
-								<input
-									ref="pdfInputRef"
-									type="file"
-									accept=".pdf"
-									@change="handlePdfSelect"
-									class="hidden" />
-								<button
-									type="button"
-									@click="triggerPdfUpload"
-									class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm transition-colors">
-									Subir PDF
-								</button>
+								<div v-if="!projectForm.pdf" class="flex-1">
+									<input
+										ref="pdfInputRef"
+										type="file"
+										accept=".pdf"
+										@change="handlePdfSelect"
+										class="hidden" />
+									<button
+										type="button"
+										@click="triggerPdfUpload"
+										class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm transition-colors">
+										Subir PDF
+									</button>
+								</div>
+								<div v-else class="flex items-center gap-2 flex-1">
+									<div
+										class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+										<DocumentTextIcon class="w-5 h-5 text-blue-600" />
+										<span class="text-sm text-text-main-light truncate max-w-xs">{{
+											getFileNameFromPath(projectForm.pdf)
+										}}</span>
+									</div>
+									<button
+										type="button"
+										@click="removePdf"
+										class="p-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors">
+										<XMarkIcon class="w-4 h-4" />
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -134,7 +146,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
-import { XMarkIcon, PhotoIcon } from "@heroicons/vue/24/outline";
+import { XMarkIcon, PhotoIcon, DocumentTextIcon } from "@heroicons/vue/24/outline";
 import { useFileManager } from "@/composables/useFileManager";
 import { useActivityDatabase } from "@/composables/useActivityDatabase";
 import { useProjectsDatabase } from "@/composables/useProjectsDatabase";
@@ -330,6 +342,25 @@ const handlePdfFile = async (file: File) => {
 	}
 };
 
+const removePdf = async () => {
+	if (projectForm.value.pdf) {
+		try {
+			// Eliminar archivo del sistema de archivos
+			await deleteFile(projectForm.value.pdf);
+
+			// Registrar actividad de eliminación
+			const projectId = props.editingProject?.id || "new_project";
+			await logActivity("DELETE", "projects", projectId, "PDF eliminado", undefined);
+		} catch (error) {
+			console.error("Error eliminando PDF:", error);
+		}
+	}
+	projectForm.value.pdf = "";
+	if (pdfInputRef.value) {
+		pdfInputRef.value.value = "";
+	}
+};
+
 const closeModal = () => {
 	emit("close");
 };
@@ -342,8 +373,6 @@ const saveProject = async () => {
 	}
 
 	try {
-		const projectData = { ...projectForm.value };
-
 		// Registrar actividad de creación/edición
 		const action = props.editingProject ? "UPDATE" : "CREATE";
 		const projectId = props.editingProject?.id || "new_project";
@@ -362,10 +391,39 @@ const saveProject = async () => {
 			await logActivity("UPLOAD", "projects", projectId, "Documento PDF adjuntado", undefined);
 		}
 
+		// Incluir el ID del proyecto en los datos si está editando
+		const projectData = {
+			...projectForm.value,
+			id: props.editingProject?.id || undefined,
+		};
 		emit("save", projectData);
 	} catch (error) {
 		console.error("Error guardando proyecto:", error);
 		alert("Error al guardar el proyecto");
 	}
+};
+
+const getFileNameFromPath = (path: string): string => {
+	if (!path) return "";
+
+	// Si es una URL de objeto (blob:) o data URL
+	if (path.startsWith("blob:") || path.startsWith("data:")) {
+		// Buscar si el nombre del archivo está en la URL
+		const fileNameMatch = path.match(/pdf-prj-[a-zA-Z0-9_-]+\.pdf/i);
+		if (fileNameMatch) {
+			return fileNameMatch[0];
+		}
+		// Si no se encuentra con el patrón específico, intentar extraer cualquier nombre .pdf
+		const genericMatch = path.match(/[^/\\&\?]*\.pdf$/i);
+		if (genericMatch) {
+			return genericMatch[0];
+		}
+		// Si no se encuentra, usar el patrón estándar con el ID del proyecto
+		const projectId = props.editingProject?.id || `new_${Date.now()}`;
+		return `pdf-prj-${projectId}.pdf`;
+	}
+
+	// Si es una ruta normal (como la que se guarda en la base de datos), devolver el nombre del archivo
+	return path.split("/").pop()?.split("\\").pop() || `pdf-prj-${props.editingProject?.id || `new_${Date.now()}`}.pdf`;
 };
 </script>
