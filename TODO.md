@@ -15,7 +15,7 @@
 - [ ] - Cargar XLSX
 - [ ] - Import - Leer -> Templates de easyeda.com
 - [x] - Import -> cuadrar las columnas 
--> - [ ] - Import stock min si se elecciona hay que poner un campo para poner un valor en la pantalla 3, tambien poner una nota informativa arriba
+- [x] - Import stock min si se elecciona hay que poner un campo para poner un valor en la pantalla 3, tambien poner una nota informativa arriba
 -> - [ ] - Import -> decidir si en una lista nueva si pertenece a algun proyecto, definir si ya tienes este stock o es por pedir
 -> - [ ] - Si es para pedir hay que cotejar con los que hay para decidir los que faltan para comprar
 -> - [ ] - hay que hacer check si  ya hay un item con misma ref hay que sumar in_stock
@@ -64,3 +64,9 @@
 ### 7. Local storage
 - [ ] cuando se cargan imagenes de lscs -> hay que guardarlas en carpeta tmp para que sea offline
 - [ ] lo mismo cuando se carga los detalles de productos tambien seria bueno guardar + doc/pdf
+
+### 8. Settings
+- [ ] Poner cantidad de items por pagina
+- [ ] Poner decimal por pais
+- [ ] Slector de $ currency
+- [ ] Slector de pais

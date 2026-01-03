@@ -255,7 +255,7 @@ const searchQuery = ref("");
 const filterCategory = ref("");
 const filterStock = ref("all");
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const itemsPerPage = 100; //TODO: hacer un selector para que user pueda poner cantidad por pagina
 const showAddModal = ref(false);
 const showImportModal = ref(false);
 const showListManager = ref(false);
@@ -344,7 +344,13 @@ const lowStockCount = computed(() => {
 });
 
 const totalValue = computed(() => {
-	return items.value.reduce((sum, item) => sum + (item.price || 0) * item.in_stock, 0);
+	//TOOD: en settings poenr el decimal
+	return items.value
+		.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
+		.toLocaleString("es-ES", {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2,
+		});
 });
 
 // Methods
