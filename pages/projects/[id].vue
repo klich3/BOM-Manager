@@ -225,13 +225,25 @@ const showImportModal = computed(() => importStore.showImportModal);
 const filteredItems = computed(() => {
 	if (!searchQuery.value) return projectItems.value;
 
-	const query = searchQuery.value.toLowerCase();
-	return projectItems.value.filter(
-		(item) =>
-			item.name?.toLowerCase().includes(query) ||
-			item.category?.toLowerCase().includes(query) ||
-			item.part_number?.toLowerCase().includes(query),
-	);
+	const query = searchQuery.value.toLowerCase().trim();
+	if (!query) return projectItems.value;
+
+	// Dividir la consulta en palabras individuales
+	const searchTerms = query.split(/\s+/).filter((term) => term.length > 0);
+
+	return projectItems.value.filter((item) => {
+		// Verificar si todas las palabras de búsqueda coinciden en algún campo
+		return searchTerms.every(
+			(term) =>
+				item.name?.toLowerCase().includes(term) ||
+				item.description?.toLowerCase().includes(term) ||
+				item.category?.toLowerCase().includes(term) ||
+				item.supplier?.toLowerCase().includes(term) ||
+				item.part_number?.toLowerCase().includes(term) ||
+				item.lcsc_part?.toLowerCase().includes(term) ||
+				item.notes?.toLowerCase().includes(term),
+		);
+	});
 });
 
 const paginatedItems = computed(() => {
@@ -260,14 +272,30 @@ const availableItems = computed(() => {
 	if (!addItemSearchQuery.value)
 		return allItems.value.filter((item) => !projectItems.value.some((pi) => pi.id === item.id));
 
-	const query = addItemSearchQuery.value.toLowerCase();
-	return allItems.value.filter(
-		(item) =>
-			!projectItems.value.some((pi) => pi.id === item.id) &&
-			(item.name?.toLowerCase().includes(query) ||
-				item.category?.toLowerCase().includes(query) ||
-				item.part_number?.toLowerCase().includes(query)),
-	);
+	const query = addItemSearchQuery.value.toLowerCase().trim();
+	if (!query) return allItems.value.filter((item) => !projectItems.value.some((pi) => pi.id === item.id));
+
+	// Dividir la consulta en palabras individuales
+	const searchTerms = query.split(/\s+/).filter((term) => term.length > 0);
+
+	return allItems.value.filter((item) => {
+		// Verificar que el item no esté ya en el proyecto
+		const notInProject = !projectItems.value.some((pi) => pi.id === item.id);
+
+		// Verificar si todas las palabras de búsqueda coinciden en algún campo
+		const matchesSearch = searchTerms.every(
+			(term) =>
+				item.name?.toLowerCase().includes(term) ||
+				item.description?.toLowerCase().includes(term) ||
+				item.category?.toLowerCase().includes(term) ||
+				item.supplier?.toLowerCase().includes(term) ||
+				item.part_number?.toLowerCase().includes(term) ||
+				item.lcsc_part?.toLowerCase().includes(term) ||
+				item.notes?.toLowerCase().includes(term),
+		);
+
+		return notInProject && matchesSearch;
+	});
 });
 
 // Methods

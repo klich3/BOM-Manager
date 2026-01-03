@@ -43,10 +43,10 @@
 - [x] Calculadora de costos
 - [ ] cargar gerber para saber cuantas partes se usan por pcb
 - [ ] al cargar gerber hacer un ayudante en donde van los compoenentes marcando el sitio, puede ser como figma una panel libre una pizzara...
-- [ ] en tarjeta poner $ coste por piezas
-- [ ] en tarjeta poner $ coste por pcb
-- [ ] en detalle de proyecto poner coste de PCB
-- [ ] en el bg hay que implementar el thumb
+- [x] en tarjeta poner $ coste por piezas
+-> - [ ] en tarjeta poner $ coste por pcb
+-> - [ ] en detalle de proyecto poner coste de PCB
+-> - [ ] en el bg hay que implementar el thumb
 
 ### 4. Integración LCSC
 - [x] Investigar API de LCSC

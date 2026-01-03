@@ -300,14 +300,25 @@ const filteredItems = computed(() => {
 
 	// Search filter
 	if (searchQuery.value) {
-		const query = searchQuery.value.toLowerCase();
-		filtered = filtered.filter(
-			(item) =>
-				item.name?.toLowerCase().includes(query) ||
-				item.category?.toLowerCase().includes(query) ||
-				item.supplier?.toLowerCase().includes(query) ||
-				item.part_number?.toLowerCase().includes(query),
-		);
+		const query = searchQuery.value.toLowerCase().trim();
+		if (query) {
+			// Dividir la consulta en palabras individuales
+			const searchTerms = query.split(/\s+/).filter((term) => term.length > 0);
+
+			filtered = filtered.filter((item) => {
+				// Verificar si todas las palabras de búsqueda coinciden en algún campo
+				return searchTerms.every(
+					(term) =>
+						item.name?.toLowerCase().includes(term) ||
+						item.description?.toLowerCase().includes(term) ||
+						item.category?.toLowerCase().includes(term) ||
+						item.supplier?.toLowerCase().includes(term) ||
+						item.part_number?.toLowerCase().includes(term) ||
+						item.lcsc_part?.toLowerCase().includes(term) ||
+						item.notes?.toLowerCase().includes(term),
+				);
+			});
+		}
 	}
 
 	// Category filter
