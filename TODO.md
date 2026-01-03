@@ -1,6 +1,7 @@
 - [ ] - user settings -> https://v2.tauri.app/plugin/window-state/
 - [x] home hay que modificar el items cuentas
 
+
 ### 1. Importación de Archivos CSV/XLSX
 - [x] Instalar `papaparse` para CSV
 - [x] Instalar `xlsx` para Excel
@@ -62,12 +63,14 @@
 
 ### 6. Export
 - [x] Posibilidad de exportar la DB -> para importar en osx o otro device
+- [ ] - mejorar el importa da json diseño en modal de settings con avisos etc....
 - [ ] se tienen que crear un zip con files de OPFS en web para export 
 - [ ] import del zip para archivos temp
 
 ### 7. Local storage
 -> - [ ] cuando se cargan imagenes de lscs -> hay que guardarlas en carpeta tmp para que sea offline
 -> - [ ] lo mismo cuando se carga los detalles de productos tambien seria bueno guardar + doc/pdf
+
 
 ### 8. Settings
 - [ ] Poner cantidad de items por pagina

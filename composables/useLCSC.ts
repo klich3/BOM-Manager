@@ -63,10 +63,15 @@ export const useLCSC = () => {
                 // Guardar imágenes localmente y registrar en la tabla files
                 const localImageUrls: string[] = [];
 
-                for (const imageUrl of result.images) {
+                for (let i = 0; i < result.images.length; i++) {
+                    const imageUrl = result.images[i];
                     try {
-                        // Verificar si ya existe un archivo local para esta imagen
-                        const fileName = itemId ? `lcsc-image-${partNumber}-${itemId}.jpg` : `lcsc-image-${partNumber}.jpg`;
+                        // Crear nombre de archivo único para cada imagen
+                        // Incluimos índice para identificar cada imagen individualmente
+                        const imageIndex = i + 1;
+                        const fileName = itemId ? 
+                            `lcsc-image-${partNumber}-${itemId}-${imageIndex}.jpg` : 
+                            `lcsc-image-${partNumber}-${imageIndex}.jpg`;
 
                         // Descargar la imagen
                         const response = await fetch(imageUrl);
