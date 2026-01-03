@@ -98,8 +98,8 @@
 				leave-to-class="opacity-0 scale-95"
 				mode="out-in">
 				<ProjectCard
-					v-for="project in filteredProjects"
-					:key="project.id"
+					v-for="(project, index) in filteredProjects"
+					:key="project.id || `project-${index}`"
 					:project="project"
 					@view-project="viewProject"
 					@edit-project="editProject"
