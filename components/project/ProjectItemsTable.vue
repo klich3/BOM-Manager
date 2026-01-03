@@ -46,8 +46,12 @@
 				<tr
 					v-for="(item, index) in items"
 					:key="item.id"
-					class="hover:bg-gray-50 transition-colors"
-					:class="{ 'bg-gray-50': selectedItems.includes(item.id) }">
+					:class="[
+						'transition-colors',
+						getStockRowClass(item.in_stock, item.min_stock),
+						{ 'bg-gray-100': selectedItems.includes(item.id) },
+						'hover:bg-opacity-80',
+					]">
 					<td class="px-6 py-4">
 						<input
 							type="checkbox"
@@ -233,6 +237,23 @@ const getStockStatus = (in_stock: number | undefined, min_stock: number | undefi
 		return "bg-yellow-500";
 	} else {
 		return "bg-green-500";
+	}
+};
+
+// Función para obtener clase de color de fondo según estado de stock
+const getStockRowClass = (in_stock: number | undefined, min_stock: number | undefined) => {
+	const stock = in_stock || 0;
+	const min = min_stock || 0;
+
+	if (stock <= 0) {
+		// Agotado - rojo claro
+		return "bg-red-50";
+	} else if (stock <= min) {
+		// Stock bajo - naranja claro
+		return "bg-orange-50";
+	} else {
+		// Stock OK - blanco
+		return "bg-white";
 	}
 };
 

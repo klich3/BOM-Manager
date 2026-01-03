@@ -46,7 +46,14 @@
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200">
-					<tr v-for="item in items" :key="item.id" class="hover:bg-gray-50 transition-colors">
+					<tr
+						v-for="item in items"
+						:key="item.id"
+						:class="[
+							'transition-colors',
+							getStockRowClass(item.in_stock, item.min_stock),
+							'hover:bg-opacity-80',
+						]">
 						<td v-if="showSelect" class="px-6 py-4">
 							<input
 								type="checkbox"
@@ -298,6 +305,23 @@ watch(
 	},
 	{ immediate: true },
 );
+
+// Función para obtener clase de color según estado de stock
+const getStockRowClass = (in_stock: number | undefined, min_stock: number | undefined) => {
+	const stock = in_stock || 0;
+	const min = min_stock || 0;
+
+	if (stock <= 0) {
+		// Agotado - rojo claro
+		return "bg-red-50";
+	} else if (stock <= min) {
+		// Stock bajo - naranja claro
+		return "bg-orange-50";
+	} else {
+		// Stock OK - blanco
+		return "bg-white";
+	}
+};
 
 // Por ahora la prop para mostrar checkboxes siempre está en true, si cambiamos este valor no muestra nada.
 const showSelect = ref(true);
