@@ -4,6 +4,7 @@ import { useActivityDatabase } from '@/composables/useActivityDatabase';
 export interface FileRecord {
     id: string;
     project_id?: string;
+    item_id?: string;
     filename: string;
     filepath: string;
     file_type?: string;
@@ -25,13 +26,14 @@ export const useFilesDatabase = () => {
         const createdAt = new Date().toISOString();
 
         const query = `
-      INSERT INTO files (id, project_id, filename, filepath, file_type, size, title, description, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO files (id, project_id, item_id, filename, filepath, file_type, size, title, description, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
         await database.execute(query, [
             id,
             file.project_id,
+            file.item_id,
             file.filename,
             file.filepath,
             file.file_type,
@@ -42,7 +44,8 @@ export const useFilesDatabase = () => {
         ]);
 
         // Registrar actividad
-        await logActivity('CREATE', 'files', id, `Archivo '${file.filename}' creado para proyecto ${file.project_id || 'general'}`);
+        const target = file.project_id ? `proyecto ${file.project_id}` : file.item_id ? `item ${file.item_id}` : 'general';
+        await logActivity('CREATE', 'files', id, `Archivo '${file.filename}' creado para ${target}`);
 
         return id;
     };
@@ -65,6 +68,19 @@ export const useFilesDatabase = () => {
         if (!database) return [];
 
         const result = await database.select<FileRecord[]>('SELECT * FROM files WHERE project_id = ?', [projectId]);
+
+        if (result) {
+            return result;
+        }
+
+        return [];
+    };
+
+    const getFilesByItemId = async (itemId: string): Promise<FileRecord[]> => {
+        const database = await getDatabase();
+        if (!database) return [];
+
+        const result = await database.select<FileRecord[]>('SELECT * FROM files WHERE item_id = ?', [itemId]);
 
         if (result) {
             return result;
@@ -119,12 +135,29 @@ export const useFilesDatabase = () => {
         }
     };
 
+    const deleteFilesByItemId = async (itemId: string): Promise<void> => {
+        const database = await getDatabase();
+        if (!database) return;
+
+        // Obtener archivos antes de eliminarlos para el registro de actividad
+        const files = await getFilesByItemId(itemId);
+
+        await database.execute('DELETE FROM files WHERE item_id = ?', [itemId]);
+
+        // Registrar actividad para cada archivo eliminado
+        for (const file of files) {
+            await logActivity('DELETE', 'files', file.id, `Archivo '${file.filename}' eliminado por eliminación en cascada del item ${itemId}`);
+        }
+    };
+
     return {
         createFile,
         getFileById,
         getFilesByProjectId,
+        getFilesByItemId,
         updateFile,
         deleteFile,
-        deleteFilesByProjectId
+        deleteFilesByProjectId,
+        deleteFilesByItemId
     };
 };

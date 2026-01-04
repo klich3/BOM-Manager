@@ -230,6 +230,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useDatabase } from "@/composables/useDatabase";
 import { useExport } from "@/composables/useExport";
+import { useExternalLink } from "@/composables/useExternalLink";
 import { useFileParser } from "@/composables/useFileParser";
 import { useLists } from "@/composables/useLists";
 import { useLCSC } from "@/composables/useLCSC";
@@ -545,8 +546,10 @@ const openLcscPreview = (lcscPart: string) => {
 	showLCSCPreview.value = true;
 };
 
+const { openExternalLink } = useExternalLink();
+
 const openLcscPurchase = (lcscPart: string) => {
-	window.open(`https://lcsc.com/product-detail/${lcscPart}.html`, "_blank");
+	openExternalLink(`https://lcsc.com/product-detail/${lcscPart}.html`);
 };
 
 const mergeSelectedLists = () => {
