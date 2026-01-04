@@ -28,8 +28,6 @@ export const useLCSC = () => {
         isLoading.value = true;
         error.value = null;
 
-        console.log('Searching component:', partNumber, itemId);
-
         try {
             let itemData = {
                 description: `Descripción del componente ${partNumber} desde LCSC`,
@@ -111,9 +109,12 @@ export const useLCSC = () => {
                     const itemPdfFiles = await getPdfFilesByItem(itemId);
 
                     // Filtrar solo el PDF del datasheet LCSC para este componente
-                    const existingLCSCDatasheet = itemPdfFiles.find(file =>
-                        file.filename.startsWith(`lcsc-datasheet-${partNumber}`)
-                    );
+                    const existingLCSCDatasheet = itemPdfFiles.find(file => {
+                        const basePattern = `lcsc-datasheet-${partNumber}`;
+                        const fullPatternWithId = itemId ? `${basePattern}-${itemId}.pdf` : null;
+                        return file.filename.startsWith(basePattern) &&
+                            (file.filename === `${basePattern}.pdf` || (fullPatternWithId && file.filename.startsWith(fullPatternWithId.replace('.pdf', ''))));
+                    });
 
                     // Si encontramos un PDF existente, verificar si está disponible localmente
                     if (existingLCSCDatasheet) {
