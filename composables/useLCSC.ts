@@ -71,12 +71,13 @@ export const useLCSC = () => {
                         // Verificar si la imagen está disponible localmente
                         try {
                             // Si el filepath es un blob o una URL local, usar directamente
-                            if (file.filepath.startsWith('blob:') || file.filepath.startsWith('data:')) {
+                            if (file.filepath.startsWith('data:')) {
                                 images.push(file.filepath);
                             } else {
                                 // Si es un nombre de archivo, intentar obtenerlo del OPFS
                                 const { getFileByName } = useFileManager();
                                 const localUrl = await getFileByName(file.filename);
+
                                 if (localUrl) {
                                     images.push(localUrl);
                                 } else {
@@ -146,6 +147,7 @@ export const useLCSC = () => {
 
             // Si no hay PDF guardado localmente, descargar y guardar uno nuevo
             if (datasheetUrl.startsWith('https://')) {
+
                 try {
                     // Usar el endpoint del servidor para evitar problemas de CORS
                     const serverResponse: { localUrl?: string, filename?: string, size?: number, error?: string } = await $fetch('/api/proxy-file', {
