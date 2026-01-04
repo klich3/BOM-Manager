@@ -116,7 +116,7 @@
 							<a
 								v-if="lcscData.datasheet"
 								href="#"
-								@click.prevent="openExternalLink(lcscData.datasheet)"
+								@click.prevent="openDatasheet(lcscData.datasheet)"
 								class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
 								<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
@@ -195,5 +195,33 @@ const closePreview = () => {
 
 const handleImageError = (index: number) => {
 	imageErrorIndexes.value.push(index);
+};
+
+const openDatasheet = (url: string) => {
+	// Verificar si es una URL base64
+	if (url.startsWith("data:application/pdf;base64,")) {
+		// Para URLs base64, convertir a blob y abrir en nueva ventana
+		try {
+			const base64Data = url.split(",")[1];
+			const binaryString = atob(base64Data);
+			const bytes = new Uint8Array(binaryString.length);
+			for (let i = 0; i < binaryString.length; i++) {
+				bytes[i] = binaryString.charCodeAt(i);
+			}
+			const blob = new Blob([bytes], { type: "application/pdf" });
+			const blobUrl = URL.createObjectURL(blob);
+			window.open(blobUrl, "_blank");
+		} catch (error) {
+			console.error("Error al convertir base64 a PDF:", error);
+			// Fallback: intentar abrir directamente
+			window.open(url, "_blank");
+		}
+	} else if (url.startsWith("blob:") || url.startsWith("data:")) {
+		// Para otras URLs locales, abrir directamente en una nueva ventana
+		window.open(url, "_blank");
+	} else {
+		// Para URLs remotas, usar la función openExternalLink existente
+		openExternalLink(url);
+	}
 };
 </script>

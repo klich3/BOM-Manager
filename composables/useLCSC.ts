@@ -109,6 +109,8 @@ export const useLCSC = () => {
                     const { getPdfFilesByItem } = useItemsDatabase();
                     const itemPdfFiles = await getPdfFilesByItem(itemId);
 
+                    console.log("---<1", itemPdfFiles)
+
                     // Filtrar solo el PDF del datasheet LCSC para este componente
                     const existingLCSCDatasheet = itemPdfFiles.find(file => {
                         const basePattern = `lcsc-datasheet-${partNumber}`;
@@ -120,8 +122,7 @@ export const useLCSC = () => {
                     // Si encontramos un PDF existente, verificar si está disponible localmente
                     if (existingLCSCDatasheet) {
                         try {
-                            // Si el filepath es un blob o una URL local, usar directamente
-                            if (existingLCSCDatasheet.filepath.startsWith('blob:') || existingLCSCDatasheet.filepath.startsWith('data:')) {
+                            if (existingLCSCDatasheet.filepath.startsWith('data:')) {
                                 datasheetUrl = existingLCSCDatasheet.filepath;
                             } else {
                                 // Si es un nombre de archivo, intentar obtenerlo del OPFS
@@ -147,29 +148,33 @@ export const useLCSC = () => {
 
             // Si no hay PDF guardado localmente, descargar y guardar uno nuevo
             if (datasheetUrl.startsWith('https://')) {
+                // Verificar si estamos en Tauri para usar métodos nativos
+                const isTauri = typeof window !== "undefined" && !!(window as any).__TAURI_INTERNALS__;
 
+                // En ambos entornos (Tauri y web), usar el FileManager para manejar correctamente los archivos
                 try {
-                    // Usar el endpoint del servidor para evitar problemas de CORS
-                    const serverResponse: { localUrl?: string, filename?: string, size?: number, error?: string } = await $fetch('/api/proxy-file', {
-                        method: 'POST',
-                        body: {
-                            url: `https://datasheet.lcsc.com/${partNumber}.pdf`,
-                            filename: itemId ? `lcsc-datasheet-${partNumber}-${itemId}.pdf` : `lcsc-datasheet-${partNumber}.pdf`,
-                            type: 'application/pdf'
-                        }
-                    });
+                    // Descargar el PDF
+                    const response = await fetch(`https://datasheet.lcsc.com/${partNumber}.pdf`);
+                    if (response.ok) {
+                        const arrayBuffer = await response.arrayBuffer();
+                        const fileName = itemId ? `lcsc-datasheet-${partNumber}-${itemId}.pdf` : `lcsc-datasheet-${partNumber}.pdf`;
 
-                    if (serverResponse && serverResponse.localUrl && serverResponse.filename && serverResponse.size) {
-                        datasheetUrl = serverResponse.localUrl;
+                        // Crear un File para usar con el FileManager
+                        const file = new File([arrayBuffer], fileName, { type: 'application/pdf' });
+
+                        // Usar el FileManager para guardar el archivo (esto lo guarda en OPFS o en Tauri según el entorno)
+                        const localUrl = await saveFile(file, fileName);
+
+                        datasheetUrl = localUrl;
 
                         // Registrar en la tabla files
                         if (itemId) {
                             try {
                                 await createFileForItem({
-                                    filename: serverResponse.filename,
-                                    filepath: serverResponse.localUrl,
+                                    filename: fileName,
+                                    filepath: localUrl,
                                     file_type: 'application/pdf',
-                                    size: serverResponse.size,
+                                    size: arrayBuffer.byteLength,
                                     title: `Datasheet LCSC para ${partNumber}`,
                                     description: `Datasheet del componente LCSC ${partNumber}`,
                                 }, itemId);
@@ -180,7 +185,54 @@ export const useLCSC = () => {
                     }
                 } catch (pdfError) {
                     console.error('Error descargando PDF del datasheet:', pdfError);
-                    // Si falla la descarga/local, mantener la URL original
+
+                    // Si falla la descarga directa, usar el endpoint proxy como fallback
+                    try {
+                        const serverResponse: { localUrl?: string, filename?: string, size?: number, error?: string } = await $fetch('/api/proxy-file', {
+                            method: 'POST',
+                            body: {
+                                url: `https://datasheet.lcsc.com/${partNumber}.pdf`,
+                                filename: itemId ? `lcsc-datasheet-${partNumber}-${itemId}.pdf` : `lcsc-datasheet-${partNumber}.pdf`,
+                                type: 'application/pdf'
+                            }
+                        });
+
+                        if (serverResponse && serverResponse.localUrl && serverResponse.filename && serverResponse.size) {
+                            // El proxy devuelve base64, necesitamos convertirlo a blob y guardarlo con FileManager
+                            const base64Data = serverResponse.localUrl.split(',')[1]; // Extraer datos base64
+                            const binaryString = atob(base64Data);
+                            const bytes = new Uint8Array(binaryString.length);
+                            for (let i = 0; i < binaryString.length; i++) {
+                                bytes[i] = binaryString.charCodeAt(i);
+                            }
+
+                            // Crear File desde el ArrayBuffer
+                            const file = new File([bytes], serverResponse.filename, { type: 'application/pdf' });
+
+                            // Guardar usando FileManager (OPFS/Tauri)
+                            const localUrl = await saveFile(file, serverResponse.filename);
+
+                            datasheetUrl = localUrl;
+
+                            // Registrar en la tabla files
+                            if (itemId) {
+                                try {
+                                    await createFileForItem({
+                                        filename: serverResponse.filename,
+                                        filepath: localUrl,
+                                        file_type: 'application/pdf',
+                                        size: serverResponse.size,
+                                        title: `Datasheet LCSC para ${partNumber}`,
+                                        description: `Datasheet del componente LCSC ${partNumber}`,
+                                    }, itemId);
+                                } catch (error) {
+                                    console.error("Error creando registro de archivo:", error);
+                                }
+                            }
+                        }
+                    } catch (proxyError) {
+                        console.error('Error usando proxy para descargar PDF:', proxyError);
+                    }
                 }
             }
 
