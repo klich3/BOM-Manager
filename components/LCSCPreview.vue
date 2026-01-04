@@ -216,6 +216,8 @@ const openDatasheet = (url: string) => {
 			// Fallback: intentar abrir directamente
 			window.open(url, "_blank");
 		}
+		//TODO: blob posible error
+		//} else if (url.startsWith("blob:") || url.startsWith("data:")) {
 	} else if (url.startsWith("blob:") || url.startsWith("data:")) {
 		// Para otras URLs locales, abrir directamente en una nueva ventana
 		window.open(url, "_blank");
