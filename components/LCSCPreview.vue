@@ -151,12 +151,14 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { useLCSC } from "~/composables/useLCSC";
-import { useExternalLink } from "~/composables/useExternalLink";
+import { useLCSC } from "@/composables/useLCSC";
+import { useExternalLink } from "@/composables/useExternalLink";
 
 interface Props {
-	partNumber: string;
+	itemData?: any;
 	show: boolean;
+	partNumber?: string;
+	itemId?: string;
 }
 
 const props = defineProps<Props>();
@@ -176,9 +178,12 @@ watch(
 	async (newShow) => {
 		showPreview.value = newShow;
 
-		if (newShow && props.partNumber) {
+		if (newShow && (props.partNumber || (props.itemData && props.itemData.lcsc_part))) {
 			imageError.value = false;
-			lcscData.value = await searchComponent(props.partNumber);
+			// Usar props.partNumber si está definido, de lo contrario usar props.itemData.lcsc_part
+			const partNumber = props.partNumber || props.itemData?.lcsc_part;
+			const itemId = props.itemId || props.itemData?.id;
+			lcscData.value = await searchComponent(partNumber, itemId);
 		}
 	},
 );

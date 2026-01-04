@@ -1,5 +1,6 @@
 import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
+import { useFilesDatabase } from '@/composables/useFilesDatabase';
 import type { BOMItem } from '@/types/bom';
 import type { Database } from '@/types/database';
 import { convertBomItemToSnake } from '@/composables/useDatabaseUtils';
@@ -317,6 +318,18 @@ export const useItemsDatabase = () => {
         }
     };
 
+    // Método para obtener archivos asociados a un item
+    const getFilesByItem = async (itemId: string) => {
+        const { getFilesByItemId } = useFilesDatabase();
+        return await getFilesByItemId(itemId);
+    };
+
+    // Método para obtener solo archivos PDF asociados a un item
+    const getPdfFilesByItem = async (itemId: string) => {
+        const files = await getFilesByItem(itemId);
+        return files.filter(file => file.file_type === 'application/pdf');
+    };
+
     return {
         getAllItems,
         getItemById,
@@ -326,6 +339,8 @@ export const useItemsDatabase = () => {
         updateItemStock,
         consumeStockFromBOM,
         addStockToItems,
-        getLowStockItems
+        getLowStockItems,
+        getFilesByItem,
+        getPdfFilesByItem
     };
 };

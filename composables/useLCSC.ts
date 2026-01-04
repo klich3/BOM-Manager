@@ -19,7 +19,7 @@ interface LCSCComponent {
 
 export const useLCSC = () => {
     const { saveFile } = useFileManager();
-    const { createFile } = useFilesDatabase();
+    const { createFileForItem } = useFilesDatabase();
     const isLoading = ref(false);
     const error = ref<string | null>(null);
 
@@ -28,16 +28,177 @@ export const useLCSC = () => {
         isLoading.value = true;
         error.value = null;
 
+        console.log('Searching component:', partNumber, itemId);
+
         try {
-            // Esta es una implementación simulada ya que necesitamos una clave API real para acceder a LCSC
-            // En la implementación real, usaríamos la API oficial de LCSC
-            console.log(`Buscando componente LCSC: ${partNumber}`);
+            let itemData = {
+                description: `Descripción del componente ${partNumber} desde LCSC`,
+                manufacturer: '-', category: '-', package: '-', tolerance: '-', voltage: '-'
+            };
 
-            // Simulación de respuesta de la API
-            // En la implementación real, haríamos una llamada a la API de LCSC
-            const response = await simulateLCSCAPI(partNumber, itemId);
+            if (itemId) {
+                try {
+                    const { getItemById } = useItemsDatabase();
+                    const item = await getItemById(itemId);
+                    if (item) {
+                        itemData = {
+                            description: item.description || `Descripción del componente ${partNumber} desde LCSC`,
+                            manufacturer: item.manufacturer || '-',
+                            category: item.category || '-',
+                            package: item.package || '-',
+                            tolerance: item.tolerance || '-',
+                            voltage: item.voltage || '-'
+                        };
+                    }
+                } catch (error) {
+                    console.error('Error obteniendo datos del item:', error);
+                }
+            }
 
-            return response;
+            // Primero intentar obtener imágenes guardadas localmente desde la base de datos
+            let images: string[] = [];
+            if (itemId) {
+                try {
+                    const { getFilesByItem } = useItemsDatabase();
+                    const itemFiles = await getFilesByItem(itemId);
+
+                    // Filtrar solo las imágenes LCSC para este componente
+                    const existingLCSCImages = itemFiles.filter(file =>
+                        file.filename.startsWith(`lcsc-image-${partNumber}`) &&
+                        file.file_type?.startsWith('image/')
+                    );
+
+                    // Agregar las URLs/nombres de archivo de las imágenes existentes
+                    for (const file of existingLCSCImages) {
+                        // Verificar si la imagen está disponible localmente
+                        try {
+                            // Si el filepath es un blob o una URL local, usar directamente
+                            if (file.filepath.startsWith('blob:') || file.filepath.startsWith('data:')) {
+                                images.push(file.filepath);
+                            } else {
+                                // Si es un nombre de archivo, intentar obtenerlo del OPFS
+                                const { getFileByName } = useFileManager();
+                                const localUrl = await getFileByName(file.filename);
+                                if (localUrl) {
+                                    images.push(localUrl);
+                                } else {
+                                    // Si no se puede obtener del OPFS, usar el filepath almacenado
+                                    images.push(file.filepath);
+                                }
+                            }
+                        } catch (fileError) {
+                            console.error('Error obteniendo imagen local:', fileError);
+                            // Si falla al obtener la imagen local, usar el filepath almacenado
+                            images.push(file.filepath);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error obteniendo imágenes guardadas:', error);
+                }
+            }
+
+            // Si no hay imágenes guardadas, obtener nuevas imágenes
+            if (!images.length) {
+                images = await getComponentImages(partNumber, itemId);
+            }
+
+            // Primero intentar obtener PDF del datasheet guardado localmente
+            let datasheetUrl = `https://datasheet.lcsc.com/${partNumber}.pdf`;
+
+            if (itemId) {
+                try {
+                    const { getPdfFilesByItem } = useItemsDatabase();
+                    const itemPdfFiles = await getPdfFilesByItem(itemId);
+
+                    // Filtrar solo el PDF del datasheet LCSC para este componente
+                    const existingLCSCDatasheet = itemPdfFiles.find(file =>
+                        file.filename.startsWith(`lcsc-datasheet-${partNumber}`)
+                    );
+
+                    // Si encontramos un PDF existente, verificar si está disponible localmente
+                    if (existingLCSCDatasheet) {
+                        try {
+                            // Si el filepath es un blob o una URL local, usar directamente
+                            if (existingLCSCDatasheet.filepath.startsWith('blob:') || existingLCSCDatasheet.filepath.startsWith('data:')) {
+                                datasheetUrl = existingLCSCDatasheet.filepath;
+                            } else {
+                                // Si es un nombre de archivo, intentar obtenerlo del OPFS
+                                const { getFileByName } = useFileManager();
+                                const localUrl = await getFileByName(existingLCSCDatasheet.filename);
+                                if (localUrl) {
+                                    datasheetUrl = localUrl;
+                                } else {
+                                    // Si no se puede obtener del OPFS, usar el filepath almacenado
+                                    datasheetUrl = existingLCSCDatasheet.filepath;
+                                }
+                            }
+                        } catch (fileError) {
+                            console.error('Error obteniendo PDF local:', fileError);
+                            // Si falla al obtener el PDF local, usar el filepath almacenado
+                            datasheetUrl = existingLCSCDatasheet.filepath;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error obteniendo PDF guardado:', error);
+                }
+            }
+
+            // Si no hay PDF guardado localmente, descargar y guardar uno nuevo
+            if (datasheetUrl.startsWith('https://')) {
+                try {
+                    // Usar el endpoint del servidor para evitar problemas de CORS
+                    const serverResponse: { localUrl?: string, filename?: string, size?: number, error?: string } = await $fetch('/api/proxy-file', {
+                        method: 'POST',
+                        body: {
+                            url: `https://datasheet.lcsc.com/${partNumber}.pdf`,
+                            filename: itemId ? `lcsc-datasheet-${partNumber}-${itemId}.pdf` : `lcsc-datasheet-${partNumber}.pdf`,
+                            type: 'application/pdf'
+                        }
+                    });
+
+                    if (serverResponse && serverResponse.localUrl && serverResponse.filename && serverResponse.size) {
+                        datasheetUrl = serverResponse.localUrl;
+
+                        // Registrar en la tabla files
+                        if (itemId) {
+                            try {
+                                await createFileForItem({
+                                    filename: serverResponse.filename,
+                                    filepath: serverResponse.localUrl,
+                                    file_type: 'application/pdf',
+                                    size: serverResponse.size,
+                                    title: `Datasheet LCSC para ${partNumber}`,
+                                    description: `Datasheet del componente LCSC ${partNumber}`,
+                                }, itemId);
+                            } catch (error) {
+                                console.error("Error creando registro de archivo:", error);
+                            }
+                        }
+                    }
+                } catch (pdfError) {
+                    console.error('Error descargando PDF del datasheet:', pdfError);
+                    // Si falla la descarga/local, mantener la URL original
+                }
+            }
+
+            // Datos simulados para el componente
+            return {
+                partNumber,
+                name: `Componente ${partNumber}`,
+                description: itemData.description,
+                image: '', // Placeholder for single image
+                images,
+                datasheet: datasheetUrl,
+                price: Math.random() * 10, // Precio aleatorio para simulación
+                stock: Math.floor(Math.random() * 1000), // Stock aleatorio para simulación
+                manufacturer: itemData.manufacturer,
+                category: itemData.category,
+                parameters: {
+                    tolerance: itemData.tolerance,
+                    package: itemData.package,
+                    voltage: itemData.voltage
+                }
+            };
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Error desconocido al buscar el componente';
             return null;
@@ -82,15 +243,23 @@ export const useLCSC = () => {
                         const localUrl = await saveFile(file, fileName);
                         localImageUrls.push(localUrl);
 
-                        // Registrar en la tabla files
-                        await createFile({
-                            filename: fileName,
-                            filepath: localUrl,
-                            file_type: 'image/jpeg',
-                            size: file.size,
-                            title: `Imagen LCSC para ${partNumber}`,
-                            description: `Imagen del componente LCSC ${partNumber}`,
-                        });
+                        if (itemId) {
+                            try {
+                                console.log('Guardando imagen localmente:', fileName, itemId);
+
+                                // Registrar en la tabla files
+                                await createFileForItem({
+                                    filename: fileName,
+                                    filepath: localUrl,
+                                    file_type: 'image/jpeg',
+                                    size: file.size,
+                                    title: `Imagen LCSC para ${partNumber}`,
+                                    description: `Imagen del componente LCSC ${partNumber}`,
+                                }, itemId);
+                            } catch (error) {
+                                console.error("Error creando registro de archivo:", error);
+                            }
+                        }
                     } catch (downloadError) {
                         console.error('Error descargando imagen:', downloadError);
                         // Si falla la descarga/local, usar la URL original
@@ -118,84 +287,6 @@ export const useLCSC = () => {
         // Por ejemplo: C123456, R123456, etc.
         const lcscPattern = /^[A-Z]\d{6,}$/i;
         return lcscPattern.test(partNumber);
-    };
-
-    // Simulación de la API de LCSC para desarrollo
-    const simulateLCSCAPI = async (partNumber: string, itemId?: string): Promise<LCSCComponent> => {
-        // Simulación de un retraso de red
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Obtener datos del item de la base de datos si se proporciona el ID
-        let itemData = { description: `Descripción del componente ${partNumber} desde LCSC`, manufacturer: '-', category: '-', package: '-', tolerance: '-', voltage: '-' };
-        if (itemId) {
-            try {
-                const { getItemById } = useItemsDatabase();
-                const item = await getItemById(itemId);
-                if (item) {
-                    itemData = {
-                        description: item.description || `Descripción del componente ${partNumber} desde LCSC`,
-                        manufacturer: item.manufacturer || '-',
-                        category: item.category || '-',
-                        package: item.package || '-',
-                        tolerance: item.tolerance || '-',
-                        voltage: item.voltage || '-'
-                    };
-                }
-            } catch (error) {
-                console.error('Error obteniendo datos del item:', error);
-            }
-        }
-
-        // Obtener imágenes y guardarlas localmente
-        const images = await getComponentImages(partNumber, itemId);
-
-        // Obtener y guardar el PDF del datasheet localmente
-        let datasheetUrl = `https://datasheet.lcsc.com/${partNumber}.pdf`;
-        try {
-            // Intentar descargar y guardar el PDF localmente
-            const pdfResponse = await fetch(datasheetUrl);
-            if (pdfResponse.ok) {
-                const pdfBlob = await pdfResponse.blob();
-                const fileName = itemId ? `lcsc-datasheet-${partNumber}-${itemId}.pdf` : `lcsc-datasheet-${partNumber}.pdf`;
-                const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-                // Guardar PDF localmente
-                const localPdfUrl = await saveFile(pdfFile, fileName);
-                datasheetUrl = localPdfUrl;
-
-                // Registrar en la tabla files
-                await createFile({
-                    filename: fileName,
-                    filepath: localPdfUrl,
-                    file_type: 'application/pdf',
-                    size: pdfFile.size,
-                    title: `Datasheet LCSC para ${partNumber}`,
-                    description: `Datasheet del componente LCSC ${partNumber}`,
-                });
-            }
-        } catch (pdfError) {
-            console.error('Error descargando PDF del datasheet:', pdfError);
-            // Si falla la descarga/local, mantener la URL original
-        }
-
-        // Datos simulados para el componente
-        return {
-            partNumber,
-            name: `Componente ${partNumber}`,
-            description: itemData.description,
-            image: '', // Placeholder for single image
-            images,
-            datasheet: datasheetUrl,
-            price: Math.random() * 10, // Precio aleatorio para simulación
-            stock: Math.floor(Math.random() * 1000), // Stock aleatorio para simulación
-            manufacturer: itemData.manufacturer,
-            category: itemData.category,
-            parameters: {
-                tolerance: itemData.tolerance,
-                package: itemData.package,
-                voltage: itemData.voltage
-            }
-        };
     };
 
     return {

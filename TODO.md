@@ -30,13 +30,15 @@
 - [x] Exportar a XLSX
 - [x] tablas poner seleccionar todos o unos cuantos para eliminar
 - [x] - seleccion varios, opcion modal asignar a un proyecto
--> - [] - Preview de items de lcsc (en listado de componentes)
+-> - [ ] - Preview de items de lcsc (en listado de componentes)
 - [ ] - Integrar o mandar para comprar lcsc.com
 - [ ] - Visualizar y guardar el listado de los componentes
 - [ ] - Guardar en iCloud copia de seguridad
 -> - [ ] - Marcar los items que llegan casi a gastarse para notificar y poder encargar nuevos
 - [ ] - Hacer mix / reorder
 - [ ] - si se borra item hay que borrar tmp files de thumb + pdf
+
+-> - [ ] hay que hacer una funcion para cuando subo un listado poder comparar de los que ya hay y los que faltan
 
 ### 3. Gestión de Proyectos
 - [x] Crear página `/pages/projects.vue`

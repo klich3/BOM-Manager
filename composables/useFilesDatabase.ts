@@ -50,6 +50,20 @@ export const useFilesDatabase = () => {
         return id;
     };
 
+    const createFileForItem = async (file: Omit<FileRecord, 'id' | 'created_at' | 'item_id'>, itemId: string): Promise<string> => {
+        return await createFile({
+            ...file,
+            item_id: itemId
+        });
+    };
+
+    const createFileForProject = async (file: Omit<FileRecord, 'id' | 'created_at' | 'project_id'>, projectId: string): Promise<string> => {
+        return await createFile({
+            ...file,
+            project_id: projectId
+        });
+    };
+
     const getFileById = async (id: string): Promise<FileRecord | null> => {
         const database = await getDatabase();
         if (!database) return null;
@@ -152,6 +166,8 @@ export const useFilesDatabase = () => {
 
     return {
         createFile,
+        createFileForItem,
+        createFileForProject,
         getFileById,
         getFilesByProjectId,
         getFilesByItemId,

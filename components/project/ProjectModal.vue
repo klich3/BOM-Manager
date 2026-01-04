@@ -184,7 +184,7 @@ const thumbUrl = ref("");
 const { saveFile, deleteFile, getFileByName } = useFileManager();
 const { logActivity } = useActivityDatabase();
 const { getProjectById } = useProjectsDatabase();
-const { createFile, getFilesByProjectId, deleteFilesByProjectId } = useFilesDatabase();
+const { createFile, createFileForProject, getFilesByProjectId, deleteFilesByProjectId } = useFilesDatabase();
 
 const projectForm = ref({
 	name: "",
@@ -440,17 +440,19 @@ const handleImageFile = async (file: File) => {
 		// Si tenemos un proyecto existente, crear registro en la tabla de archivos
 		if (props.editingProject?.id) {
 			try {
-				await createFile({
-					project_id: props.editingProject.id,
-					filename: fileName,
-					filepath: fileUrl,
-					file_type: file.type,
-					size: file.size,
-					title: `Thumbnail para ${projectForm.value.name || "proyecto"}`,
-					description: `Imagen de thumbnail para el proyecto ${
-						projectForm.value.name || props.editingProject.id
-					}`,
-				});
+				await createFileForProject(
+					{
+						filename: fileName,
+						filepath: fileUrl,
+						file_type: file.type,
+						size: file.size,
+						title: `Thumbnail para ${projectForm.value.name || "proyecto"}`,
+						description: `Imagen de thumbnail para el proyecto ${
+							projectForm.value.name || props.editingProject.id
+						}`,
+					},
+					props.editingProject.id,
+				);
 			} catch (error) {
 				console.error("Error creando registro de archivo:", error);
 			}
@@ -548,15 +550,19 @@ const handlePdfFile = async (file: File) => {
 		// Si tenemos un proyecto existente, crear registro en la tabla de archivos
 		if (props.editingProject?.id) {
 			try {
-				await createFile({
-					project_id: props.editingProject.id,
-					filename: fileName,
-					filepath: fileUrl,
-					file_type: file.type,
-					size: file.size,
-					title: `PDF para ${projectForm.value.name || "proyecto"}`,
-					description: `Documento PDF para el proyecto ${projectForm.value.name || props.editingProject.id}`,
-				});
+				await createFileForProject(
+					{
+						filename: fileName,
+						filepath: fileUrl,
+						file_type: file.type,
+						size: file.size,
+						title: `PDF para ${projectForm.value.name || "proyecto"}`,
+						description: `Documento PDF para el proyecto ${
+							projectForm.value.name || props.editingProject.id
+						}`,
+					},
+					props.editingProject.id,
+				);
 			} catch (error) {
 				console.error("Error creando registro de archivo:", error);
 			}

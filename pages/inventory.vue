@@ -173,7 +173,11 @@
 	</main>
 
 	<!-- LCSC Preview Modal -->
-	<LCSCPreview :show="showLCSCPreview" :part-number="lcscPartNumber" @close="showLCSCPreview = false" />
+	<LCSCPreview
+		:show="showLCSCPreview"
+		:partNumber="lcscPartNumber"
+		:itemId="lcscItemId"
+		@close="showLCSCPreview = false" />
 
 	<!-- Add/Edit Item Modal -->
 	<AddItemToInventoryModal
@@ -283,7 +287,8 @@ const itemForm = ref({
 
 // LCSC Preview State
 const showLCSCPreview = ref(false);
-const lcscPartNumber = ref("");
+const lcscPartNumber = ref<string>("");
+const lcscItemId = ref<string>("");
 
 // Toast State
 const showToast = ref(false);
@@ -541,8 +546,13 @@ const saveList = (list: any) => {
 	showToastMessage(`Lista "${list.name}" guardada exitosamente`, "success");
 };
 
-const openLcscPreview = (lcscPart: string) => {
-	lcscPartNumber.value = lcscPart;
+const openLcscPreview = (partNumber: string, itemId?: string) => {
+	lcscPartNumber.value = partNumber;
+	if (itemId) {
+		lcscItemId.value = itemId;
+	} else {
+		lcscItemId.value = "";
+	}
 	showLCSCPreview.value = true;
 };
 

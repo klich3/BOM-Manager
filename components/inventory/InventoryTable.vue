@@ -85,7 +85,7 @@
 								<span v-else class="text-sm text-text-muted-light">-</span>
 								<button
 									v-if="item.lcsc_part"
-									@click="openLcscPreview(item.lcsc_part)"
+									@click="openLcscPreview(item)"
 									class="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors">
 									<DocumentTextIcon class="w-4 h-4" />
 								</button>
@@ -221,7 +221,7 @@ const emit = defineEmits<{
 	"edit-item": [item: InventoryItem];
 	"remove-item": [id: string];
 	"remove-items": [ids: string[]];
-	"open-lcsc-preview": [partNumber: string];
+	"open-lcsc-preview": [partNumber: string, itemId?: string];
 	"open-lcsc-purchase": [partNumber: string];
 	"add-first-item": [];
 	"delete-item": [id: string];
@@ -274,8 +274,10 @@ const onItemsAssignedToProject = (projectId: string) => {
 	emit("items-assigned-to-project", projectId);
 };
 
-const openLcscPreview = (partNumber: string) => {
-	emit("open-lcsc-preview", partNumber);
+const openLcscPreview = (item: InventoryItem) => {
+	if (item.lcsc_part) {
+		emit("open-lcsc-preview", item.lcsc_part, item.id);
+	}
 };
 
 const openLcscPurchase = (partNumber: string) => {
