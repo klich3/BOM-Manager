@@ -1,6 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { createApp, h, ref } from "vue";
-import ConfirmModal from "@/components/ConfirmModal.vue";
 import { useNotifications } from "@/composables/useNotifications";
 
 export const useDialog = () => {
@@ -16,33 +14,9 @@ export const useDialog = () => {
                 return confirm(`${title}\n${message}`);
             }
         } else {
-            // Usar modal web para confirmación
-            return new Promise<boolean>((resolve) => {
-                const show = ref(true);
-                const container = document.createElement("div");
-                document.body.appendChild(container);
-
-                const modal = createApp({
-                    render: () => h(ConfirmModal, {
-                        show: show.value,
-                        title,
-                        message,
-                        confirmText: "Confirmar",
-                        onClose: () => {
-                            resolve(false);
-                            modal.unmount();
-                            document.body.removeChild(container);
-                        },
-                        onConfirm: () => {
-                            resolve(true);
-                            modal.unmount();
-                            document.body.removeChild(container);
-                        }
-                    })
-                });
-
-                modal.mount(container);
-            });
+            // Para modo web, usar confirm del navegador como fallback
+            // En aplicaciones reales, esto debería conectarse a un sistema de modales global
+            return confirm(`${title}\n${message}`);
         }
     };
 

@@ -109,8 +109,6 @@ export const useLCSC = () => {
                     const { getPdfFilesByItem } = useItemsDatabase();
                     const itemPdfFiles = await getPdfFilesByItem(itemId);
 
-                    console.log("---<1", itemPdfFiles)
-
                     // Filtrar solo el PDF del datasheet LCSC para este componente
                     const existingLCSCDatasheet = itemPdfFiles.find(file => {
                         const basePattern = `lcsc-datasheet-${partNumber}`;
