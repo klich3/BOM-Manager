@@ -31,14 +31,20 @@ export interface BOMItem {
   itemImage?: string;
 }
 
+export type ProjectStatus = 'Draft' | 'Prototype' | 'Production' | 'Archived';
+
 export interface BOMProject {
   id: string;
   name: string;
   description?: string;
+  status?: ProjectStatus;
   git?: string;
   web?: string;
+  pcbQuantity?: number;
+  pcbCost?: number;
   createdAt: Date;
   updatedAt: Date;
+  thumb?: string; // Nombre del archivo de imagen
 }
 
 export interface CSVImportData {

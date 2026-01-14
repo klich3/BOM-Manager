@@ -10,7 +10,7 @@
 		},
 		{
 			"name": "projects",
-			"definition": "CREATE TABLE IF NOT EXISTS projects (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  description TEXT,\n  git TEXT,\n  web TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+			"definition": "CREATE TABLE IF NOT EXISTS projects (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL,\n  description TEXT,\n  status TEXT DEFAULT 'Draft',\n  git TEXT,\n  web TEXT,\n  pcb_quantity INTEGER DEFAULT 1,\n  pcb_cost REAL DEFAULT 0,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
 		},
 		{
 			"name": "files",
@@ -30,7 +30,19 @@
 		},
 		{
 			"name": "settings",
-			"definition": "CREATE TABLE IF NOT EXISTS settings (\n  id TEXT PRIMARY KEY,\n  currency TEXT DEFAULT 'USD',\n  items_per_page INTEGER DEFAULT 20,\n  language TEXT DEFAULT 'es',\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+			"definition": "CREATE TABLE IF NOT EXISTS settings (\n  id TEXT PRIMARY KEY,\n  currency TEXT DEFAULT 'USD',\n  items_per_page INTEGER DEFAULT 20,\n  language TEXT DEFAULT 'es',\n  decimals INTEGER DEFAULT 2,\n  theme TEXT DEFAULT 'light',\n  country TEXT DEFAULT 'ES',\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n)"
+		},
+		{
+			"name": "stock_movements",
+			"definition": "CREATE TABLE IF NOT EXISTS stock_movements (\n  id TEXT PRIMARY KEY,\n  item_id TEXT NOT NULL,\n  type TEXT NOT NULL,\n  quantity REAL NOT NULL,\n  previous_stock REAL NOT NULL,\n  new_stock REAL NOT NULL,\n  reason TEXT,\n  created_at TEXT NOT NULL,\n  FOREIGN KEY (item_id) REFERENCES bom_items(id) ON DELETE CASCADE\n)"
+		},
+		{
+			"name": "tags",
+			"definition": "CREATE TABLE IF NOT EXISTS tags (\n  id TEXT PRIMARY KEY,\n  name TEXT NOT NULL UNIQUE,\n  color TEXT DEFAULT '#3B82F6',\n  created_at TEXT NOT NULL\n)"
+		},
+		{
+			"name": "item_tags",
+			"definition": "CREATE TABLE IF NOT EXISTS item_tags (\n  item_id TEXT NOT NULL,\n  tag_id TEXT NOT NULL,\n  PRIMARY KEY (item_id, tag_id),\n  FOREIGN KEY (item_id) REFERENCES bom_items(id) ON DELETE CASCADE,\n  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE\n)"
 		}
 	]
 }

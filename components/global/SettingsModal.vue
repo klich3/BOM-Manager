@@ -33,10 +33,24 @@
 						<select
 							v-model="localSettings.items_per_page"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-							<option value="10">10</option>
-							<option value="20">20</option>
-							<option value="50">50</option>
-							<option value="100">100</option>
+							<option :value="10">10</option>
+							<option :value="20">20</option>
+							<option :value="50">50</option>
+							<option :value="100">100</option>
+						</select>
+					</div>
+
+					<!-- Decimals -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Decimales en precios</label>
+						<select
+							v-model="localSettings.decimals"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+							<option :value="0">0</option>
+							<option :value="1">1</option>
+							<option :value="2">2</option>
+							<option :value="3">3</option>
+							<option :value="4">4</option>
 						</select>
 					</div>
 
@@ -53,16 +67,82 @@
 						</select>
 					</div>
 
+					<!-- Theme -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Tema</label>
+						<select
+							v-model="localSettings.theme"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+							<option value="light">Claro</option>
+							<option value="dark">Oscuro</option>
+						</select>
+					</div>
+
+					<!-- Country -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">País</label>
+						<select
+							v-model="localSettings.country"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+							<option value="ES">España</option>
+							<option value="US">Estados Unidos</option>
+							<option value="UK">Reino Unido</option>
+							<option value="FR">Francia</option>
+							<option value="DE">Alemania</option>
+							<option value="CN">China</option>
+							<option value="JP">Japón</option>
+						</select>
+					</div>
+
 					<!-- Database Export/Import Section -->
 					<div class="border-t border-gray-200 pt-6">
-						<h3 class="text-lg font-medium text-gray-900 mb-4">Base de Datos</h3>
+						<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Base de Datos y Archivos</h3>
+
+						<!-- Full Backup (ZIP) -->
+						<div
+							class="mb-6 border border-purple-200 bg-purple-50 dark:bg-purple-900/10 dark:border-purple-800 rounded-lg p-4">
+							<label class="block text-sm font-medium text-purple-800 dark:text-purple-300 mb-3"
+								>Respaldo Completo (ZIP)</label
+							>
+							<p class="text-sm text-purple-700 dark:text-purple-400 mb-3">
+								Exporta la base de datos junto con todos los archivos (imágenes, PDFs) en un único
+								archivo comprimido.
+							</p>
+							<div class="flex flex-wrap gap-3">
+								<button
+									@click="exportFullBackup"
+									:disabled="isExporting"
+									class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white font-medium rounded-lg transition-colors">
+									<ArrowDownTrayIcon v-if="!isExporting" class="w-5 h-5 mr-2" />
+									<div
+										v-if="isExporting"
+										class="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+									{{ isExporting ? "Exportando ZIP..." : "Exportar Todo (ZIP)" }}
+								</button>
+
+								<button
+									@click="triggerZipFileSelect"
+									class="inline-flex items-center px-4 py-2 border border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-medium rounded-lg transition-colors">
+									<ArrowUpTrayIcon class="w-5 h-5 mr-2" />
+									Importar Todo (ZIP)
+								</button>
+								<input
+									ref="zipFileInputRef"
+									type="file"
+									accept=".zip"
+									@change="handleZipFileSelect"
+									class="hidden" />
+							</div>
+						</div>
 
 						<!-- Export Database -->
-						<div class="mb-6 border border-green-200 bg-green-50 rounded-lg p-4">
-							<label class="block text-sm font-medium text-green-800 mb-3">Exportar Base de Datos</label>
-							<p class="text-sm text-green-700 mb-3">
-								Exporta toda la información del sistema en un archivo JSON para respaldar o transferir a
-								otro dispositivo.
+						<div
+							class="mb-6 border border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800 rounded-lg p-4">
+							<label class="block text-sm font-medium text-green-800 dark:text-green-300 mb-3"
+								>Exportar Base de Datos (JSON)</label
+							>
+							<p class="text-sm text-green-700 dark:text-green-400 mb-3">
+								Exporta solo la base de datos en formato JSON.
 							</p>
 							<button
 								@click="exportDatabase"
@@ -72,8 +152,52 @@
 								<div
 									v-if="isExporting"
 									class="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-								{{ isExporting ? "Exportando..." : "Exportar Base de Datos" }}
+								{{ isExporting ? "Exportando..." : "Exportar JSON" }}
 							</button>
+						</div>
+
+						<!-- Git Sync Section (Desktop only) -->
+						<div
+							v-if="isTauri"
+							class="mb-6 border border-indigo-200 bg-indigo-50 dark:bg-indigo-900/10 dark:border-indigo-800 rounded-lg p-4">
+							<label class="block text-sm font-medium text-indigo-800 dark:text-indigo-300 mb-3"
+								>Sincronización Git</label
+							>
+							<p class="text-sm text-indigo-700 dark:text-indigo-400 mb-3">
+								Sincroniza tu base de datos y archivos con un repositorio Git remoto.
+							</p>
+
+							<div class="space-y-4">
+								<div>
+									<input
+										v-model="gitRemoteUrl"
+										type="text"
+										placeholder="https://github.com/usuario/repo.git"
+										class="w-full px-3 py-2 border border-indigo-200 dark:border-indigo-800 rounded-lg bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+								</div>
+
+								<div class="flex flex-wrap gap-3">
+									<button
+										@click="handleGitSetup"
+										class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+										Configurar Remoto
+									</button>
+									<button
+										@click="handleGitSync"
+										:disabled="isSyncing"
+										class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-900 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:bg-gray-100 text-sm font-medium rounded-lg transition-colors">
+										<ArrowPathIcon v-if="!isSyncing" class="w-4 h-4 mr-2" />
+										<div
+											v-else
+											class="w-4 h-4 mr-2 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+										{{ isSyncing ? "Sincronizando..." : "Sincronizar Ahora" }}
+									</button>
+								</div>
+
+								<p v-if="lastSync" class="text-[10px] text-indigo-500">
+									Última sincronización: {{ lastSync }}
+								</p>
+							</div>
 						</div>
 
 						<!-- Import Database -->
@@ -164,6 +288,10 @@ import { useDatabaseAdapter } from "@/composables/useDatabaseAdapter";
 import { useDatabaseSchema } from "@/composables/useDatabaseSchema";
 import { useNotifications } from "@/composables/useNotifications";
 import { useDialog } from "@/composables/useDialog";
+import { useBackup } from "@/composables/useBackup";
+import { useGitSync } from "@/composables/useGitSync";
+import { useFileManager } from "@/composables/useFileManager";
+import { ArrowPathIcon } from "@heroicons/vue/24/outline";
 
 interface Props {
 	show: boolean;
@@ -179,6 +307,9 @@ const localSettings = ref({
 	currency: settingsStore.settings.currency,
 	items_per_page: settingsStore.settings.items_per_page,
 	language: settingsStore.settings.language,
+	decimals: settingsStore.settings.decimals,
+	theme: settingsStore.settings.theme,
+	country: settingsStore.settings.country,
 });
 
 // Database export/import refs
@@ -187,9 +318,15 @@ const selectedFileName = ref<string>("");
 const selectedFile = ref<File | null>(null);
 const isExporting = ref(false);
 const isImporting = ref(false);
+const zipFileInputRef = ref<HTMLInputElement | null>(null);
 
 const { success, error: showError } = useNotifications();
 const { showConfirmation, showMessage } = useDialog();
+const { exportBackupZip, importBackupZip } = useBackup();
+const { isSyncing, lastSync, setupRemote, sync } = useGitSync();
+const { isTauri } = useFileManager();
+
+const gitRemoteUrl = ref("");
 
 // Actualizar los valores locales cuando cambien los de la tienda
 watch(
@@ -199,6 +336,9 @@ watch(
 			currency: newSettings.currency,
 			items_per_page: newSettings.items_per_page,
 			language: newSettings.language,
+			decimals: newSettings.decimals,
+			theme: newSettings.theme,
+			country: newSettings.country,
 		};
 	},
 	{ deep: true },
@@ -212,6 +352,9 @@ const saveSettings = () => {
 	settingsStore.updateCurrency(localSettings.value.currency);
 	settingsStore.updateItemsPerPage(localSettings.value.items_per_page);
 	settingsStore.updateLanguage(localSettings.value.language);
+	settingsStore.updateDecimals(localSettings.value.decimals);
+	settingsStore.updateTheme(localSettings.value.theme);
+	settingsStore.updateCountry(localSettings.value.country);
 	emit("close");
 };
 
@@ -391,6 +534,78 @@ const importDatabase = async () => {
 		);
 	} finally {
 		isImporting.value = false;
+	}
+};
+
+const exportFullBackup = async () => {
+	isExporting.value = true;
+	try {
+		await exportBackupZip();
+		success("Exportación completada", "Respaldo completo (ZIP) exportado correctamente");
+	} catch (error) {
+		console.error("Error exporting ZIP backup:", error);
+		showError("Error", "No se pudo exportar el respaldo completo");
+	} finally {
+		isExporting.value = false;
+	}
+};
+
+const triggerZipFileSelect = () => {
+	if (zipFileInputRef.value) {
+		zipFileInputRef.value.click();
+	}
+};
+
+const handleZipFileSelect = async (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	if (input.files && input.files.length > 0) {
+		const file = input.files[0];
+		const confirmed = await showConfirmation(
+			"Importar Respaldo Completo",
+			`¿Estás seguro que deseas importar "${file.name}"?\n\n` +
+				"Esta acción reemplazará TODOS los datos y archivos actuales. No se puede deshacer.",
+		);
+
+		if (confirmed) {
+			isImporting.value = true;
+			try {
+				await importBackupZip(file);
+				success("Importación completada", "Los datos y archivos se han restaurado correctamente");
+				setTimeout(() => location.reload(), 2000);
+			} catch (error) {
+				console.error("Error importing ZIP backup:", error);
+				showError("Error", "No se pudo importar el archivo ZIP");
+			} finally {
+				isImporting.value = false;
+			}
+		}
+	}
+};
+
+const handleGitSetup = async () => {
+	if (!gitRemoteUrl.value.trim()) {
+		showError("Error", "Por favor ingresa una URL de repositorio válida");
+		return;
+	}
+
+	try {
+		await setupRemote(gitRemoteUrl.value.trim());
+		success("Git Configurado", "El repositorio remoto se ha configurado correctamente");
+	} catch (error) {
+		showError("Error", "No se pudo configurar el repositorio Git");
+	}
+};
+
+const handleGitSync = async () => {
+	try {
+		const result = await sync();
+		if (result.success) {
+			success("Sincronización Exitosa", "La base de datos se ha sincronizado con Git");
+		} else {
+			showError("Error de Sincronización", result.error || "Ocurrió un fallo en el proceso de Git");
+		}
+	} catch (error) {
+		showError("Error Crítico", "Fallo al ejecutar la sincronización Git");
 	}
 };
 </script>

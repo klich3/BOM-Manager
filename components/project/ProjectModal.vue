@@ -30,6 +30,40 @@
 						placeholder="Describe el proyecto..."></textarea>
 				</div>
 
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-2"> Estado </label>
+						<select
+							v-model="projectForm.status"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
+							<option value="Draft">Borrador</option>
+							<option value="Prototype">Prototipo</option>
+							<option value="Production">Producción</option>
+							<option value="Archived">Archivado</option>
+						</select>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-2"> Cantidad de PCBs </label>
+						<input
+							v-model.number="projectForm.pcbQuantity"
+							type="number"
+							min="1"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+							placeholder="ej. 5" />
+					</div>
+				</div>
+
+				<div>
+					<label class="block text-sm font-medium text-text-main-light mb-2"> Coste por PCB ($) </label>
+					<input
+						v-model.number="projectForm.pcbCost"
+						type="number"
+						step="0.01"
+						min="0"
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+						placeholder="ej. 2.50" />
+				</div>
+
 				<!-- Thumbnail Upload -->
 				<div>
 					<label class="block text-sm font-medium text-text-main-light mb-2">
@@ -156,6 +190,7 @@ interface Project {
 	id?: string;
 	name: string;
 	description?: string;
+	status?: string;
 	thumb?: string;
 	git?: string;
 	web?: string;
@@ -189,10 +224,13 @@ const { createFile, createFileForProject, getFilesByProjectId, deleteFilesByProj
 const projectForm = ref({
 	name: "",
 	description: "",
+	status: "Draft",
 	thumb: "",
 	git: "",
 	web: "",
 	pdf: "",
+	pcbQuantity: 1,
+	pcbCost: 0,
 });
 
 // Variables para almacenar los filepaths originales cuando se tienen URLs blob
@@ -209,10 +247,13 @@ const loadProjectData = async () => {
 				projectForm.value = {
 					name: projectData.name,
 					description: projectData.description || "",
+					status: projectData.status || "Draft",
 					thumb: "", // Inicializar como vacío, se llenará después con archivos
 					git: projectData.git || "",
 					web: projectData.web || "",
 					pdf: "", // Inicializar como vacío, se llenará después con archivos
+					pcbQuantity: projectData.pcbQuantity || 1,
+					pcbCost: projectData.pcbCost || 0,
 				};
 
 				// Cargar archivos asociados al proyecto (thumbnails y PDFs)
@@ -270,10 +311,13 @@ const loadProjectData = async () => {
 		projectForm.value = {
 			name: "",
 			description: "",
+			status: "Draft",
 			thumb: "",
 			git: "",
 			web: "",
 			pdf: "",
+			pcbQuantity: 1,
+			pcbCost: 0,
 		};
 	}
 

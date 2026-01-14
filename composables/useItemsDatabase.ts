@@ -1,6 +1,8 @@
 import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import { useFilesDatabase } from '@/composables/useFilesDatabase';
+import { useFileManager } from '@/composables/useFileManager';
+import { useStockMovementsDatabase } from '@/composables/useStockMovementsDatabase';
 import type { BOMItem } from '@/types/bom';
 import type { Database } from '@/types/database';
 import { convertBomItemToSnake } from '@/composables/useDatabaseUtils';
@@ -13,6 +15,7 @@ const generateId = (): string => {
 export const useItemsDatabase = () => {
     const { getDatabase } = useDatabaseAdapter();
     const { logActivity } = useActivityDatabase();
+    const { logMovement } = useStockMovementsDatabase();
 
     // Métodos para items
     const getAllItems = async () => {
@@ -97,6 +100,19 @@ export const useItemsDatabase = () => {
             // Registrar actividad
             await logActivity('CREATE', 'bom_items', id, `Item '${item.name || 'sin nombre'}' creado`);
 
+            // Registrar movimiento inicial de stock si hay stock
+            const inStock = itemForDb.in_stock !== undefined && itemForDb.in_stock !== null ? itemForDb.in_stock : 0;
+            if (inStock > 0) {
+                await logMovement({
+                    item_id: id,
+                    type: 'IN',
+                    quantity: inStock,
+                    previous_stock: 0,
+                    new_stock: inStock,
+                    reason: 'Stock inicial al crear item'
+                });
+            }
+
             return id;
         } catch (error) {
             console.error('Error creando item:', error);
@@ -160,9 +176,27 @@ export const useItemsDatabase = () => {
         const database = await getDatabase();
         if (!database) return false;
 
+        const { deleteFilesByItemId, getFilesByItemId } = useFilesDatabase();
+        const { deleteFile: deletePhysicalFile } = useFileManager();
+
         try {
             // Registrar actividad antes de eliminar
             const item = await getItemById(id);
+
+            // Obtener y eliminar archivos físicos asociados
+            const files = await getFilesByItemId(id);
+            for (const file of files) {
+                try {
+                    await deletePhysicalFile(file);
+                } catch (err) {
+                    console.error(`Error deleting physical file ${file.filename}:`, err);
+                }
+            }
+
+            // Eliminar registros de archivos de la DB
+            await deleteFilesByItemId(id);
+
+            // Eliminar el item
             await database.execute('DELETE FROM bom_items WHERE id = ?', [id]);
 
             // Registrar actividad
@@ -176,20 +210,35 @@ export const useItemsDatabase = () => {
     };
 
     // Método para actualizar stock de items
-    const updateItemStock = async (id: string, newStock: number) => {
+    const updateItemStock = async (id: string, newStock: number, reason?: string) => {
         const database = await getDatabase();
         if (!database) return false;
 
         try {
+            const currentItem = await getItemById(id);
+            const previousStock = currentItem?.in_stock || 0;
             const now = new Date().toISOString();
+
             await database.execute(
                 'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
                 [newStock, now, id]
             );
 
+            // Registrar movimiento
+            const quantity = Math.abs(newStock - previousStock);
+            const type = newStock > previousStock ? 'IN' : 'OUT';
+
+            await logMovement({
+                item_id: id,
+                type: type,
+                quantity: quantity,
+                previous_stock: previousStock,
+                new_stock: newStock,
+                reason: reason || 'Ajuste manual de stock'
+            });
+
             // Obtener el nombre del item para registrar la actividad
-            const item = await getItemById(id);
-            await logActivity('UPDATE', 'bom_items', id, `Stock de ${item?.name || 'item'} actualizado a ${newStock}`);
+            await logActivity('UPDATE', 'bom_items', id, `Stock de ${currentItem?.name || 'item'} actualizado a ${newStock}`);
 
             return true;
         } catch (error) {
@@ -229,6 +278,16 @@ export const useItemsDatabase = () => {
                     'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
                     [newStock, now, bomItem.id]
                 );
+
+                // Registrar movimiento
+                await logMovement({
+                    item_id: bomItem.id,
+                    type: 'OUT',
+                    quantity: bomItem.quantity,
+                    previous_stock: currentItem.in_stock || 0,
+                    new_stock: newStock,
+                    reason: 'Consumo por proyecto'
+                });
 
                 // Registrar actividad
                 await logActivity('UPDATE', 'bom_items', bomItem.id, `Stock de ${currentItem.name} actualizado de ${(currentItem.in_stock || 0)} a ${newStock}`);
@@ -280,6 +339,16 @@ export const useItemsDatabase = () => {
                     [newStock, now, update.id]
                 );
 
+                // Registrar movimiento
+                await logMovement({
+                    item_id: update.id,
+                    type: 'IN',
+                    quantity: update.quantity,
+                    previous_stock: currentStock,
+                    new_stock: newStock,
+                    reason: 'Entrada de stock (Importación/Añadido)'
+                });
+
                 // Registrar actividad
                 await logActivity('UPDATE', 'bom_items', update.id, `Stock de ${currentItem.name} actualizado de ${currentStock} a ${newStock}`);
             }
@@ -330,6 +399,29 @@ export const useItemsDatabase = () => {
         return files.filter(file => file.file_type === 'application/pdf');
     };
 
+    // Método para buscar un item por sus referencias (Part Number o LCSC Part)
+    const findItemByReference = async (partNumber?: string, lcscPart?: string) => {
+        const database = await getDatabase();
+        if (!database) return null;
+
+        try {
+            if (lcscPart) {
+                const result = await database.select<any[]>('SELECT * FROM bom_items WHERE lcsc_part = ?', [lcscPart]);
+                if (result.length > 0) return result[0];
+            }
+
+            if (partNumber) {
+                const result = await database.select<any[]>('SELECT * FROM bom_items WHERE part_number = ?', [partNumber]);
+                if (result.length > 0) return result[0];
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error buscando item por referencia:', error);
+            return null;
+        }
+    };
+
     return {
         getAllItems,
         getItemById,
@@ -341,6 +433,7 @@ export const useItemsDatabase = () => {
         addStockToItems,
         getLowStockItems,
         getFilesByItem,
-        getPdfFilesByItem
+        getPdfFilesByItem,
+        findItemByReference
     };
 };

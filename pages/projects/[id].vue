@@ -2,14 +2,21 @@
 	<!-- Main Content -->
 	<main class="min-h-screen">
 		<!-- Header -->
-		<header class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200">
-			<div>
-				<h1 class="text-2xl font-semibold text-text-main-light">
-					{{ project?.name || "Detalles del Proyecto" }}
-				</h1>
-				<p class="text-sm text-text-muted-light mt-1">
-					{{ project?.description || "Proyecto sin descripción" }}
-				</p>
+		<header class="h-24 px-8 flex items-center justify-between bg-background-light border-b border-gray-200">
+			<div class="flex items-center gap-4">
+				<div
+					class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm">
+					<img v-if="thumbUrl" :src="thumbUrl" class="w-full h-full object-cover" />
+					<RectangleStackIcon v-else class="w-8 h-8 text-primary" />
+				</div>
+				<div>
+					<h1 class="text-2xl font-semibold text-text-main-light">
+						{{ project?.name || "Detalles del Proyecto" }}
+					</h1>
+					<p class="text-sm text-text-muted-light mt-1">
+						{{ project?.description || "Proyecto sin descripción" }}
+					</p>
+				</div>
 			</div>
 			<div class="flex items-center gap-4">
 				<!--
@@ -21,10 +28,22 @@
 				</button>
 				-->
 				<button
+					@click="showGerberVisualizer = true"
+					class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
+					<MapIcon class="w-5 h-5" />
+					<span>Mapa PCB</span>
+				</button>
+				<button
 					@click="handleImportComponents"
 					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<ArrowDownTrayIcon class="w-4 h-4" />
 					<span>Importar Componentes</span>
+				</button>
+				<button
+					@click="consumeProjectStock"
+					class="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-amber-700 transition-colors">
+					<ArchiveBoxIcon class="w-5 h-5" />
+					<span>Consumir Stock</span>
 				</button>
 				<button
 					@click="exportProject"
@@ -93,8 +112,34 @@
 							<CurrencyDollarIcon class="w-5 h-5 text-purple-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Valor Total</p>
-							<p class="text-2xl font-bold text-text-main-light">${{ totalValue }}</p>
+							<p class="text-xs text-text-muted-light">Valor Componentes</p>
+							<p class="text-2xl font-bold text-text-main-light">${{ totalComponentsValue }}</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-card-light rounded-2xl p-4 shadow-sm border border-primary/20">
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+							<RectangleStackIcon class="w-5 h-5 text-primary" />
+						</div>
+						<div>
+							<p class="text-xs text-text-muted-light">
+								Total Proyecto ({{ project?.pcbQuantity || 1 }} PCBs)
+							</p>
+							<p class="text-2xl font-bold text-primary">${{ totalProjectValue }}</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="bg-card-light rounded-2xl p-4 shadow-sm border border-green-200">
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+							<CurrencyDollarIcon class="w-5 h-5 text-green-600" />
+						</div>
+						<div>
+							<p class="text-xs text-text-muted-light">Coste por PCB</p>
+							<p class="text-2xl font-bold text-green-600">${{ costPerPcb }}</p>
 						</div>
 					</div>
 				</div>
@@ -142,6 +187,13 @@
 		@notification="(data) => showToastMessage(data.message, data.type)"
 		@file-selected-to-project="handleImportToProject"
 		@import-completed="handleImportCompleted" />
+
+	<!-- Gerber/XY Visualizer Overlay -->
+	<div v-if="showGerberVisualizer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+		<div class="w-full h-full max-w-6xl max-h-[85vh]">
+			<GerberVisualizer @close="showGerberVisualizer = false" />
+		</div>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -167,12 +219,15 @@ import {
 	XMarkIcon,
 	PlusIcon,
 	ArrowDownTrayIcon,
+	ArchiveBoxIcon,
+	MapIcon,
 } from "@heroicons/vue/24/outline";
 
 import { useDatabase } from "@/composables/useDatabase";
 import { useCostCalculator } from "@/composables/useCostCalculator";
 import { useFileParser } from "@/composables/useFileParser";
 import { useRouter, useRoute } from "vue-router";
+import { useFileManager } from "@/composables/useFileManager";
 import type { BOMItem, BOMProject } from "@/types/bom";
 import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
 import EditItemInProjectModal from "@/components/EditItemInProjectModal.vue";
@@ -180,6 +235,7 @@ import ProjectItemsTable from "@/components/project/ProjectItemsTable.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import Toast from "@/components/Toast.vue";
 import ImportModal from "@/components/ImportModal.vue";
+import GerberVisualizer from "@/components/project/GerberVisualizer.vue";
 import { navigateTo } from "nuxt/app";
 
 // Define page meta properties (using Nuxt's automatic route naming)
@@ -204,6 +260,30 @@ const showAddItemModal = ref(false);
 const showEditItemModal = ref(false);
 const editingItem = ref<any>(null);
 const costBreakdown = ref<any>(null);
+const showGerberVisualizer = ref(false);
+
+const { getFileByName } = useFileManager();
+const thumbUrl = ref<string | null>(null);
+
+const loadThumb = async () => {
+	if (project.value?.thumb) {
+		if (project.value.thumb.startsWith("http") || project.value.thumb.startsWith("data:")) {
+			thumbUrl.value = project.value.thumb;
+			return;
+		}
+
+		try {
+			const fileUrl = await getFileByName(project.value.thumb);
+			if (fileUrl) {
+				thumbUrl.value = fileUrl;
+			}
+		} catch (error) {
+			console.error("Error loading project thumb:", error);
+		}
+	} else {
+		thumbUrl.value = null;
+	}
+};
 
 // Confirm Modal State
 // const showConfirmModal = ref(false);
@@ -264,8 +344,21 @@ const lowStockCount = computed(() => {
 	return projectItems.value.filter((item) => item.in_stock < (item.min_stock || 0)).length;
 });
 
-const totalValue = computed(() => {
+const totalComponentsValue = computed(() => {
 	return projectItems.value.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0).toFixed(2);
+});
+
+const totalProjectValue = computed(() => {
+	const componentsValue = parseFloat(totalComponentsValue.value);
+	const pcbQty = project.value?.pcbQuantity || 1;
+	const pcbCost = project.value?.pcbCost || 0;
+	return (componentsValue + pcbQty * pcbCost).toFixed(2);
+});
+
+const costPerPcb = computed(() => {
+	const total = parseFloat(totalProjectValue.value);
+	const pcbQty = project.value?.pcbQuantity || 1;
+	return (total / pcbQty).toFixed(2);
 });
 
 const availableItems = computed(() => {
@@ -311,6 +404,7 @@ const loadProject = async () => {
 		}
 
 		project.value = projectData;
+		await loadThumb();
 
 		// Cargar items del proyecto
 		projectItems.value = await db.getProjectItems(projectId);
@@ -476,6 +570,29 @@ const calculateProjectCostMethod = () => {
 const exportProject = () => {
 	showToastMessage("Funcionalidad de exportación del proyecto en desarrollo", "info");
 	// TODO: Implementar exportación del proyecto
+};
+
+const consumeProjectStock = async () => {
+	const confirmed = await showConfirmation(
+		"Consumir Stock",
+		"¿Estás seguro de descontar las cantidades de este proyecto del inventario global? Esta acción afectará el stock real disponible.",
+	);
+
+	if (confirmed) {
+		try {
+			const itemsToConsume = projectItems.value.map((item) => ({
+				id: item.id,
+				quantity: item.quantity || 1,
+			}));
+
+			await db.consumeStockFromBOM(itemsToConsume);
+			await loadProject();
+			showToastMessage("Stock consumido exitosamente", "success");
+		} catch (error) {
+			console.error("Error al consumir stock:", error);
+			showToastMessage("Error al consumir stock", "error");
+		}
+	}
 };
 
 const goBack = async () => {

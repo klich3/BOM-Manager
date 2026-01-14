@@ -98,6 +98,48 @@
 
 				<!-- Right Column -->
 				<div class="col-span-12 lg:col-span-7 flex flex-col gap-6">
+					<div v-if="lowStockItems.length > 0">
+						<h3 class="text-xl font-semibold text-text-main-light mb-4 flex items-center gap-2">
+							<ExclamationTriangleIcon class="w-6 h-6 text-amber-500" />
+							Stock Bajo
+						</h3>
+						<div class="bg-card-light rounded-3xl p-6 shadow-sm border border-amber-100">
+							<div class="space-y-4">
+								<div
+									v-for="item in lowStockItems.slice(0, 5)"
+									:key="item.id"
+									class="flex items-center justify-between">
+									<div class="flex flex-col">
+										<span class="text-sm font-medium text-text-main-light">{{ item.name }}</span>
+										<span class="text-xs text-text-muted-light">{{
+											item.part_number || item.lcsc_part || "Sin ref"
+										}}</span>
+									</div>
+									<div class="flex items-center gap-4">
+										<div class="text-right">
+											<p class="text-xs text-text-muted-light">Stock</p>
+											<p class="text-sm font-bold text-amber-600">
+												{{ item.in_stock || 0 }} / {{ item.min_stock }}
+											</p>
+										</div>
+										<NuxtLink :to="{ name: 'inventory', query: { search: item.name } }">
+											<button class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+												<ShoppingCartIcon class="w-4 h-4 text-primary" />
+											</button>
+										</NuxtLink>
+									</div>
+								</div>
+								<div v-if="lowStockItems.length > 5" class="text-center pt-2">
+									<NuxtLink
+										:to="{ name: 'inventory' }"
+										class="text-sm text-primary font-medium hover:underline">
+										Ver todos ({{ lowStockItems.length }})
+									</NuxtLink>
+								</div>
+							</div>
+						</div>
+					</div>
+
 					<div class="flex justify-between items-center">
 						<h3 class="text-xl font-semibold text-text-main-light">Actividad Reciente</h3>
 					</div>
@@ -140,7 +182,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useDatabase } from "@/composables/useDatabase";
-import { CubeIcon, DocumentArrowUpIcon, RectangleStackIcon, BellIcon, Squares2X2Icon } from "@heroicons/vue/24/outline";
+import {
+	CubeIcon,
+	DocumentArrowUpIcon,
+	RectangleStackIcon,
+	BellIcon,
+	Squares2X2Icon,
+	ExclamationTriangleIcon,
+	ShoppingCartIcon,
+} from "@heroicons/vue/24/outline";
 import StatCard from "@/components/dashboard/StatCard.vue";
 import StockHealthIndicator from "@/components/dashboard/StockHealthIndicator.vue";
 import ImportModal from "@/components/ImportModal.vue";
@@ -157,6 +207,7 @@ const showImportModal = ref(false);
 const unreadNotificationsCount = ref(0);
 const recentActivity = ref<any[]>([]);
 const loading = ref(true);
+const lowStockItems = ref<any[]>([]);
 
 const stats = ref({
 	totalItems: 0,
@@ -198,15 +249,22 @@ const loadStats = async () => {
 		const items = await db.getAllItems();
 		stats.value.totalItems = items.length;
 
-		// Calcular stock bajo - antes usábamos in_stock pero ahora usamos quantity
-		// Ahora calculamos cuántos items tienen quantity menor que min_stock
+		// Items con stock bajo
+		lowStockItems.value = items.filter(
+			(item) =>
+				(item.in_stock !== undefined && item.in_stock !== null ? item.in_stock : 0) < (item.min_stock || 0) &&
+				(item.min_stock || 0) > 0,
+		);
+
+		// Calcular stock bajo usando in_stock
 		stats.value.lowStock = items.filter(
-			(item) => (item.quantity || 0) < (item.min_stock || 0) && (item.min_stock || 0) > 0,
+			(item) =>
+				(item.in_stock !== undefined && item.in_stock !== null ? item.in_stock : 0) < (item.min_stock || 0) &&
+				(item.min_stock || 0) > 0,
 		).length;
 
-		// Calcular valor total - antes usábamos in_stock pero ahora no existe
-		// Ahora calculamos el valor total basado en price y quantity
-		stats.value.totalValue = items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+		// Calcular valor total basado en price e in_stock (valor actual del inventario)
+		stats.value.totalValue = items.reduce((sum, item) => sum + (item.price || 0) * (item.in_stock || 0), 0);
 
 		// Cargar proyectos
 		const projects = await db.getAllProjects();

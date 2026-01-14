@@ -1,6 +1,8 @@
 import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import { useFilesDatabase } from '@/composables/useFilesDatabase';
+import { useFileManager } from '@/composables/useFileManager';
+import { convertSnakeToCamel } from '@/composables/useDatabaseUtils';
 import type { BOMProject } from '@/types/bom';
 import type { Database } from '@/types/database';
 
@@ -28,7 +30,7 @@ export const useProjectsDatabase = () => {
                 GROUP BY p.id
                 ORDER BY p.created_at DESC
             `);
-            return result;
+            return convertSnakeToCamel(result);
         } catch (error) {
             console.error('Error obteniendo proyectos:', error);
             return [];
@@ -41,7 +43,7 @@ export const useProjectsDatabase = () => {
 
         try {
             const result = await database.select<any[]>('SELECT * FROM projects WHERE id = ?', [id]);
-            return result.length > 0 ? result[0] : null;
+            return result.length > 0 ? convertSnakeToCamel(result[0]) : null;
         } catch (error) {
             console.error('Error obteniendo proyecto:', error);
             return null;
@@ -57,8 +59,19 @@ export const useProjectsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                'INSERT INTO projects (id, name, description, git, web, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [id, project.name || '', project.description || null, project.git ?? null, project.web ?? null, now, now]
+                'INSERT INTO projects (id, name, description, status, git, web, pcb_quantity, pcb_cost, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [
+                    id,
+                    project.name || '',
+                    project.description || null,
+                    project.status || 'Draft',
+                    project.git ?? null,
+                    project.web ?? null,
+                    project.pcbQuantity ?? 1,
+                    project.pcbCost ?? 0,
+                    now,
+                    now
+                ]
             );
 
             // Registrar actividad
@@ -79,8 +92,18 @@ export const useProjectsDatabase = () => {
             const now = new Date().toISOString();
 
             await database.execute(
-                'UPDATE projects SET name = ?, description = ?, git = ?, web = ?, updated_at = ? WHERE id = ?',
-                [project.name, project.description, project.git ?? null, project.web ?? null, now, id]
+                'UPDATE projects SET name = ?, description = ?, status = ?, git = ?, web = ?, pcb_quantity = ?, pcb_cost = ?, updated_at = ? WHERE id = ?',
+                [
+                    project.name,
+                    project.description,
+                    project.status || 'Draft',
+                    project.git ?? null,
+                    project.web ?? null,
+                    project.pcbQuantity ?? 1,
+                    project.pcbCost ?? 0,
+                    now,
+                    id
+                ]
             );
 
             // Registrar actividad
@@ -97,15 +120,30 @@ export const useProjectsDatabase = () => {
         const database = await getDatabase();
         if (!database) return false;
 
-        const { deleteFilesByProjectId } = useFilesDatabase();
+        const { deleteFilesByProjectId, getFilesByProjectId } = useFilesDatabase();
+        const { deleteFile: deletePhysicalFile } = useFileManager();
 
         try {
             // Registrar actividad antes de eliminar
             const project = await getProjectById(id);
 
-            // Eliminar archivos asociados al proyecto (eliminación en cascada)
+            // Obtener archivos antes de eliminarlos para el borrado físico
+            const files = await getFilesByProjectId(id);
+            for (const file of files) {
+                try {
+                    await deletePhysicalFile(file);
+                } catch (err) {
+                    console.error(`Error deleting physical file ${file.filename}:`, err);
+                }
+            }
+
+            // Eliminar registros de archivos asociados
             await deleteFilesByProjectId(id);
 
+            // Eliminar relación con items
+            await database.execute('DELETE FROM project_items WHERE project_id = ?', [id]);
+
+            // Eliminar el proyecto
             await database.execute('DELETE FROM projects WHERE id = ?', [id]);
 
             // Registrar actividad

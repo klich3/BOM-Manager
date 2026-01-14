@@ -185,7 +185,15 @@
 										v-model="importDestination"
 										value="project"
 										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
-									<label class="ml-2 block text-sm text-gray-700">Proyecto específico</label>
+									<label class="ml-2 block text-sm text-gray-700">Proyecto existente</label>
+								</div>
+								<div class="flex items-center">
+									<input
+										type="radio"
+										v-model="importDestination"
+										value="new_project"
+										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
+									<label class="ml-2 block text-sm text-gray-700">Nuevo Proyecto</label>
 								</div>
 							</div>
 
@@ -198,6 +206,13 @@
 										{{ project.name }}
 									</option>
 								</select>
+							</div>
+							<div v-else-if="importDestination === 'new_project'" class="mt-3">
+								<input
+									type="text"
+									v-model="newProjectName"
+									placeholder="Nombre del nuevo proyecto"
+									class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
 							</div>
 							<div
 								v-else-if="importDestination === 'project' && projects.length === 0"
@@ -225,7 +240,7 @@
 						</div>
 
 						<ImportPreviewTable
-							:items="editableItems"
+							:items="parsedItems"
 							:editable="true"
 							:field-mappings="columnMapping"
 							@update-item="updateEditableItem" />
@@ -318,6 +333,7 @@ const {
 	projects,
 	importDestination,
 	selectedProjectId,
+	newProjectName,
 } = storeToRefs(importStore);
 
 // Initialize notifications composable
@@ -533,8 +549,13 @@ const resetImport = () => {
 };
 
 // Additional methods
-const nextStep = () => {
+const nextStep = async () => {
 	if (canProceed.value) {
+		if (importStore.step === 2) {
+			// Antes de pasar al paso 3, pre-procesar los items y compararlos con el inventario
+			importStore.setParsedItems(mappedItems.value);
+			await importStore.compareWithInventory(db);
+		}
 		importStore.goToNextStep();
 	} else {
 		// Mostrar notificación de error si no se puede avanzar
@@ -692,9 +713,7 @@ const getFieldName = (field: string): string => {
 
 // Función para actualizar un campo editable
 const updateEditableItem = (data: { index: number; field: string; value: any }) => {
-	if (editableItems.value[data.index]) {
-		editableItems.value[data.index][data.field] = data.value;
-	}
+	importStore.updateImportItem(data.index, { [data.field]: data.value });
 };
 
 // Función para manejar errores en el procesamiento del archivo
@@ -709,11 +728,6 @@ const confirmImport = async () => {
 	importStore.setIsProcessing(true);
 
 	try {
-		// Convertir los items editables de camelCase a snake_case antes de importar
-		const itemsToImport = editableItems.value.map((item) => convertBomItemToSnake(item));
-		// Actualizar los parsedItems en el store con los items editables antes de confirmar la importación
-		importStore.setParsedItems(itemsToImport as Partial<BOMItem>[]);
-
 		// Parsear el archivo usando el composable useFileParser
 		const result = await importStore.confirmImport(
 			db,
@@ -732,8 +746,8 @@ const confirmImport = async () => {
 		emit("import-completed", {
 			importedCount: result.importedCount,
 			errors: result.errors,
-			destination: importStore.importDestination,
-			projectId: importStore.selectedProjectId,
+			destination: importStore.importDestination as "global" | "project",
+			projectId: result.projectId,
 		});
 		// Reiniciar el estado del modal antes de cerrar
 		resetModalState();

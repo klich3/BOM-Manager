@@ -8,6 +8,16 @@
 			</div>
 			<div class="flex items-center gap-4">
 				<button
+					@click="updateLcscPrices"
+					:disabled="isUpdatingPrices"
+					class="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-amber-700 disabled:bg-gray-400 transition-colors">
+					<ArrowPathIcon v-if="!isUpdatingPrices" class="w-5 h-5" />
+					<div
+						v-else
+						class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+					<span>{{ isUpdatingPrices ? "Actualizando..." : "Actualizar Precios" }}</span>
+				</button>
+				<button
 					@click="showImportModal = true"
 					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<DocumentArrowUpIcon class="w-5 h-5" />
@@ -231,6 +241,7 @@ import {
 	ClipboardDocumentListIcon,
 	GlobeAltIcon,
 	ShoppingCartIcon,
+	ArrowPathIcon,
 } from "@heroicons/vue/24/outline";
 import { useDatabase } from "@/composables/useDatabase";
 import { useExport } from "@/composables/useExport";
@@ -253,6 +264,7 @@ const { exportAllInventory } = useExport();
 const { parseFile } = useFileParser();
 const lists = useLists();
 const { showConfirmation } = useDialog();
+const { massUpdatePrices } = useLCSC();
 
 // State
 const items = ref<any[]>([]);
@@ -265,6 +277,7 @@ const showAddModal = ref(false);
 const showImportModal = ref(false);
 const showListManager = ref(false);
 const showListsManagement = ref(false);
+const isUpdatingPrices = ref(false);
 const selectedListsForMerge = ref<string[]>([]);
 const mergeListName = ref("");
 const editingItem = ref<any>(null);
@@ -614,6 +627,36 @@ const deleteSelectedItemsConfirm = async (ids: string[]) => {
 		} catch (error) {
 			console.error("Error eliminando componentes:", error);
 			showToastMessage("Error al eliminar los componentes", "error");
+		}
+	}
+};
+
+const updateLcscPrices = async () => {
+	const itemsWithLcsc = items.value
+		.filter((item) => item.lcsc_part)
+		.map((item) => ({ id: item.id, lcsc_part: item.lcsc_part }));
+
+	if (itemsWithLcsc.length === 0) {
+		showToastMessage("No hay items con referencia LCSC para actualizar", "warning");
+		return;
+	}
+
+	const confirmed = await showConfirmation(
+		"Actualizar Precios LCSC",
+		`¿Deseas actualizar los precios de ${itemsWithLcsc.length} componentes desde LCSC? Esto puede tomar un momento.`,
+	);
+
+	if (confirmed) {
+		isUpdatingPrices.value = true;
+		try {
+			const updatedCount = await massUpdatePrices(itemsWithLcsc);
+			await loadItems();
+			showToastMessage(`Se han actualizado ${updatedCount} precios correctamente`, "success");
+		} catch (error) {
+			console.error("Error al actualizar precios:", error);
+			showToastMessage("Ocurrió un error al actualizar los precios", "error");
+		} finally {
+			isUpdatingPrices.value = false;
 		}
 	}
 };

@@ -140,6 +140,7 @@ import { useRouter } from "vue-router";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useDialog } from "@/composables/useDialog";
+import type { BOMItem, BOMProject } from "@/types/bom";
 import ProjectModal from "@/components/project/ProjectModal.vue";
 import ProjectCard from "@/components/project/ProjectCard.vue";
 import { navigateTo } from "nuxt/app";
@@ -182,18 +183,23 @@ const filteredProjects = computed(() => {
 // Methods
 const loadProjects = async () => {
 	try {
-		const allProjects = await db.getAllProjects();
-		// Calcular el valor total para cada proyecto
-		const projectsWithTotalValue = await Promise.all(
-			allProjects.map(async (project) => {
-				const totalValue = await projectItemsDb.getProjectTotalValue(project.id);
+		const allProjects = (await db.getAllProjects()) as BOMProject[];
+		// Calcular el valor total y obtener thumbnail para cada proyecto
+		const projectsWithExtras = await Promise.all(
+			allProjects.map(async (project: BOMProject) => {
+				const itemsValue = await projectItemsDb.getProjectTotalValue(project.id);
+				const pcbFabricationCost = (project.pcbQuantity || 1) * (project.pcbCost || 0);
+				const projectFiles = await db.getFilesByProjectId(project.id);
+				const thumbFile = projectFiles.find((f: any) => f.filename.startsWith("thumb-prj-"));
+
 				return {
 					...project,
-					totalValue,
+					totalValue: itemsValue + pcbFabricationCost,
+					thumb: thumbFile ? thumbFile.filename : null,
 				};
 			}),
 		);
-		projects.value = projectsWithTotalValue;
+		projects.value = projectsWithExtras;
 	} catch (error) {
 		console.error("Error cargando proyectos:", error);
 	}

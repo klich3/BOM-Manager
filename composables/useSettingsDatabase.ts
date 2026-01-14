@@ -27,12 +27,15 @@ export const useSettingsDatabase = () => {
         try {
             const now = new Date().toISOString();
             await database.execute(
-                'INSERT INTO settings (id, currency, items_per_page, language, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+                'INSERT INTO settings (id, currency, items_per_page, language, decimals, theme, country, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     setting.id,
                     setting.currency || 'USD',
                     setting.items_per_page || 20,
                     setting.language || 'es',
+                    setting.decimals || 2,
+                    setting.theme || 'light',
+                    setting.country || 'ES',
                     setting.created_at || now,
                     setting.updated_at || now
                 ]
@@ -56,11 +59,14 @@ export const useSettingsDatabase = () => {
         try {
             const now = new Date().toISOString();
             await database.execute(
-                'UPDATE settings SET currency = ?, items_per_page = ?, language = ?, updated_at = ? WHERE id = ?',
+                'UPDATE settings SET currency = ?, items_per_page = ?, language = ?, decimals = ?, theme = ?, country = ?, updated_at = ? WHERE id = ?',
                 [
                     setting.currency,
                     setting.items_per_page,
                     setting.language,
+                    setting.decimals,
+                    setting.theme,
+                    setting.country,
                     now,
                     id
                 ]

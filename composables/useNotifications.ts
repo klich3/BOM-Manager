@@ -100,9 +100,19 @@ export const useNotifications = () => {
      * Notificación de stock bajo
      */
     const lowStockAlert = (itemName: string, currentStock: number, minStock: number) => {
+        const message = `${itemName} tiene solo ${currentStock} unidades (mínimo: ${minStock})`;
+
+        // Si el stock es 0, es una alerta crítica, enviamos notificación nativa
+        if (currentStock <= 0) {
+            sendSystemNotification('¡CRÍTICO: Stock Agotado!', message);
+        } else if (currentStock <= minStock * 0.5) {
+            // Si el stock es menor al 50% del mínimo, también notificamos al sistema
+            sendSystemNotification('Stock Muy Bajo', message);
+        }
+
         return warning(
             'Stock Bajo',
-            `${itemName} tiene solo ${currentStock} unidades (mínimo: ${minStock})`,
+            message,
             0 // No auto-cerrar
         );
     };

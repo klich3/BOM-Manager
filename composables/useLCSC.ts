@@ -342,12 +342,39 @@ export const useLCSC = () => {
         return lcscPattern.test(partNumber);
     };
 
+    // Función para actualizar masivamente los precios
+    const massUpdatePrices = async (items: { id: string, lcsc_part: string }[]) => {
+        isLoading.value = true;
+        let updatedCount = 0;
+        const { updateItem } = useItemsDatabase();
+
+        for (const item of items) {
+            try {
+                // En una implementación real, aquí haríamos fetch de la API o scraping
+                // Por ahora simulamos la obtención del precio
+                const componentData = await searchComponent(item.lcsc_part, item.id);
+                if (componentData && componentData.price !== undefined) {
+                    await updateItem(item.id, { price: componentData.price });
+                    updatedCount++;
+                }
+                // Pequeño delay para no saturar
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (err) {
+                console.error(`Error actualizando precio para ${item.lcsc_part}:`, err);
+            }
+        }
+
+        isLoading.value = false;
+        return updatedCount;
+    };
+
     return {
         isLoading,
         error,
         searchComponent,
         getComponentImages,
         getPurchaseLink,
-        validatePartNumber
+        validatePartNumber,
+        massUpdatePrices
     };
 };

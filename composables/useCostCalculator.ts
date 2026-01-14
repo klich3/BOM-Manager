@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import type { BOMItem } from '@/types/bom';
+import { useSettingsStore } from '@/stores/settings';
 
 export interface CostCalculation {
     subtotal: number;
@@ -20,9 +21,11 @@ export interface ProjectCostBreakdown {
 }
 
 export const useCostCalculator = () => {
+    const settingsStore = useSettingsStore();
     const taxRate = ref(0.19); // 19% por defecto
     const shippingCost = ref(0);
-    const currency = ref('USD');
+    const currency = computed(() => settingsStore.settings.currency);
+    const decimals = computed(() => settingsStore.settings.decimals);
 
     /**
      * Calcula el costo total de un proyecto basado en sus items
@@ -97,11 +100,12 @@ export const useCostCalculator = () => {
      * Formatear monto monetario
      */
     const formatCurrency = (amount: number, curr: string = currency.value): string => {
-        return new Intl.NumberFormat('es-ES', {
+        const lang = settingsStore.settings.language === 'es' ? 'es-ES' : 'en-US';
+        return new Intl.NumberFormat(lang, {
             style: 'currency',
             currency: curr,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            minimumFractionDigits: decimals.value,
+            maximumFractionDigits: decimals.value
         }).format(amount);
     };
 
@@ -117,13 +121,6 @@ export const useCostCalculator = () => {
      */
     const setShippingCost = (cost: number) => {
         shippingCost.value = Math.max(0, cost); // Asegurar que sea positivo
-    };
-
-    /**
-     * Actualiza la moneda
-     */
-    const setCurrency = (curr: string) => {
-        currency.value = curr;
     };
 
     /**
@@ -159,7 +156,7 @@ export const useCostCalculator = () => {
     return {
         taxRate: computed(() => taxRate.value),
         shippingCost: computed(() => shippingCost.value),
-        currency: computed(() => currency.value),
+        currency,
 
         calculateProjectCost,
         calculateItemCost,
@@ -167,7 +164,6 @@ export const useCostCalculator = () => {
         formatCurrency,
         setTaxRate,
         setShippingCost,
-        setCurrency,
         getCostStatistics
     };
 };

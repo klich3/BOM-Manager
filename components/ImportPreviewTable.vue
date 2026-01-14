@@ -5,6 +5,10 @@
 				<tr>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+						Estado/Acción
+					</th>
+					<th
+						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
 						Nombre
 					</th>
 					<th
@@ -82,7 +86,40 @@
 				</tr>
 			</thead>
 			<tbody class="bg-white divide-y divide-gray-200">
-				<tr v-for="(item, index) in items" :key="index">
+				<tr v-for="(item, index) in items" :key="index" :class="getRowClass(item)">
+					<td class="px-3 py-2 text-sm text-gray-900 min-w-[150px]">
+						<div class="flex flex-col gap-2">
+							<span
+								:class="getStatusBadgeClass(item)"
+								class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
+								{{ getStatusLabel(item) }}
+							</span>
+							<select
+								v-model="item.selectedAction"
+								@change="
+									$emit('update-item', { index, field: 'selectedAction', value: item.selectedAction })
+								"
+								class="block w-full text-xs border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+								<option value="create">Crear nuevo</option>
+								<option v-if="item.importStatus === 'exists'" value="update_stock">Sumar stock</option>
+								<option v-if="item.importStatus === 'exists'" value="merge">Combinar datos</option>
+								<option value="ignore">Ignorar</option>
+							</select>
+							<select
+								v-model="item.selectedStockType"
+								@change="
+									$emit('update-item', {
+										index,
+										field: 'selectedStockType',
+										value: item.selectedStockType,
+									})
+								"
+								class="block w-full text-xs border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+								<option value="existing">Stock disponible</option>
+								<option value="to_order">Por pedir</option>
+							</select>
+						</div>
+					</td>
 					<td class="px-3 py-2 text-sm text-gray-900 min-w-[120px]">
 						<input
 							v-if="editable && !isFieldMapped('name')"
@@ -160,15 +197,17 @@
 						<span v-else>{{ item.price ? `$${item.price}` : "-" }}</span>
 					</td>
 					<td class="px-3 py-2 text-sm text-gray-900 min-w-[80px]">
-						<input
-							v-if="editable && !isFieldMapped('inStock')"
-							type="number"
-							v-model="item.inStock"
-							class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-							@input="
-								$emit('update-item', { index, field: 'inStock', value: parseInt(item.inStock) || 0 })
-							" />
-						<span v-else>{{ item.inStock || 0 }}</span>
+						<div class="flex flex-col">
+							<span
+								:class="
+									(item.existingItem?.inStock || 0) < (item.quantity || 0)
+										? 'text-red-600 font-bold'
+										: 'text-green-600 font-medium'
+								">
+								{{ item.existingItem?.inStock || 0 }}
+							</span>
+							<span class="text-[10px] text-gray-400">en inv.</span>
+						</div>
 					</td>
 					<td class="px-3 py-2 text-sm text-gray-900 min-w-[80px]">
 						<input
@@ -317,5 +356,36 @@ const isColumnSelected = (field: string): boolean => {
 	// En ImportPreviewTable no tenemos información sobre selección de columnas
 	// Por lo tanto, devolvemos true por defecto
 	return true;
+};
+
+const getRowClass = (item: any) => {
+	if (item.selectedAction === "ignore") return "bg-gray-100 opacity-60";
+
+	// Lógica de marcado según stock para "por pedir"
+	if (item.selectedStockType === "to_order") {
+		const inStock = item.existingItem?.inStock || 0;
+		const needed = item.quantity || 0;
+
+		if (inStock >= needed) {
+			return "bg-green-50 border-l-4 border-green-500"; // Tenemos todo
+		} else if (inStock > 0) {
+			return "bg-amber-50 border-l-4 border-amber-500"; // Tenemos algo
+		} else {
+			return "bg-red-50 border-l-4 border-red-500"; // Hay que comprar todo
+		}
+	}
+
+	if (item.importStatus === "exists") return "bg-amber-50";
+	return "";
+};
+
+const getStatusBadgeClass = (item: any) => {
+	if (item.importStatus === "exists") return "bg-amber-100 text-amber-800";
+	return "bg-green-100 text-green-800";
+};
+
+const getStatusLabel = (item: any) => {
+	if (item.importStatus === "exists") return "Ya existe en inventario";
+	return "Nuevo item";
 };
 </script>

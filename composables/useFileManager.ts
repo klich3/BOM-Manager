@@ -249,12 +249,43 @@ export const useFileManager = () => {
         }
     };
 
+    // Función para limpiar archivos huérfanos
+    const cleanupOrphanFiles = async (validFileNames: string[]) => {
+        if (isTauri) {
+            console.warn('cleanupOrphanFiles no está implementado para Tauri todavía');
+            return { success: false, message: 'No implementado para Tauri' };
+        }
+
+        try {
+            // @ts-ignore - OPFS support
+            const opfsRoot = await navigator.storage.getDirectory();
+            let count = 0;
+
+            // @ts-ignore
+            for await (const entry of opfsRoot.values()) {
+                if (entry.kind === 'file') {
+                    if (!validFileNames.includes(entry.name)) {
+                        console.log(`Eliminando archivo huérfano: ${entry.name}`);
+                        await opfsRoot.removeEntry(entry.name);
+                        count++;
+                    }
+                }
+            }
+
+            return { success: true, count };
+        } catch (error) {
+            console.error('Error durante la limpieza de archivos huérfanos:', error);
+            return { success: false, error };
+        }
+    };
+
     return {
         saveFile,
         deleteFile,
         getStorageInfo,
         isOPFSAvailable,
         isTauri,
-        getFileByName
+        getFileByName,
+        cleanupOrphanFiles
     };
 };

@@ -6,6 +6,9 @@ export interface Settings {
     currency: string;
     items_per_page: number;
     language: string;
+    decimals: number;
+    theme: string;
+    country: string;
     created_at: string;
     updated_at: string;
 }
@@ -17,6 +20,9 @@ export const useSettingsStore = defineStore('settings', {
             currency: 'USD',
             items_per_page: 20,
             language: 'es',
+            decimals: 2,
+            theme: 'light',
+            country: 'ES',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         } as Settings,
@@ -36,6 +42,9 @@ export const useSettingsStore = defineStore('settings', {
                         currency: 'USD',
                         items_per_page: 20,
                         language: 'es',
+                        decimals: 2,
+                        theme: 'light',
+                        country: 'ES',
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString(),
                     };
@@ -56,6 +65,9 @@ export const useSettingsStore = defineStore('settings', {
                     currency: 'USD',
                     items_per_page: 20,
                     language: 'es',
+                    decimals: 2,
+                    theme: 'light',
+                    country: 'ES',
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
                 };
@@ -93,6 +105,21 @@ export const useSettingsStore = defineStore('settings', {
 
         updateLanguage(language: string) {
             this.settings.language = language;
+            this.saveSettings();
+        },
+
+        updateDecimals(decimals: number) {
+            this.settings.decimals = decimals;
+            this.saveSettings();
+        },
+
+        updateTheme(theme: string) {
+            this.settings.theme = theme;
+            this.saveSettings();
+        },
+
+        updateCountry(country: string) {
+            this.settings.country = country;
             this.saveSettings();
         },
     },

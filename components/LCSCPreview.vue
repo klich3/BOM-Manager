@@ -1,5 +1,11 @@
 <template>
 	<div v-if="showPreview" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<!-- Pdf Viewer Modal -->
+		<PdfViewerModal
+			:show="showPdfViewer"
+			:pdf-url="pdfToView"
+			:title="lcscData?.name || 'Datasheet'"
+			@close="showPdfViewer = false" />
 		<div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
 			<div class="flex items-center justify-between mb-4 p-6 pb-4">
 				<h2 class="text-xl font-semibold text-gray-900">
@@ -151,6 +157,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import PdfViewerModal from "@/components/global/PdfViewerModal.vue";
 import { useLCSC } from "@/composables/useLCSC";
 import { useExternalLink } from "@/composables/useExternalLink";
 
@@ -170,6 +177,8 @@ const { isLoading, error, searchComponent, getPurchaseLink } = useLCSC();
 const lcscData = ref<any>(null);
 
 const showPreview = ref(false);
+const showPdfViewer = ref(false);
+const pdfToView = ref("");
 
 const { openExternalLink } = useExternalLink();
 
@@ -198,32 +207,7 @@ const handleImageError = (index: number) => {
 };
 
 const openDatasheet = (url: string) => {
-	// Verificar si es una URL base64
-	if (url.startsWith("data:application/pdf;base64,")) {
-		// Para URLs base64, convertir a blob y abrir en nueva ventana
-		try {
-			const base64Data = url.split(",")[1];
-			const binaryString = atob(base64Data);
-			const bytes = new Uint8Array(binaryString.length);
-			for (let i = 0; i < binaryString.length; i++) {
-				bytes[i] = binaryString.charCodeAt(i);
-			}
-			const blob = new Blob([bytes], { type: "application/pdf" });
-			const blobUrl = URL.createObjectURL(blob);
-			window.open(blobUrl, "_blank");
-		} catch (error) {
-			console.error("Error al convertir base64 a PDF:", error);
-			// Fallback: intentar abrir directamente
-			window.open(url, "_blank");
-		}
-		//TODO: blob posible error
-		//} else if (url.startsWith("blob:") || url.startsWith("data:")) {
-	} else if (url.startsWith("blob:") || url.startsWith("data:")) {
-		// Para otras URLs locales, abrir directamente en una nueva ventana
-		window.open(url, "_blank");
-	} else {
-		// Para URLs remotas, usar la función openExternalLink existente
-		openExternalLink(url);
-	}
+	pdfToView.value = url;
+	showPdfViewer.value = true;
 };
 </script>

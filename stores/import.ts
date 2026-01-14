@@ -2,6 +2,17 @@ import { defineStore } from 'pinia';
 import type { BOMItem } from '@/types/bom';
 import type { ParseResult } from '@/composables/useFileParser';
 import { useActivityDatabase } from '@/composables/useActivityDatabase';
+import { convertSnakeToCamel } from '@/composables/useDatabaseUtils';
+
+export type ImportAction = 'create' | 'update_stock' | 'merge' | 'ignore';
+export type StockType = 'existing' | 'to_order';
+
+export interface ImportItem extends Partial<BOMItem> {
+    importStatus: 'new' | 'exists' | 'conflict';
+    existingItem?: any | null;
+    selectedAction: ImportAction;
+    selectedStockType: StockType;
+}
 
 export interface ImportState {
     step: number;
@@ -11,12 +22,13 @@ export interface ImportState {
         rows: any[][];
     } | null;
     parseResult: ParseResult;
-    parsedItems: Partial<BOMItem>[];
+    parsedItems: ImportItem[];
     isProcessing: boolean;
     columnMapping: Record<string, string>;
     projects: any[];
-    importDestination: 'global' | 'project';
+    importDestination: 'global' | 'project' | 'new_project';
     selectedProjectId: string;
+    newProjectName: string;
     showImportModal: boolean;
 }
 
@@ -37,6 +49,7 @@ export const useImportStore = defineStore('import', {
         projects: [],
         importDestination: 'global',
         selectedProjectId: '',
+        newProjectName: '',
         showImportModal: false,
     }),
 
@@ -105,8 +118,19 @@ export const useImportStore = defineStore('import', {
             this.parseResult = result;
         },
 
-        setParsedItems(items: Partial<BOMItem>[]) {
-            this.parsedItems = items;
+        setParsedItems(items: any[]) {
+            this.parsedItems = items.map(item => ({
+                ...item,
+                importStatus: item.importStatus || 'new',
+                selectedAction: item.selectedAction || 'create',
+                selectedStockType: item.selectedStockType || 'existing'
+            }));
+        },
+
+        updateImportItem(index: number, updates: Partial<ImportItem>) {
+            if (this.parsedItems[index]) {
+                this.parsedItems[index] = { ...this.parsedItems[index], ...updates };
+            }
         },
 
         setIsProcessing(processing: boolean) {
@@ -121,12 +145,16 @@ export const useImportStore = defineStore('import', {
             this.projects = projects;
         },
 
-        setImportDestination(destination: 'global' | 'project') {
+        setImportDestination(destination: 'global' | 'project' | 'new_project') {
             this.importDestination = destination;
         },
 
         setSelectedProjectId(projectId: string) {
             this.selectedProjectId = projectId;
+        },
+
+        setNewProjectName(name: string) {
+            this.newProjectName = name;
         },
 
         setShowImportModal(show: boolean) {
@@ -260,76 +288,119 @@ export const useImportStore = defineStore('import', {
             }
         },
 
-        async confirmImport(db: any, selectedFile: File | null, importDestination: 'global' | 'project', selectedProjectId: string, parseFile: (file: File) => Promise<ParseResult>) {
+        async compareWithInventory(db: any) {
+            this.setIsProcessing(true);
+            try {
+                const itemsWithComparison: ImportItem[] = [];
+
+                for (const item of this.parsedItems) {
+                    const existing = await db.findItemByReference(item.partNumber, item.lcscPart);
+
+                    if (existing) {
+                        const existingCamel = convertSnakeToCamel(existing);
+
+                        itemsWithComparison.push({
+                            ...item,
+                            importStatus: 'exists',
+                            existingItem: existingCamel,
+                            selectedAction: 'update_stock',
+                            selectedStockType: 'existing'
+                        });
+                    } else {
+                        itemsWithComparison.push({
+                            ...item,
+                            importStatus: 'new',
+                            existingItem: null,
+                            selectedAction: 'create',
+                            selectedStockType: 'existing'
+                        });
+                    }
+                }
+
+                this.parsedItems = itemsWithComparison;
+            } catch (error) {
+                console.error("Error al comparar con el inventario:", error);
+            } finally {
+                this.setIsProcessing(false);
+            }
+        },
+
+        async confirmImport(db: any, selectedFile: File | null, importDestination: 'global' | 'project' | 'new_project', selectedProjectId: string, parseFile: (file: File) => Promise<ParseResult>) {
             this.setIsProcessing(true);
             const activityDb = useActivityDatabase();
 
             try {
-                // Usar los items ya procesados y mapeados en lugar de volver a parsear
                 const itemsToImport = this.parsedItems;
+                let destinationProjectId = selectedProjectId;
+
+                if (importDestination === 'new_project') {
+                    const newProjId = await db.createProject({
+                        name: this.newProjectName || `Importación ${new Date().toLocaleDateString()}`,
+                        description: `Proyecto creado desde importación de ${selectedFile?.name || 'archivo'}`
+                    });
+                    if (newProjId) {
+                        destinationProjectId = newProjId;
+                    } else {
+                        throw new Error("No se pudo crear el nuevo proyecto");
+                    }
+                }
 
                 if (itemsToImport.length > 0) {
                     let importedCount = 0;
                     const errors: string[] = [];
 
-                    // Dependiendo del destino seleccionado, importar de manera diferente
-                    if (importDestination === 'global') {
-                        // Importar al inventario global
-                        for (const item of itemsToImport) {
-                            const success = await db.createItem(item);
-                            if (success) {
-                                importedCount++;
-                                // Registrar la actividad de creación del item
-                                await activityDb.logActivity(
-                                    'CREATE',
-                                    'bom_items',
-                                    success.id || 'unknown',
-                                    `Item ${item.name} creado desde importación de archivo`,
-                                    'system'
-                                );
-                            } else {
-                                errors.push(`Error al crear item ${item.name || "desconocido"} en el inventario`);
-                            }
-                        }
-                    } else if (importDestination === 'project' && selectedProjectId) {
-                        // Importar a un proyecto específico
-                        for (const item of itemsToImport) {
-                            // Crear o actualizar el item en el inventario global
-                            const result = await db.createItem(item);
+                    for (const importItem of itemsToImport) {
+                        if (importItem.selectedAction === 'ignore') continue;
 
+                        let itemId = '';
+                        let isNew = false;
+
+                        if (importItem.selectedAction === 'create' || !importItem.existingItem) {
+                            const result = await db.createItem(importItem);
                             if (result) {
-                                // Agregar el item al proyecto
-                                const success = await db.addItemToProject(selectedProjectId, result, item.quantity || 1);
-                                if (success) {
-                                    importedCount++;
-                                    // Registrar la actividad de creación del item
-                                    await activityDb.logActivity(
-                                        'CREATE',
-                                        'bom_items',
-                                        result.id || 'unknown',
-                                        `Item ${item.name} creado desde importación de archivo y asignado al proyecto`,
-                                        'system'
-                                    );
-                                    // Registrar la actividad de asignación al proyecto
-                                    await activityDb.logActivity(
-                                        'CREATE',
-                                        'project_items',
-                                        `${selectedProjectId}-${result.id || 'unknown'}`,
-                                        `Item ${item.name} asignado al proyecto ${selectedProjectId} desde importación`,
-                                        'system'
-                                    );
-                                } else {
-                                    errors.push(`Error al agregar item ${item.name || "desconocido"} al proyecto`);
-                                }
+                                itemId = result;
+                                isNew = true;
+                                importedCount++;
                             } else {
-                                errors.push(`Error al crear item ${item.name || "desconocido"} en el inventario`);
+                                errors.push(`Error al crear item ${importItem.name}`);
+                                continue;
+                            }
+                        } else if (importItem.selectedAction === 'update_stock' || importItem.selectedAction === 'merge') {
+                            itemId = importItem.existingItem.id;
+                            const existingStock = importItem.existingItem.inStock || 0;
+                            const newQuantity = importItem.quantity || 0;
+
+                            if (importItem.selectedAction === 'update_stock') {
+                                await db.updateItemStock(itemId, existingStock + newQuantity);
+                            } else if (importItem.selectedAction === 'merge') {
+                                const mergedData = {
+                                    ...importItem.existingItem,
+                                    ...importItem,
+                                    inStock: existingStock + newQuantity,
+                                    id: itemId
+                                };
+                                await db.updateItem(itemId, mergedData);
+                            }
+                            importedCount++;
+                        }
+
+                        if ((importDestination === 'project' || importDestination === 'new_project') && destinationProjectId && itemId) {
+                            const success = await db.addItemToProject(destinationProjectId, itemId, importItem.quantity || 1);
+                            if (!success) {
+                                errors.push(`Error al asignar item ${importItem.name} al proyecto`);
                             }
                         }
-                    } else {
-                        throw new Error("Por favor selecciona un destino de importación válido.");
+
+                        await activityDb.logActivity(
+                            isNew ? 'CREATE' : 'UPDATE',
+                            'bom_items',
+                            itemId,
+                            `Item ${importItem.name} ${isNew ? 'creado' : 'actualizado'} desde importación`,
+                            'system'
+                        );
                     }
 
-                    return { importedCount, errors };
+                    return { importedCount, errors, projectId: destinationProjectId };
                 } else {
                     throw new Error("No hay items para importar");
                 }

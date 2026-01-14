@@ -5,19 +5,32 @@ import { useActivityDatabase } from '@/composables/useActivityDatabase';
 import { useNotificationsDatabase } from '@/composables/useNotificationsDatabase';
 import { useSettingsDatabase } from '@/composables/useSettingsDatabase';
 import { useFilesDatabase } from '@/composables/useFilesDatabase';
+import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
+import { useDatabaseSchema } from '@/composables/useDatabaseSchema';
+import { useTagsDatabase } from '@/composables/useTagsDatabase';
+import { useStockMovementsDatabase } from '@/composables/useStockMovementsDatabase';
 
 export const initDatabase = async () => {
   const itemsDb = useItemsDatabase();
   const projectsDb = useProjectsDatabase();
   const projectItemsDb = useProjectItemsDatabase();
+  const { getDatabase } = useDatabaseAdapter();
+  const { syncSchema } = await useDatabaseSchema();
 
   // Asegurarse de que las bases de datos estén listas
   try {
+    const database = await getDatabase();
+    if (database) {
+      console.log('Sincronizando esquema de base de datos...');
+      await syncSchema(database);
+    }
+
     // Intentar una operación simple para asegurar que la base de datos esté lista
     await itemsDb.getAllItems();
     await projectsDb.getAllProjects();
     await projectItemsDb.getProjectItems('dummy');
   } catch (error) {
+    console.error('Error al sincronizar esquema o inicializar tablas:', error);
     console.log('Base de datos aún no completamente inicializada, se hará cuando se necesite');
   }
 };
@@ -30,6 +43,8 @@ export const useDatabase = () => {
   const notificationsDb = useNotificationsDatabase();
   const settingsDb = useSettingsDatabase();
   const filesDb = useFilesDatabase();
+  const tagsDb = useTagsDatabase();
+  const stockDb = useStockMovementsDatabase();
 
   return {
     // Métodos para items
@@ -84,6 +99,18 @@ export const useDatabase = () => {
     getFilesByProjectId: filesDb.getFilesByProjectId,
     updateFile: filesDb.updateFile,
     deleteFile: filesDb.deleteFile,
-    deleteFilesByProjectId: filesDb.deleteFilesByProjectId
+    deleteFilesByProjectId: filesDb.deleteFilesByProjectId,
+
+    // Métodos para etiquetas
+    getAllTags: tagsDb.getAllTags,
+    createTag: tagsDb.createTag,
+    addItemTag: tagsDb.addItemTag,
+    removeItemTag: tagsDb.removeItemTag,
+    getItemTags: tagsDb.getItemTags,
+    getItemsByTag: tagsDb.getItemsByTag,
+
+    // Métodos para movimientos de stock
+    logStockMovement: stockDb.logMovement,
+    getStockMovements: stockDb.getMovementsByItem
   };
 };
