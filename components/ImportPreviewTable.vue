@@ -5,67 +5,67 @@
 				<tr>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Estado/Acción
+						{{ t("import_status") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Nombre
+						{{ t("name") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
-						Cantidad
+						{{ t("quantity") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
-						Descripción
+						{{ t("description") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Categoría
+						{{ t("category") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Proveedor
+						{{ t("supplier") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Número de Parte
+						{{ t("part_number") || "Part Number" }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-						Referencia LCSC
+						LCSC
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
-						Precio Ud.
+						{{ t("unit_price") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
-						Stock Actual
+						{{ t("current_stock") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
-						Stock Mín.
+						{{ t("min_stock_header") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Notas
+						{{ t("notes") || "Notas" }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Fabricante
+						{{ t("manufacturer") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-						Empaquetado
+						{{ t("package") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
-						Estado
+						{{ t("status") }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-						Número Cliente
+						{{ t("customer_no") || "Customer No" }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">
@@ -73,15 +73,15 @@
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
-						Precio Ext.
+						{{ t("ext_price") || "Price Ext." }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-						Tiempo Entrega
+						{{ t("lead_time") || "Lead Time" }}
 					</th>
 					<th
 						class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-						Código Fecha/Lote
+						{{ t("date_code_lot_no") || "Date Code" }}
 					</th>
 				</tr>
 			</thead>
@@ -100,15 +100,15 @@
 									$emit('update-item', { index, field: 'selectedAction', value: item.selectedAction })
 								"
 								class="block w-full text-xs border-gray-300 rounded-md focus:ring-primary focus:border-primary">
-								<option value="create">Crear nuevo</option>
+								<option value="create">{{ t("action_create") }}</option>
 								<option v-if="item.importStatus === 'exists'" value="update_stock">
-									Sumar stock (Rellenar)
+									{{ t("action_update_stock") }}
 								</option>
 								<option v-if="item.importStatus === 'exists'" value="consume_stock">
-									Restar stock (Quitar)
+									{{ t("action_consume_stock") }}
 								</option>
-								<option v-if="item.importStatus === 'exists'" value="merge">Combinar datos</option>
-								<option value="ignore">Ignorar</option>
+								<option v-if="item.importStatus === 'exists'" value="merge">{{ t("action_merge") }}</option>
+								<option value="ignore">{{ t("action_ignore") }}</option>
 							</select>
 							<select
 								v-model="item.selectedStockType"
@@ -120,8 +120,8 @@
 									})
 								"
 								class="block w-full text-xs border-gray-300 rounded-md focus:ring-primary focus:border-primary">
-								<option value="existing">Stock disponible</option>
-								<option value="to_order">Por pedir</option>
+								<option value="existing">{{ t("stock_type_available") }}</option>
+								<option value="to_order">{{ t("stock_type_to_order") }}</option>
 							</select>
 						</div>
 					</td>
@@ -211,7 +211,7 @@
 								">
 								{{ item.existingItem?.inStock || 0 }}
 							</span>
-							<span class="text-[10px] text-gray-400">en inv.</span>
+							<span class="text-[10px] text-gray-400">{{ t("in_inventory") }}</span>
 						</div>
 					</td>
 					<td class="px-3 py-2 text-sm text-gray-900 min-w-[80px]">
@@ -322,11 +322,15 @@
 		</table>
 	</div>
 	<div v-else class="text-center py-8 text-gray-500">
-		<p>No hay items para mostrar</p>
+		<p>{{ t("no_items_to_show") }}</p>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "@/composables/useI18n";
+
+const { t } = useI18n();
+
 interface Props {
 	items: any[];
 	editable?: boolean;
@@ -390,7 +394,7 @@ const getStatusBadgeClass = (item: any) => {
 };
 
 const getStatusLabel = (item: any) => {
-	if (item.importStatus === "exists") return "MATCHED / ENCONTRADO";
-	return "Nuevo item";
+	if (item.importStatus === "exists") return t("matched_found");
+	return t("new_item");
 };
 </script>

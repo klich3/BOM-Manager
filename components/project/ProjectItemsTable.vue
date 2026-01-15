@@ -11,40 +11,43 @@
 							class="rounded text-primary focus:ring-primary border-gray-300" />
 					</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Componente
+						{{ t("name") }}
 					</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Empaquetado
+						{{ t("package") }}
 					</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Fabricante
+						{{ t("manufacturer") }}
 					</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Categoría</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">{{ t("category") }}</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Cantidad Inicial
-					</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Stock con Estado
-					</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Proveedor</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Precio Ud.
+						{{ t("initial_quantity") }}
 					</th>
 					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-						Precio Total
+						{{ t("stock_status") }}
 					</th>
-					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">Acciones</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">{{ t("supplier") }}</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						{{ t("unit_price") }}
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+						{{ t("total_price") }}
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase text-center">
+						{{ t("pcb") }}
+					</th>
+					<th class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">{{ t("actions") }}</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-gray-200">
 				<tr v-if="items.length === 0">
 					<td colspan="10" class="px-6 py-12 text-center">
 						<CubeIcon class="w-12 h-12 mx-auto mb-4 text-gray-300" />
-						<p class="text-text-muted-light">No hay componentes en el proyecto</p>
+						<p class="text-text-muted-light">{{ t("no_items_project") }}</p>
 					</td>
 				</tr>
 				<tr
-					v-for="(item, index) in items"
+					v-for="item in items"
 					:key="item.id"
 					:class="[
 						'transition-colors',
@@ -98,6 +101,16 @@
 						${{ (item.price || 0).toFixed(2) }}
 					</td>
 					<td class="px-6 py-4 text-sm font-medium text-text-main-light">${{ calculateTotalPrice(item) }}</td>
+					<td class="px-6 py-4 text-center">
+						<button
+							v-if="item.pcb_designation"
+							@click="emit('locate-pcb', item.pcb_designation)"
+							class="p-1.5 hover:bg-indigo-100 rounded-lg transition-colors group"
+							:title="t('locate_pcb')">
+							<MapPinIcon class="w-5 h-5 text-indigo-600 group-hover:scale-110 transition-transform" />
+						</button>
+						<span v-else class="text-[10px] text-gray-400">N/A</span>
+					</td>
 					<td class="px-6 py-4">
 						<div class="flex items-center gap-2">
 							<button
@@ -117,18 +130,18 @@
 		</table>
 	</div>
 	<div class="flex justify-between items-center px-6 py-4 bg-gray-50" v-if="selectedItems.length > 0">
-		<p class="text-sm text-text-main-light">{{ selectedItems.length }} items seleccionados</p>
+		<p class="text-sm text-text-main-light">{{ t("items_selected_simple", { count: selectedItems.length }) }}</p>
 		<div class="flex items-center gap-2">
 			<button
 				@click="selectedItems = []"
 				class="flex items-center gap-2 bg-gray-200 text-text-main-light px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">
-				<span>Deseleccionar todos</span>
+				<span>{{ t("deselect_all") }}</span>
 			</button>
 			<button
 				@click="deleteSelectedItems"
 				class="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
 				<TrashIcon class="w-4 h-4" />
-				<span>Eliminar seleccionados ({{ selectedItems.length }})</span>
+				<span>{{ t("delete_selected_count", { count: selectedItems.length }) }}</span>
 			</button>
 		</div>
 	</div>
@@ -137,13 +150,14 @@
 			@click="emit('import-components')"
 			class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 			<ArrowDownTrayIcon class="w-4 h-4" />
-			<span>Importar Componentes</span>
+			<span>{{ t("import_components") }}</span>
 		</button>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { useI18n } from "@/composables/useI18n";
 import {
 	CubeIcon,
 	PencilIcon,
@@ -153,6 +167,7 @@ import {
 	CodeBracketIcon,
 	DocumentTextIcon,
 	CodeBracketSquareIcon,
+	MapPinIcon,
 } from "@heroicons/vue/24/outline";
 
 interface ProjectItem {
@@ -181,12 +196,15 @@ interface ProjectItem {
 
 const props = defineProps<{ items: ProjectItem[] }>();
 
+const { t } = useI18n();
+
 const emit = defineEmits([
 	"edit-item",
 	"remove-item",
 	"remove-selected-items",
 	"import-components",
 	"file-selected-to-project",
+	"locate-pcb",
 ]);
 
 const selectedItems = ref<string[]>([]);
@@ -194,7 +212,7 @@ const selectAll = ref(false);
 
 const toggleSelectAll = () => {
 	if (selectAll.value) {
-		selectedItems.value = props.items.map((item) => item.id);
+		selectedItems.value = props.items.map((item: ProjectItem) => item.id);
 	} else {
 		selectedItems.value = [];
 	}
@@ -211,7 +229,7 @@ const deleteSelectedItems = () => {
 // Actualizar selectAll cuando cambia el número de elementos seleccionados
 watch(
 	selectedItems,
-	(newSelected, oldSelected) => {
+	(newSelected: string[]) => {
 		selectAll.value = newSelected.length === props.items.length && props.items.length > 0;
 	},
 	{ immediate: true },

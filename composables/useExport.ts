@@ -173,10 +173,32 @@ export const useExport = () => {
         }));
     };
 
+    /**
+     * Exporta lista de compra a CSV
+     */
+    const exportShoppingList = (items: any[]): string => {
+        if (items.length === 0) return '';
+        const headers = ['Nombre', 'Part Number', 'LCSC Part', 'Requerido', 'Disponible', 'A Comprar'];
+        const rows = items.map(item => [
+            item.name,
+            item.partNumber || '',
+            item.lcscPart || '',
+            item.needed,
+            item.available,
+            item.toOrder
+        ]);
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
+        return csvContent;
+    };
+
     return {
         exportToCSV,
         exportToExcel,
         exportAllInventory,
+        exportShoppingList,
         convertToCSV,
         convertToWorksheetData
     };

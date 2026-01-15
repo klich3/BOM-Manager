@@ -154,7 +154,8 @@
 						@remove-item="removeItemFromProject"
 						@remove-selected-items="removeSelectedItemsFromProject"
 						@import-components="handleImportComponents"
-						@file-selected-to-project="handleImportToProject" />
+						@file-selected-to-project="handleImportToProject"
+						@locate-pcb="handleLocatePcb" />
 				</div>
 			</div>
 		</div>
@@ -195,7 +196,10 @@
 	<!-- Gerber/XY Visualizer Overlay -->
 	<div v-if="showGerberVisualizer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
 		<div class="w-full h-full">
-			<GerberVisualizer :project-id="String(route.params.id)" @close="showGerberVisualizer = false" />
+			<GerberVisualizer
+				:project-id="String(route.params.id)"
+				:selected-ref="highlightedRef"
+				@close="closeGerberVisualizer" />
 		</div>
 	</div>
 </template>
@@ -280,6 +284,7 @@ const showEditItemModal = ref(false);
 const editingItem = ref<any>(null);
 const costBreakdown = ref<any>(null);
 const showGerberVisualizer = ref(false);
+const highlightedRef = ref<string>("");
 
 const { getFileByName } = useFileManager();
 const thumbUrl = ref<string | null>(null);
@@ -459,8 +464,8 @@ const removeItemFromProject = async (itemId: string) => {
 	const projectId = route.params.id as string;
 
 	const confirmed = await showCustomConfirmation(
-		"Remover Componente",
-		"¿Estás seguro de remover este componente del proyecto? Esta acción no se puede deshacer.",
+		t("project_mgmt.remove_item_title"),
+		t("project_mgmt.remove_item_desc"),
 		"warning",
 	);
 
@@ -473,20 +478,20 @@ const removeItemFromProject = async (itemId: string) => {
 					projectItems.value.splice(index, 1);
 					// Recalcular costos
 					calculateProjectCostMethod();
-					notifySuccess("Componente removido", "Componente removido del proyecto exitosamente");
+					notifySuccess(t("project_mgmt.remove_item_title"), t("project_mgmt.remove_success"));
 				}
 			}
 		} catch (error) {
 			console.error("Error removiendo item del proyecto:", error);
-			notifyError("Error", "Error al remover el componente del proyecto");
+			notifyError(t("global.error"), t("project_mgmt.remove_error_msg") || t("global.error"));
 		}
 	}
 };
 
 const removeSelectedItemsFromProject = async (ids: string[]) => {
 	const confirmed = await showCustomConfirmation(
-		"Remover Componentes",
-		`¿Estás seguro de remover ${ids.length} componentes seleccionados del proyecto? Esta acción no se puede deshacer.`,
+		t("project_mgmt.remove_selected_title"),
+		t("project_mgmt.remove_selected_desc", { count: ids.length }),
 		"warning",
 	);
 
@@ -506,10 +511,10 @@ const removeSelectedItemsFromProject = async (ids: string[]) => {
 			}
 			// Recalcular costos
 			calculateProjectCostMethod();
-			notifySuccess("Componentes removidos", `${removedCount} componentes removidos del proyecto exitosamente`);
+			notifySuccess(t("project_mgmt.remove_selected_title"), t("project_mgmt.remove_selected_success", { count: removedCount }));
 		} catch (error) {
 			console.error("Error removiendo items del proyecto:", error);
-			notifyError("Error", "Error al remover los componentes del proyecto");
+			notifyError(t("global.error"), t("project_mgmt.remove_error_msg") || t("global.error"));
 		}
 	}
 };
@@ -529,12 +534,12 @@ const handleEditItemSave = async (itemData: any) => {
 		await loadProject();
 		calculateProjectCostMethod();
 
-		notifySuccess("Éxito", "Componente actualizado exitosamente");
+		notifySuccess(t("global.success"), t("project_mgmt.update_success"));
 		showEditItemModal.value = false;
 		editingItem.value = null;
 	} catch (error) {
 		console.error("Error actualizando componente:", error);
-		notifyError("Error", "Error al actualizar el componente");
+		notifyError(t("global.error"), t("global.error"));
 	}
 };
 
@@ -550,7 +555,7 @@ const addItemToProject = async (item: any) => {
 		// Verificar si el item ya está en el proyecto
 		const existingItem = projectItems.value.find((i) => i.id === item.id);
 		if (existingItem) {
-			notifyWarning("Advertencia", "Este item ya está en el proyecto");
+			notifyWarning(t("global.warning"), t("project_mgmt.already_in_project"));
 			return;
 		}
 
@@ -561,11 +566,11 @@ const addItemToProject = async (item: any) => {
 			projectItems.value.push(itemToAdd);
 			closeAddItemModal();
 			calculateProjectCostMethod();
-			notifySuccess("Éxito", "Componente agregado al proyecto exitosamente");
+			notifySuccess(t("global.success"), t("project_mgmt.add_success"));
 		}
 	} catch (error) {
 		console.error("Error agregando item al proyecto:", error);
-		notifyError("Error", "Error al agregar el componente al proyecto");
+		notifyError(t("global.error"), t("global.error"));
 	}
 };
 
@@ -586,14 +591,14 @@ const calculateProjectCostMethod = () => {
 };
 
 const exportProject = () => {
-	notifyInfo("Información", "Funcionalidad de exportación del proyecto en desarrollo");
+	notifyInfo(t("global.warning"), t("project_mgmt.export_in_development"));
 	// TODO: Implementar exportación del proyecto
 };
 
 const consumeProjectStock = async () => {
 	const confirmed = await showCustomConfirmation(
-		"Consumir Stock",
-		"¿Estás seguro de descontar las cantidades de este proyecto del inventario global? Esta acción afectará el stock real disponible.",
+		t("project_mgmt.consume_stock_title"),
+		t("project_mgmt.consume_stock_desc"),
 		"warning",
 	);
 
@@ -606,10 +611,10 @@ const consumeProjectStock = async () => {
 
 			await db.consumeStockFromBOM(itemsToConsume);
 			await loadProject();
-			notifySuccess("Éxito", "Stock consumido exitosamente");
+			notifySuccess(t("global.success"), t("project_mgmt.consume_stock_success"));
 		} catch (error) {
 			console.error("Error al consumir stock:", error);
-			notifyError("Error", "Error al consumir stock");
+			notifyError(t("global.error"), t("global.error"));
 		}
 	}
 };
@@ -621,6 +626,16 @@ const goBack = async () => {
 const handleAddItemSearch = (query: string) => {
 	// Lógica para manejar la búsqueda en el modal de agregar item
 	addItemSearchQuery.value = query;
+};
+
+const handleLocatePcb = (refDes: string) => {
+	highlightedRef.value = refDes;
+	showGerberVisualizer.value = true;
+};
+
+const closeGerberVisualizer = () => {
+	showGerberVisualizer.value = false;
+	highlightedRef.value = "";
 };
 
 const handleImportComponents = () => {
@@ -659,23 +674,23 @@ const handleImportToProject = async (data: { file: File; projectId: string }) =>
 			await loadProject();
 			calculateProjectCostMethod();
 
-			let message = `Importación completada: ${importedCount} items agregados al proyecto.`;
+			let message = t("project_mgmt.import_to_project_success", { count: importedCount });
 			if (errors.length > 0) {
-				message += ` Errores: ${errors.length}.`;
+				message += t("project_mgmt.import_errors", { count: errors.length });
 				console.error("Errores durante la importación:", errors);
 			}
 
 			if (importedCount > 0) {
-				notifySuccess("Importación completada", message);
+				notifySuccess(t("import_modal.items_imported_success"), message);
 			} else {
-				notifyError("Error en la importación", message);
+				notifyError(t("import_modal.import_failed"), message);
 			}
 		} else {
-			notifyError("Error en la importación", result.errors.join(", "));
+			notifyError(t("import_modal.import_failed"), result.errors.join(", "));
 		}
 	} catch (error) {
 		console.error("Error al importar archivo al proyecto:", error);
-		notifyError("Error", "Error al importar archivo al proyecto");
+		notifyError(t("global.error"), t("global.error"));
 	}
 };
 
@@ -690,18 +705,18 @@ const handleImportCompleted = async (data: {
 		await loadProject();
 		calculateProjectCostMethod();
 		// Mostrar mensaje específico para importación a proyecto
-		let message = `Importación completada: ${data.importedCount} items agregados al proyecto.`;
+		let message = t("project_mgmt.import_to_project_success", { count: data.importedCount });
 		if (data.errors.length > 0) {
-			message += ` Errores: ${data.errors.length}.`;
+			message += t("project_mgmt.import_errors", { count: data.errors.length });
 		}
 
 		if (data.importedCount > 0) {
-			notifySuccess("Importación completada", message);
+			notifySuccess(t("import_modal.items_imported_success"), message);
 		} else {
-			notifyError("Error en la importación", message);
+			notifyError(t("import_modal.import_failed"), message);
 		}
 	} else {
-		notifySuccess("Éxito", "Items importados exitosamente");
+		notifySuccess(t("global.success"), t("import_modal.items_imported_success"));
 	}
 };
 

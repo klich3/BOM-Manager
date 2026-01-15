@@ -12,14 +12,14 @@
 		<div class="flex justify-between items-start z-10">
 			<div class="flex items-center gap-2">
 				<CubeIcon class="w-5 h-5" />
-				<span class="text-sm font-medium">{{ title }}</span>
+				<span class="text-sm font-medium">{{ displayTitle }}</span>
 			</div>
 		</div>
 		<div class="z-10">
 			<div class="flex items-end gap-2">
 				<span class="text-4xl font-bold">{{ percentage }}%</span>
 			</div>
-			<p class="text-xs opacity-80 mt-2">{{ statusText }}</p>
+			<p class="text-xs opacity-80 mt-2">{{ displayStatusText }}</p>
 		</div>
 	</div>
 </template>
@@ -27,6 +27,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { CheckCircleIcon, CubeIcon } from "@heroicons/vue/24/outline";
+import { useI18n } from "@/composables/useI18n";
+
+const { t } = useI18n();
 
 interface Props {
 	percentage: number;
@@ -35,9 +38,12 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	title: "Stock Health",
-	statusText: "Inventario en niveles óptimos",
+	title: "",
+	statusText: "",
 });
+
+const displayTitle = computed(() => props.title || t("stock_health"));
+const displayStatusText = computed(() => props.statusText || t("inventory_optimal"));
 
 const backgroundClass = computed(() => {
 	if (props.percentage >= 80) {

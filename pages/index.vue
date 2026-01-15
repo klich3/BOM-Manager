@@ -318,12 +318,12 @@ const handleImportCompleted = async (data: {
 		await loadRecentActivity(); // Refrescar también la actividad reciente
 	}
 	// Si fue a un proyecto específico, podríamos refrescar esa información también
-	success(t("import"), "Items importados exitosamente");
+	success(t("import"), t("import_modal.items_imported_success"));
 };
 
 const handleImportError = (message: string) => {
 	console.error("Error de importación:", message);
-	notifyError(t("import"), `Error en la importación: ${message}`);
+	notifyError(t("import"), t("import_modal.import_error_msg", { message }));
 };
 
 const formatDate = (date: Date) => {

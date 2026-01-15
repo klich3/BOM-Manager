@@ -60,37 +60,11 @@
 						<select
 							v-model="localSettings.language"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-							<option value="es">Español</option>
-							<option value="en">English</option>
-							<option value="fr">Français</option>
-							<option value="de">Deutsch</option>
-						</select>
-					</div>
-
-					<!-- Theme -->
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("theme") }}</label>
-						<select
-							v-model="localSettings.theme"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-							<option value="light">{{ t("light") }}</option>
-							<option value="dark">{{ t("dark") }}</option>
-						</select>
-					</div>
-
-					<!-- Country -->
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("country") }}</label>
-						<select
-							v-model="localSettings.country"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-							<option value="ES">España</option>
-							<option value="US">Estados Unidos</option>
-							<option value="UK">Reino Unido</option>
-							<option value="FR">Francia</option>
-							<option value="DE">Alemania</option>
-							<option value="CN">China</option>
-							<option value="JP">Japón</option>
+							<option value="ru">{{ t("languages.ru") }}</option>
+							<option value="es">{{ t("languages.es") }}</option>
+							<option value="en">{{ t("languages.en") }}</option>
+							<option value="fr">{{ t("languages.fr") }}</option>
+							<option value="de">{{ t("languages.de") }}</option>
 						</select>
 					</div>
 
@@ -112,18 +86,19 @@
 							<div class="flex flex-wrap gap-3">
 								<button
 									@click="exportFullBackup"
-									:disabled="isExporting"
+									:disabled="isAnyProcessing"
 									class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white font-medium rounded-lg transition-colors">
-									<ArrowDownTrayIcon v-if="!isExporting" class="w-5 h-5 mr-2" />
+									<ArrowDownTrayIcon v-if="!isExportingZip" class="w-5 h-5 mr-2" />
 									<div
-										v-if="isExporting"
+										v-if="isExportingZip"
 										class="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-									{{ isExporting ? t("exporting_zip") : t("export_all_zip") }}
+									{{ isExportingZip ? t("exporting_zip") : t("export_all_zip") }}
 								</button>
 
 								<button
 									@click="triggerZipFileSelect"
-									class="inline-flex items-center px-4 py-2 border border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-medium rounded-lg transition-colors">
+									:disabled="isAnyProcessing"
+									class="inline-flex items-center px-4 py-2 border border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:border-gray-300 disabled:text-gray-300 font-medium rounded-lg transition-colors">
 									<ArrowUpTrayIcon class="w-5 h-5 mr-2" />
 									{{ t("import_all_zip") }}
 								</button>
@@ -147,13 +122,13 @@
 							</p>
 							<button
 								@click="exportDatabase"
-								:disabled="isExporting"
+								:disabled="isAnyProcessing"
 								class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-medium rounded-lg transition-colors">
-								<ArrowDownTrayIcon v-if="!isExporting" class="w-5 h-5 mr-2" />
+								<ArrowDownTrayIcon v-if="!isExportingJson" class="w-5 h-5 mr-2" />
 								<div
-									v-if="isExporting"
+									v-if="isExportingJson"
 									class="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-								{{ isExporting ? t("exporting") : t("export_json") }}
+								{{ isExportingJson ? t("exporting") : t("export_json") }}
 							</button>
 						</div>
 
@@ -180,13 +155,14 @@
 								<div class="flex flex-wrap gap-3">
 									<button
 										@click="handleGitSetup"
-										class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+										:disabled="isAnyProcessing"
+										class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white text-sm font-medium rounded-lg transition-colors">
 										{{ t("setup_remote") }}
 									</button>
 									<button
 										@click="handleGitSync"
-										:disabled="isSyncing"
-										class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-900 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:bg-gray-100 text-sm font-medium rounded-lg transition-colors">
+										:disabled="isAnyProcessing"
+										class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-900 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:border-gray-200 disabled:text-gray-300 text-sm font-medium rounded-lg transition-colors">
 										<ArrowPathIcon v-if="!isSyncing" class="w-4 h-4 mr-2" />
 										<div
 											v-else
@@ -217,7 +193,8 @@
 									class="hidden" />
 								<button
 									@click="triggerFileSelect"
-									class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+									:disabled="isAnyProcessing"
+									class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium rounded-lg transition-colors">
 									<ArrowUpTrayIcon class="w-5 h-5 mr-2" />
 									{{ t("select_file") }}
 								</button>
@@ -229,7 +206,7 @@
 							<div v-if="selectedFileName" class="mt-4 flex gap-3">
 								<button
 									@click="importDatabase"
-									:disabled="isImporting"
+									:disabled="isAnyProcessing"
 									class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white font-medium rounded-lg transition-colors">
 									<ExclamationTriangleIcon v-if="!isImporting" class="w-5 h-5 mr-2" />
 									<div
@@ -265,12 +242,14 @@
 			<div class="flex justify-end items-center gap-4 mt-6 pt-6 border-t border-gray-200">
 				<button
 					@click="closeModal"
-					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
+					:disabled="isAnyProcessing"
+					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
 					{{ t("cancel") }}
 				</button>
 				<button
 					@click="saveSettings"
-					class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-all">
+					:disabled="isAnyProcessing"
+					class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 disabled:bg-gray-300 text-white font-bold transition-all">
 					{{ t("save") }}
 				</button>
 			</div>
@@ -280,7 +259,7 @@
 
 <script setup lang="ts">
 import { XMarkIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 import { useDatabaseAdapter } from "@/composables/useDatabaseAdapter";
 import { useDatabaseSchema } from "@/composables/useDatabaseSchema";
@@ -309,16 +288,19 @@ const localSettings = ref({
 	items_per_page: settingsStore.settings.items_per_page,
 	language: settingsStore.settings.language,
 	decimals: settingsStore.settings.decimals,
-	theme: settingsStore.settings.theme,
-	country: settingsStore.settings.country,
 });
 
 // Database export/import refs
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const selectedFileName = ref<string>("");
 const selectedFile = ref<File | null>(null);
-const isExporting = ref(false);
+const isExportingZip = ref(false);
+const isExportingJson = ref(false);
 const isImporting = ref(false);
+
+const isAnyProcessing = computed(
+	() => isExportingZip.value || isExportingJson.value || isImporting.value || isSyncing.value,
+);
 const zipFileInputRef = ref<HTMLInputElement | null>(null);
 
 const { success, error: showError } = useNotifications();
@@ -338,8 +320,6 @@ watch(
 			items_per_page: newSettings.items_per_page,
 			language: newSettings.language,
 			decimals: newSettings.decimals,
-			theme: newSettings.theme,
-			country: newSettings.country,
 		};
 	},
 	{ deep: true },
@@ -354,14 +334,12 @@ const saveSettings = () => {
 	settingsStore.updateItemsPerPage(localSettings.value.items_per_page);
 	settingsStore.updateLanguage(localSettings.value.language);
 	settingsStore.updateDecimals(localSettings.value.decimals);
-	settingsStore.updateTheme(localSettings.value.theme);
-	settingsStore.updateCountry(localSettings.value.country);
 	emit("close");
 };
 
 // Database export functions
 const exportDatabase = async () => {
-	isExporting.value = true;
+	isExportingJson.value = true;
 	try {
 		const { getDatabase } = useDatabaseAdapter();
 		const db = await getDatabase();
@@ -413,7 +391,7 @@ const exportDatabase = async () => {
 		console.error("Error exporting database:", error);
 		showError("Error en exportación", "No se pudo exportar la base de datos");
 	} finally {
-		isExporting.value = false;
+		isExportingJson.value = false;
 	}
 };
 
@@ -539,7 +517,7 @@ const importDatabase = async () => {
 };
 
 const exportFullBackup = async () => {
-	isExporting.value = true;
+	isExportingZip.value = true;
 	try {
 		await exportBackupZip();
 		success("Exportación completada", "Respaldo completo (ZIP) exportado correctamente");
@@ -547,7 +525,7 @@ const exportFullBackup = async () => {
 		console.error("Error exporting ZIP backup:", error);
 		showError("Error", "No se pudo exportar el respaldo completo");
 	} finally {
-		isExporting.value = false;
+		isExportingZip.value = false;
 	}
 };
 

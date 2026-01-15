@@ -7,7 +7,7 @@
 		>
 			<div class="flex items-center justify-between mb-6 p-6 pb-4">
 				<h2 class="text-xl font-semibold text-text-main-light">
-					Importar Template de EasyEDA
+					{{ t("import_easyeda") }}
 				</h2>
 				<button
 					@click="closeImporter"
@@ -33,7 +33,7 @@
 				<!-- Upload Section -->
 				<div class="mb-6">
 					<label class="block text-sm font-medium text-text-main-light mb-2">
-						Seleccionar archivo de template de EasyEDA
+						{{ t("select_easyeda_file") }}
 					</label>
 					<div
 						@dragover.prevent="handleDragOver"
@@ -66,11 +66,10 @@
 								></path>
 							</svg>
 							<p class="text-text-main-light">
-								<span class="font-medium text-primary">Click para subir</span> o
-								arrastra un archivo JSON aquí
+								<span class="font-medium text-primary">{{ t("click_to_upload") }}</span> {{ t("drag_drop_json") }}
 							</p>
 							<p class="text-sm text-text-muted-light mt-1">
-								Solo archivos .json de EasyEDA
+								{{ t("only_json_allowed") }}
 							</p>
 						</div>
 					</div>
@@ -84,7 +83,7 @@
 					<div
 						class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"
 					></div>
-					<p class="text-text-main-light">Procesando template...</p>
+					<p class="text-text-main-light">{{ t("processing_template") }}</p>
 				</div>
 
 				<!-- Error State -->
@@ -105,23 +104,23 @@
 					<!-- Metadata -->
 					<div class="mb-6">
 						<h3 class="text-lg font-medium text-text-main-light mb-3">
-							Metadatos del Template
+							{{ t("template_metadata") }}
 						</h3>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div>
-								<p class="text-sm text-text-muted-light">Título</p>
+								<p class="text-sm text-text-muted-light">{{ t("name") }}</p>
 								<p class="text-text-main-light">
 									{{ importResult.metadata.title || "N/A" }}
 								</p>
 							</div>
 							<div>
-								<p class="text-sm text-text-muted-light">Autor</p>
+								<p class="text-sm text-text-muted-light">{{ t("author") }}</p>
 								<p class="text-text-main-light">
 									{{ importResult.metadata.author || "N/A" }}
 								</p>
 							</div>
 							<div>
-								<p class="text-sm text-text-muted-light">Componentes</p>
+								<p class="text-sm text-text-muted-light">{{ t("component_count") }}</p>
 								<p class="text-text-main-light">
 									{{ importResult.metadata.componentCount }}
 								</p>
@@ -132,7 +131,7 @@
 					<!-- Components Preview -->
 					<div class="mb-6">
 						<h3 class="text-lg font-medium text-text-main-light mb-3">
-							Vista Previa de Componentes
+							{{ t("components_preview") }}
 						</h3>
 						<div class="border border-gray-200 rounded-lg overflow-hidden">
 							<table class="w-full">
@@ -141,17 +140,17 @@
 										<th
 											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 										>
-											Nombre
+											{{ t("name") }}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 										>
-											Categoría
+											{{ t("category") }}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
 										>
-											Part Number
+											{{ t("part_number") || "Part Number" }}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-semibold text-text-muted-light uppercase"
@@ -186,8 +185,7 @@
 											colspan="4"
 											class="px-4 py-3 text-sm text-center text-text-muted-light"
 										>
-											... y
-											{{ importResult.components.length - 10 }} componentes más
+											{{ t("more_components", { count: importResult.components.length - 10 }) }}
 										</td>
 									</tr>
 								</tbody>
@@ -201,13 +199,13 @@
 							@click="closeImporter"
 							class="px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
 						>
-							Cancelar
+							{{ t("cancel") }}
 						</button>
 						<button
 							@click="confirmImport"
 							class="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium"
 						>
-							Importar Componentes
+							{{ t("import_components") }}
 						</button>
 					</div>
 				</div>
@@ -218,7 +216,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useEasyEDAImporter } from "~/composables/useEasyEDAImporter";
+import { useEasyEDAImporter } from "@/composables/useEasyEDAImporter";
+import { useI18n } from "@/composables/useI18n";
 
 interface Props {
 	show: boolean;
@@ -226,6 +225,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["close", "import"]);
+
+const { t } = useI18n();
 
 const { isLoading, error, importTemplate, convertToInternalFormat } =
 	useEasyEDAImporter();

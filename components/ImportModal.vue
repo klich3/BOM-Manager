@@ -8,7 +8,7 @@
 			">
 			<!-- Header -->
 			<div class="flex items-center justify-between mb-6">
-				<h2 class="text-xl font-semibold text-text-main-light">Importar Archivo BOM</h2>
+				<h2 class="text-xl font-semibold text-text-main-light">{{ t("import_modal.title") }}</h2>
 				<button @click="handleClose" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
 					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
@@ -17,7 +17,7 @@
 			<!-- Progress indicator -->
 			<div class="mb-6">
 				<div class="flex justify-between items-center mb-2">
-					<span class="text-primary text-sm font-bold uppercase tracking-wider">Paso {{ step }} de 3</span>
+					<span class="text-primary text-sm font-bold uppercase tracking-wider">{{ t("import_modal.step_x_of_y", { current: step, total: 3 }) }}</span>
 					<span class="text-text-main-light text-sm font-medium">{{ getStepTitle() }}</span>
 				</div>
 				<div class="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -26,9 +26,9 @@
 						:style="{ width: getProgressWidth() }"></div>
 				</div>
 				<div class="flex justify-between text-xs text-text-muted-light font-medium mt-1">
-					<span>Upload</span>
-					<span class="text-text-main-light">Mapping</span>
-					<span>Validation</span>
+					<span>{{ t("import_modal.step_upload") }}</span>
+					<span class="text-text-main-light">{{ t("import_modal.step_mapping") }}</span>
+					<span>{{ t("import_modal.step_validation") }}</span>
 				</div>
 			</div>
 
@@ -47,13 +47,13 @@
 									</p>
 									<p class="text-sm text-gray-500">
 										{{ formatFileSize(selectedFile?.size || 0) }} •
-										{{ selectedFile?.type || "Archivo" }}
+										{{ selectedFile?.type || t("all") }}
 									</p>
 								</div>
 								<button
 									@click="resetImport"
 									class="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-									Cambiar archivo
+									{{ t("import_modal.change_file") }}
 								</button>
 							</div>
 						</div>
@@ -65,18 +65,18 @@
 					<div class="mb-6">
 						<!-- Preview of final table in InventoryTable style -->
 						<div>
-							<h3 class="text-lg font-medium text-gray-900 mb-4">Vista previa de la tabla final</h3>
+							<h3 class="text-lg font-medium text-gray-900 mb-4">{{ t("import_modal.final_table_preview") }}</h3>
 							<p class="text-gray-600 mb-4">
-								{{ countSelectedRowsStep2 }} de {{ sampleData?.rows?.length || 0 }} filas seleccionadas
+								{{ t("import_modal.rows_selected", { count: countSelectedRowsStep2, total: sampleData?.rows?.length || 0 }) }}
 							</p>
 							<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
 								<div class="overflow-x-auto">
 									<table class="w-full">
 										<thead class="bg-gray-50">
 											<tr>
-												<th
+											<th
 													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase w-[40px]">
-													Seleccionar
+													{{ t("all") }}
 												</th>
 												<th
 													v-for="(header, headerIndex) in originalHeaders"
@@ -102,26 +102,26 @@
 													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 													<select
 														:value="getMappedField(header) || ''"
-														@change="(e: Event) => updateColumnMapping(header, (e.target as HTMLSelectElement).value)"
+														@change="(e) => updateColumnMapping(header, e.target.value)"
 														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">Seleccionar campo...</option>
-														<optgroup label="Campos requeridos">
-															<option value="name">Nombre</option>
-															<option value="quantity">Cantidad</option>
+														<option value="">{{ t("import_modal.select_field_placeholder") }}</option>
+														<optgroup :label="t('import_modal.required_fields')">
+															<option value="name">{{ t("name") }}</option>
+															<option value="quantity">{{ t("quantity") }}</option>
 														</optgroup>
-														<optgroup label="Campos opcionales">
-															<option value="description">Descripción</option>
-															<option value="category">Categoría</option>
-															<option value="supplier">Proveedor</option>
-															<option value="partNumber">Número de parte</option>
-															<option value="lcscPart">Referencia LCSC</option>
-															<option value="price">Precio Ud.</option>
-															<option value="inStock">Stock actual</option>
-															<option value="minStock">Stock mínimo</option>
-															<option value="notes">Notas</option>
-															<option value="manufacturer">Fabricante</option>
-															<option value="package">Empaquetado</option>
-															<option value="status">Estado</option>
+														<optgroup :label="t('import_modal.optional_fields')">
+															<option value="description">{{ t("description") }}</option>
+															<option value="category">{{ t("category") }}</option>
+															<option value="supplier">{{ t("supplier") }}</option>
+															<option value="partNumber">{{ t("partNumber") }}</option>
+															<option value="lcscPart">{{ t("lcscPart") }}</option>
+															<option value="price">{{ t("unit_price") }}</option>
+															<option value="inStock">{{ t("current_stock") }}</option>
+															<option value="minStock">{{ t("min_stock_header") }}</option>
+															<option value="notes">{{ t("notes") }}</option>
+															<option value="manufacturer">{{ t("manufacturer") }}</option>
+															<option value="package">{{ t("package") }}</option>
+															<option value="status">{{ t("status") }}</option>
 														</optgroup>
 													</select>
 												</th>
@@ -132,7 +132,7 @@
 												<td
 													:colspan="originalHeaders.length + 1"
 													class="px-6 py-12 text-center">
-													<p class="text-text-muted-light">No hay datos para previsualizar</p>
+													<p class="text-text-muted-light">{{ t("import_modal.no_data_preview") }}</p>
 												</td>
 											</tr>
 											<tr
@@ -164,12 +164,12 @@
 				<div v-if="step === 3">
 					<!-- Step 3: Import Preview -->
 					<div class="mb-6">
-						<h3 class="text-lg font-medium text-gray-900 mb-4">Revisión de importación</h3>
-						<p class="text-gray-600 mb-4">Se importarán {{ mappedItems.length }} items.</p>
+						<h3 class="text-lg font-medium text-gray-900 mb-4">{{ t("import_modal.import_review") }}</h3>
+						<p class="text-gray-600 mb-4">{{ t("import_modal.items_will_be_imported", { count: mappedItems.length }) }}</p>
 
 						<!-- Selección de destino de importación -->
 						<div class="mb-4 p-4 bg-gray-50 rounded-lg">
-							<label class="block text-sm font-medium text-gray-700 mb-2">Destino de importación</label>
+							<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("import_modal.import_destination") }}</label>
 							<div class="flex gap-4">
 								<div class="flex items-center">
 									<input
@@ -177,7 +177,7 @@
 										v-model="importDestination"
 										value="global"
 										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
-									<label class="ml-2 block text-sm text-gray-700">Inventario Global</label>
+									<label class="ml-2 block text-sm text-gray-700">{{ t("import_modal.global_inventory") }}</label>
 								</div>
 								<div v-if="projects.length > 0" class="flex items-center">
 									<input
@@ -185,7 +185,7 @@
 										v-model="importDestination"
 										value="project"
 										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
-									<label class="ml-2 block text-sm text-gray-700">Proyecto existente</label>
+									<label class="ml-2 block text-sm text-gray-700">{{ t("import_modal.existing_project") }}</label>
 								</div>
 								<div class="flex items-center">
 									<input
@@ -193,7 +193,7 @@
 										v-model="importDestination"
 										value="new_project"
 										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
-									<label class="ml-2 block text-sm text-gray-700">Nuevo Proyecto</label>
+									<label class="ml-2 block text-sm text-gray-700">{{ t("import_modal.new_project") }}</label>
 								</div>
 							</div>
 
@@ -201,7 +201,7 @@
 								<select
 									v-model="selectedProjectId"
 									class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
-									<option value="">Selecciona un proyecto...</option>
+									<option value="">{{ t("import_modal.select_project_placeholder") }}</option>
 									<option v-for="project in projects" :key="project.id" :value="project.id">
 										{{ project.name }}
 									</option>
@@ -211,18 +211,18 @@
 								<input
 									type="text"
 									v-model="newProjectName"
-									placeholder="Nombre del nuevo proyecto"
+									:placeholder="t('import_modal.new_project_name_placeholder')"
 									class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
 							</div>
 							<div
 								v-else-if="importDestination === 'project' && projects.length === 0"
 								class="mt-2 text-sm text-amber-600">
-								No hay proyectos disponibles. Crea un proyecto primero.
+								{{ t("import_modal.no_projects_available") }}
 							</div>
 						</div>
 
 						<div v-if="parseResult.errors.length > 0" class="mb-4">
-							<h4 class="font-medium text-red-600 mb-2">Errores detectados:</h4>
+							<h4 class="font-medium text-red-600 mb-2">{{ t("import_modal.errors_detected") }}</h4>
 							<ul class="list-disc list-inside text-red-600 text-sm space-y-1">
 								<li v-for="(error, index) in parseResult.errors" :key="index">
 									{{ error }}
@@ -231,7 +231,7 @@
 						</div>
 
 						<div v-if="parseResult.warnings.length > 0" class="mb-4">
-							<h4 class="font-medium text-amber-600 mb-2">Advertencias:</h4>
+							<h4 class="font-medium text-amber-600 mb-2">{{ t("import_modal.warnings") }}</h4>
 							<ul class="list-disc list-inside text-amber-600 text-sm space-y-1">
 								<li v-for="(warning, index) in parseResult.warnings" :key="index">
 									{{ warning }}
@@ -253,31 +253,31 @@
 				<button
 					@click="handleClose"
 					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
-					Cancelar
+					{{ t("cancel") }}
 				</button>
 				<button
 					v-if="step > 1"
 					@click="previousStep"
 					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
-					Anterior
+					{{ t("previous") }}
 				</button>
 				<button
 					v-if="step < 3 && !isProcessing"
 					@click="nextStep"
 					:disabled="!canProceed"
 					class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-					<span>{{ step === 1 ? "Procesar archivo" : "Siguiente" }}</span>
+					<span>{{ step === 1 ? t("import_modal.process_file") : t("next") }}</span>
 					<ArrowRightIcon class="w-5 h-5" v-if="step < 3" />
 				</button>
 				<button
 					v-if="step === 3 && !isProcessing"
 					@click="confirmImport"
 					class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold transition-all flex items-center gap-2">
-					<span>Importar datos</span>
+					<span>{{ t("import_modal.import_data") }}</span>
 				</button>
 				<div v-if="isProcessing" class="flex items-center gap-2 text-gray-600">
 					<div class="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-					<span>Procesando...</span>
+					<span>{{ t("import_modal.processing") }}</span>
 				</div>
 			</div>
 		</div>
@@ -466,31 +466,30 @@ if (props.projectId && !selectedProjectId.value) {
 }
 
 // Required and optional fields for mapping
-const requiredFields = [
-	{ key: "name", label: "Nombre" },
-	{ key: "quantity", label: "Cantidad" },
-	//{ key: "unit", label: "Unidad" },
-];
+const requiredFields = computed(() => [
+	{ key: "name", label: t("name") },
+	{ key: "quantity", label: t("quantity") },
+]);
 
-const optionalFields = [
-	{ key: "description", label: "Descripción" },
-	{ key: "category", label: "Categoría" },
-	{ key: "supplier", label: "Proveedor" },
-	{ key: "partNumber", label: "Número de parte" },
-	{ key: "lcscPart", label: "Referencia LCSC" },
-	{ key: "price", label: "Precio" },
-	{ key: "inStock", label: "Stock actual" },
-	{ key: "minStock", label: "Stock mínimo" },
-	{ key: "notes", label: "Notas" },
-	{ key: "manufacturer", label: "Fabricante" },
-	{ key: "package", label: "Empaquetado" },
-	{ key: "status", label: "Estado" },
-	{ key: "customerNo", label: "Número de Cliente" },
+const optionalFields = computed(() => [
+	{ key: "description", label: t("description") },
+	{ key: "category", label: t("category") },
+	{ key: "supplier", label: t("supplier") },
+	{ key: "partNumber", label: t("part_number") },
+	{ key: "lcscPart", label: t("supplier") + " LCSC" }, // O crear clave específica
+	{ key: "price", label: t("price") },
+	{ key: "inStock", label: t("current_stock") },
+	{ key: "minStock", label: t("min_stock_header") },
+	{ key: "notes", label: t("notes") },
+	{ key: "manufacturer", label: t("manufacturer") },
+	{ key: "package", label: t("package") },
+	{ key: "status", label: t("status") },
+	{ key: "customerNo", label: t("customer_no") },
 	{ key: "rohs", label: "RoHS" },
-	{ key: "extPrice", label: "Precio Extendido" },
-	{ key: "leadTime", label: "Tiempo de Entrega" },
-	{ key: "dateCodeLotNo", label: "Código de Fecha/Número de Lote" },
-];
+	{ key: "extPrice", label: t("ext_price") },
+	{ key: "leadTime", label: t("lead_time") },
+	{ key: "dateCodeLotNo", label: t("date_code_lot_no") },
+]);
 
 // Computed properties
 const canProceed = computed(() => {
@@ -526,15 +525,15 @@ const handleFileImport = async (file: File) => {
 			const errorMessage =
 				importStore.parseResult.errors.length > 0
 					? importStore.parseResult.errors[0]
-					: "No se pudo procesar el archivo correctamente";
-			showError("Error al procesar el archivo", errorMessage);
+					: t("import_modal.error_parsing");
+			showError(t("import_modal.error_parsing"), errorMessage);
 		} else if (importStore.parseResult.items.length === 0) {
-			showError("Archivo sin datos", "El archivo no contiene datos válidos para importar");
+			showError(t("import_modal.no_data_file"), t("import_modal.no_data_file"));
 		}
 	} catch (error) {
 		console.error("Error parsing file:", error);
-		showError("Error al procesar el archivo", `Error al procesar el archivo: ${(error as Error).message}`);
-		emit("error", `Error al procesar el archivo: ${(error as Error).message}`);
+		showError(t("import_modal.error_parsing"), `${t("import_modal.error_parsing")}: ${(error as Error).message}`);
+		emit("error", `${t("import_modal.error_parsing")}: ${(error as Error).message}`);
 	}
 };
 
@@ -579,13 +578,13 @@ const previousStep = () => {
 const getStepTitle = () => {
 	switch (step.value) {
 		case 1:
-			return "Upload";
+			return t("import_modal.step_upload");
 		case 2:
-			return "Mapping Columns";
+			return t("import_modal.step_mapping");
 		case 3:
-			return "Validation";
+			return t("import_modal.step_validation");
 		default:
-			return "Upload";
+			return t("import_modal.step_upload");
 	}
 };
 
@@ -688,25 +687,25 @@ const deletePreviewItem = (index: number) => {
 // Función para obtener el nombre legible de un campo
 const getFieldName = (field: string): string => {
 	const fieldLabels: Record<string, string> = {
-		name: "Nombre",
-		quantity: "Cantidad",
-		description: "Descripción",
-		category: "Categoría",
-		supplier: "Proveedor",
-		partNumber: "Número de parte",
-		lcscPart: "Referencia LCSC",
-		price: "Precio",
-		inStock: "Stock actual",
-		minStock: "Stock mínimo",
-		notes: "Notas",
-		manufacturer: "Fabricante",
-		customerNo: "Número de Cliente",
-		package: "Empaquetado",
+		name: t("name"),
+		quantity: t("quantity"),
+		description: t("description"),
+		category: t("category"),
+		supplier: t("supplier"),
+		partNumber: t("part_number"),
+		lcscPart: "LCSC Part",
+		price: t("unit_price"),
+		inStock: t("current_stock"),
+		minStock: t("min_stock_header"),
+		notes: t("notes"),
+		manufacturer: t("manufacturer"),
+		customerNo: t("customer_no"),
+		package: t("package"),
 		rohs: "RoHS",
-		extPrice: "Precio Extendido",
-		leadTime: "Tiempo de Entrega",
-		dateCodeLotNo: "Código de Fecha/Número de Lote",
-		status: "Estado",
+		extPrice: t("ext_price"),
+		leadTime: t("lead_time"),
+		dateCodeLotNo: t("date_code_lot_no"),
+		status: t("status"),
 	};
 	return fieldLabels[field] || field;
 };
@@ -754,14 +753,14 @@ const confirmImport = async () => {
 
 		emit("close");
 		if (result.importedCount > 0) {
-			success("Importación completada", message);
+			success(t("import_modal.title"), message);
 		} else {
-			showError("Importación fallida", message);
+			showError(t("import_modal.import_failed"), message);
 		}
 	} catch (error) {
 		console.error("Error al procesar la importación:", error);
-		showError("Error en la importación", `Error al procesar la importación: ${(error as Error).message}`);
-		emit("error", `Error al procesar la importación: ${(error as Error).message}`);
+		showError(t("import_modal.import_review"), `${t("import_modal.import_review")}: ${(error as Error).message}`);
+		emit("error", `${t("import_modal.import_review")}: ${(error as Error).message}`);
 	} finally {
 		importStore.setIsProcessing(false);
 	}

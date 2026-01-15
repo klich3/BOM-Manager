@@ -31,13 +31,13 @@
 					v-if="components.length"
 					@click="autoCenter"
 					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500"
-					title="Centrar Vista">
+					:title="t('gerber.center_view')">
 					<ArrowsPointingInIcon class="w-5 h-5" />
 				</button>
 				<button
 					@click="resetView"
 					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500"
-					title="Resetear Vista">
+					:title="t('gerber.reset_view')">
 					<ArrowPathIcon class="w-5 h-5" />
 				</button>
 				<button @click="close" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500">
@@ -211,6 +211,7 @@ import { useI18n } from "@/composables/useI18n";
 
 const props = defineProps<{
 	projectId?: string;
+	selectedRef?: string;
 }>();
 
 const emit = defineEmits(["close"]);
@@ -709,14 +710,40 @@ const close = () => {
 	emit("close");
 };
 
+const locateComponent = (refDes: string) => {
+	const index = components.value.findIndex((c: ComponentPos) => c.ref.toLowerCase() === refDes.toLowerCase());
+	if (index !== -1) {
+		const comp = components.value[index];
+		panX.value = comp.x;
+		panY.value = -comp.y;
+		zoom.value = 50; // Zoom in
+		hoveredIndex.value = index;
+	}
+};
+
 onMounted(() => {
 	loadVersions();
+	if (props.selectedRef) {
+		// Esperar un poco a que carguen los datos
+		setTimeout(() => {
+			locateComponent(props.selectedRef!);
+		}, 500);
+	}
 });
 
 watch(
 	() => props.projectId,
 	() => {
 		loadVersions();
+	},
+);
+
+watch(
+	() => props.selectedRef,
+	(newRef: string | undefined) => {
+		if (newRef) {
+			locateComponent(newRef);
+		}
 	},
 );
 </script>

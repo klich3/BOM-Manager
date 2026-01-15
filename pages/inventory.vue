@@ -441,18 +441,18 @@ const editItem = (item: any) => {
 
 const deleteItemConfirm = async (id: string) => {
 	const confirmed = await showConfirmation(
-		"Eliminar Componente",
-		"¿Estás seguro de eliminar este componente? Esta acción no se puede deshacer.",
+		t("inventory_mgmt.delete_item_title"),
+		t("inventory_mgmt.delete_item_desc"),
 	);
 
 	if (confirmed) {
 		try {
 			await db.deleteItem(id);
 			await loadItems();
-			notifySuccess("Éxito", "Componente eliminado exitosamente");
+			notifySuccess(t("global.success"), t("inventory_mgmt.delete_success"));
 		} catch (error) {
 			console.error("Error eliminando componente:", error);
-			notifyError("Error", "Error al eliminar el componente");
+			notifyError(t("global.error"), t("inventory_mgmt.delete_error"));
 		}
 	}
 };
@@ -508,13 +508,13 @@ const handleFileImport = async (file: File) => {
 
 			await loadItems();
 			showImportModal.value = false;
-			notifySuccess("Importación exitosa", `${result.items.length} items agregados`);
+			notifySuccess(t("import_modal.title"), t("import_modal.success_message", { count: result.items.length }));
 		} else {
-			notifyError("Error en la importación", result.errors.join(", "));
+			notifyError(t("global.error"), result.errors.join(", "));
 		}
 	} catch (error) {
 		console.error("Error importando archivo:", error);
-		notifyError("Error", "Error al importar archivo");
+		notifyError(t("global.error"), t("import_modal.error_parsing"));
 	}
 };
 
@@ -533,7 +533,7 @@ const handleImportCompleted = async (data: {
 		filterStock.value = "";
 		currentPage.value = 1;
 	}
-	notifySuccess("Éxito", "Items importados exitosamente");
+	notifySuccess(t("global.success"), t("import_modal.items_imported_success"));
 };
 
 const handleImportError = (message: string) => {
@@ -571,7 +571,7 @@ const createListFromSelection = () => {
 	}
 
 	if (selectedItems.length === 0) {
-		notifyWarning("Advertencia", "No hay items seleccionados para crear la lista");
+		notifyWarning(t("global.warning"), t("inventory_mgmt.no_items_selected_list"));
 		return;
 	}
 
@@ -591,7 +591,7 @@ const saveList = (list: any) => {
 		items: list.items,
 	});
 	showListManager.value = false;
-	notifySuccess("Éxito", `Lista "${list.name}" guardada exitosamente`);
+	notifySuccess(t("global.success"), t("inventory_mgmt.list_created", { name: list.name }));
 };
 
 const openLcscPreview = (partNumber: string, itemId?: string) => {
@@ -639,10 +639,10 @@ const handleMergeLists = (listIds: string[], newListName: string) => {
 		showListsManagement.value = false;
 		selectedListsForMerge.value = [];
 		mergeListName.value = "";
-		notifySuccess("Éxito", "Listas combinadas exitosamente");
+		notifySuccess(t("global.success"), t("inventory_mgmt.merge_success"));
 	} catch (error: any) {
 		console.error("Error al mezclar listas:", error);
-		notifyError("Error", "Error al mezclar las listas: " + error.message);
+		notifyError(t("global.error"), t("global.error") + ": " + error.message);
 	}
 };
 
@@ -653,17 +653,17 @@ const handleCreateGroup = (items: any[], newListName: string) => {
 			description: `Grupo creado desde gestión de listas`,
 			items: items,
 		});
-		notifySuccess("Éxito", `Grupo "${newListName}" creado exitosamente`);
+		notifySuccess(t("global.success"), t("inventory_mgmt.group_created", { name: newListName }));
 	} catch (error: any) {
 		console.error("Error al crear grupo:", error);
-		notifyError("Error", "Error al crear el grupo: " + error.message);
+		notifyError(t("global.error"), t("global.error") + ": " + error.message);
 	}
 };
 
 const deleteSelectedItemsConfirm = async (ids: string[]) => {
 	const confirmed = await showConfirmation(
-		"Eliminar Componentes",
-		`¿Estás seguro de eliminar ${ids.length} componentes seleccionados? Esta acción no se puede deshacer.`,
+		t("inventory_mgmt.delete_selected_title"),
+		t("inventory_mgmt.delete_selected_desc", { count: ids.length }),
 	);
 
 	if (confirmed) {
@@ -672,10 +672,10 @@ const deleteSelectedItemsConfirm = async (ids: string[]) => {
 				await db.deleteItem(id);
 			}
 			await loadItems();
-			notifySuccess("Éxito", `${ids.length} componentes eliminados exitosamente`);
+			notifySuccess(t("global.success"), t("inventory_mgmt.delete_selected_success", { count: ids.length }));
 		} catch (error) {
 			console.error("Error eliminando componentes:", error);
-			notifyError("Error", "Error al eliminar los componentes");
+			notifyError(t("global.error"), t("inventory_mgmt.delete_error"));
 		}
 	}
 };
@@ -686,13 +686,13 @@ const updateLcscPrices = async () => {
 		.map((item) => ({ id: item.id, lcsc_part: item.lcsc_part }));
 
 	if (itemsWithLcsc.length === 0) {
-		notifyWarning("Advertencia", "No hay items con referencia LCSC para actualizar");
+		notifyWarning(t("global.warning"), t("inventory_mgmt.no_lcsc_items"));
 		return;
 	}
 
 	const confirmed = await showConfirmation(
-		"Actualizar Precios LCSC",
-		`¿Deseas actualizar los precios de ${itemsWithLcsc.length} componentes desde LCSC? Esto puede tomar un momento.`,
+		t("inventory_mgmt.update_lcsc_title"),
+		t("inventory_mgmt.update_lcsc_desc", { count: itemsWithLcsc.length }),
 	);
 
 	if (confirmed) {
@@ -700,10 +700,10 @@ const updateLcscPrices = async () => {
 		try {
 			const updatedCount = await massUpdatePrices(itemsWithLcsc);
 			await loadItems();
-			notifySuccess("Éxito", `Se han actualizado ${updatedCount} precios correctamente`);
+			notifySuccess(t("global.success"), t("inventory_mgmt.update_lcsc_success", { count: updatedCount }));
 		} catch (error) {
 			console.error("Error al actualizar precios:", error);
-			notifyError("Error", "Ocurrió un error al actualizar los precios");
+			notifyError(t("global.error"), t("global.error"));
 		} finally {
 			isUpdatingPrices.value = false;
 		}
