@@ -58,8 +58,12 @@
 							<!-- Project Items List -->
 							<div v-if="projectItemsResults.length > 0" class="mt-3 space-y-2">
 								<div class="flex items-center justify-between mb-1">
-									<span class="text-[10px] font-bold text-gray-400 uppercase">Items del Proyecto</span>
-									<button @click="addAllProjectItems" class="text-[10px] text-primary font-bold hover:underline">
+									<span class="text-[10px] font-bold text-gray-400 uppercase"
+										>Items del Proyecto</span
+									>
+									<button
+										@click="addAllProjectItems"
+										class="text-[10px] text-primary font-bold hover:underline">
 										Añadir Todos
 									</button>
 								</div>
@@ -69,7 +73,9 @@
 										:key="item.id"
 										class="p-2 border border-gray-50 bg-white rounded-lg flex items-center justify-between group hover:border-primary transition-colors">
 										<div class="min-w-0">
-											<p class="text-[10px] font-medium text-gray-900 truncate">{{ item.name }}</p>
+											<p class="text-[10px] font-medium text-gray-900 truncate">
+												{{ item.name }}
+											</p>
 										</div>
 										<button
 											@click="addItemToList(item)"

@@ -547,14 +547,14 @@ const createListFromSelection = () => {
 	if (selectedIds.length > 0) {
 		// Si hay selección manual, usar esos items
 		selectedItems = items.value
-			.filter(item => selectedIds.includes(item.id))
-			.map(item => ({
+			.filter((item) => selectedIds.includes(item.id))
+			.map((item) => ({
 				id: item.id,
 				name: item.name,
 				part_number: item.part_number,
 				lcsc_part: item.lcsc_part,
 				unit: item.unit || "pcs",
-				quantity: item.quantity && item.quantity > 0 ? item.quantity : 1
+				quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
 			}));
 	} else {
 		// Si no hay selección manual, usar los items filtrados (comportamiento anterior)

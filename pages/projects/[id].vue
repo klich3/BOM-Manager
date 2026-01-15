@@ -195,9 +195,7 @@
 	<!-- Gerber/XY Visualizer Overlay -->
 	<div v-if="showGerberVisualizer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
 		<div class="w-full h-full">
-			<GerberVisualizer
-				:project-id="String(route.params.id)"
-				@close="showGerberVisualizer = false" />
+			<GerberVisualizer :project-id="String(route.params.id)" @close="showGerberVisualizer = false" />
 		</div>
 	</div>
 </template>

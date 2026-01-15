@@ -94,7 +94,9 @@
 				@mouseup="endPan"
 				@mouseleave="endPan"
 				@wheel="handleZoom">
-				<div v-if="!components.length && !Object.keys(layers).length" class="absolute inset-0 flex items-center justify-center p-8 text-center bg-gray-50">
+				<div
+					v-if="!components.length && !Object.keys(layers).length"
+					class="absolute inset-0 flex items-center justify-center p-8 text-center bg-gray-50">
 					<div class="max-w-xs">
 						<div
 							class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -273,7 +275,12 @@ const loadVersion = async () => {
 	if (!version) return;
 
 	try {
-		const url = await getFileByName(version.filepath);
+		// Intentar cargar usando filename primero, ya que filepath puede ser un blob URL caducado
+		let url = await getFileByName(version.filename);
+		if (!url) {
+			url = await getFileByName(version.filepath);
+		}
+
 		if (!url) {
 			notifyError("Error", "No se pudo recuperar el archivo guardado");
 			return;
@@ -356,6 +363,7 @@ const getLayerClass = (name: string) => {
 
 const processFile = async (file: File, shouldSave: boolean) => {
 	let success = false;
+	components.value = []; // Reset components list
 	coordinateFileName.value = "";
 	layers.value = {};
 	zipFiles.value = [];
@@ -406,11 +414,11 @@ const processFile = async (file: File, shouldSave: boolean) => {
 
 	if (success && shouldSave && props.projectId) {
 		try {
-			const savedPath = await saveFile(file, file.name);
+			await saveFile(file, file.name);
 			await db.createFile({
 				project_id: props.projectId,
 				filename: file.name,
-				filepath: savedPath,
+				filepath: file.name, // Guardamos el nombre del archivo para persistencia real en OPFS
 				file_type: file.type,
 				size: file.size,
 				title: `Versión PCB ${new Date().toLocaleString()}`,
@@ -431,28 +439,67 @@ const parseGerberToSvg = (content: string) => {
 	let d = "";
 	let strokeWidth = 0.2;
 
-	// Muy simplificado: Solo busca comandos de movimiento G01, G02, G03, D01, D02, D03
-	// Y asume coordenadas absolutas mm para este ejemplo básico
+	// Gerber State
+	let unitFactor = 1; // 1 for mm, 25.4 for inches
+	let formatX = { int: 2, dec: 4 };
+	let formatY = { int: 2, dec: 4 };
+	let zeroSuppression = "leading"; // "leading" or "trailing"
+
+	const parseCoordinate = (coord: string, format: { int: number; dec: number }) => {
+		if (!coord) return 0;
+		const isNegative = coord.startsWith("-");
+		let val = coord.replace(/[-+]/, "");
+
+		if (zeroSuppression === "leading") {
+			// Add leading zeros if necessary
+			val = val.padStart(format.int + format.dec, "0");
+		} else {
+			// Add trailing zeros if necessary
+			val = val.padEnd(format.int + format.dec, "0");
+		}
+
+		// Insert decimal point
+		const splitPos = val.length - format.dec;
+		const result = parseFloat(val.slice(0, splitPos) + "." + val.slice(splitPos));
+		return (isNegative ? -result : result) * unitFactor;
+	};
+
 	lines.forEach((line) => {
 		line = line.trim();
 		if (!line) return;
 
-		// Buscar coordenadas X e Y
+		// 1. Units
+		if (line.includes("G70") || line.includes("%MOIN*%")) {
+			unitFactor = 25.4;
+			return;
+		}
+		if (line.includes("G71") || line.includes("%MOMM*%")) {
+			unitFactor = 1;
+			return;
+		}
+
+		// 2. Format Statement (%FSLAX24Y24*%)
+		const fsMatch = line.match(/%FS([LT])A?X(\d)(\d)Y(\d)(\d)/);
+		if (fsMatch) {
+			zeroSuppression = fsMatch[1] === "L" ? "leading" : "trailing";
+			formatX = { int: parseInt(fsMatch[2]), dec: parseInt(fsMatch[3]) };
+			formatY = { int: parseInt(fsMatch[4]), dec: parseInt(fsMatch[5]) };
+			return;
+		}
+
+		// 3. Coordinate commands
 		const xMatch = line.match(/X([-+]?\d+)/);
 		const yMatch = line.match(/Y([-+]?\d+)/);
 
 		if (xMatch || yMatch) {
-			// Convertir de unidades Gerber (asumiendo 2.4 o similar) a mm
-			// NOTA: Esto es MUY heurístico y puede fallar sin un parser real
-			const factor = 0.01; // Simplificación extrema
-			const x = xMatch ? parseInt(xMatch[1]) * factor : currentX;
-			const y = yMatch ? parseInt(yMatch[1]) * factor : currentY;
+			const x = xMatch ? parseCoordinate(xMatch[1], formatX) : currentX;
+			const y = yMatch ? parseCoordinate(yMatch[1], formatY) : currentY;
 
-			if (line.includes("D02")) {
-				// Move to
+			if (line.includes("D02") || (line.startsWith("G00") && !line.includes("D01"))) {
+				// Move to (Exposure off)
 				d += ` M ${x} ${-y}`;
-			} else if (line.includes("D01")) {
-				// Line to
+			} else if (line.includes("D01") || line.includes("G01") || line.includes("L")) {
+				// Line to (Exposure on)
 				if (!d.includes("M")) d = `M ${currentX} ${-currentY}` + d;
 				d += ` L ${x} ${-y}`;
 			}
@@ -461,7 +508,8 @@ const parseGerberToSvg = (content: string) => {
 			currentY = y;
 		}
 
-		if (line.includes("*")) {
+		// End of command or flash
+		if (line.includes("*") || line.includes("D03")) {
 			if (d) {
 				paths.push({ d, w: strokeWidth });
 				d = "";
@@ -567,23 +615,44 @@ const parseCentroidFile = (content: string) => {
 };
 
 const autoCenter = () => {
-	if (!components.value.length) {
-		// Try centering based on layers if no components
-		const allLayerPaths = Object.values(layers.value).flat();
-		if (allLayerPaths.length > 0) {
-			// This is more complex, just resetting to 0 for now
-			panX.value = 0;
-			panY.value = 0;
-			zoom.value = 200;
-			return;
-		}
-		return;
+	let minX = Infinity,
+		maxX = -Infinity,
+		minY = Infinity,
+		maxY = -Infinity;
+
+	if (components.value.length > 0) {
+		components.value.forEach((c: ComponentPos) => {
+			minX = Math.min(minX, c.x);
+			maxX = Math.max(maxX, c.x);
+			minY = Math.min(minY, c.y);
+			maxY = Math.max(maxY, c.y);
+		});
 	}
 
-	const minX = Math.min(...components.value.map((c: ComponentPos) => c.x));
-	const maxX = Math.max(...components.value.map((c: ComponentPos) => c.x));
-	const minY = Math.min(...components.value.map((c: ComponentPos) => c.y));
-	const maxY = Math.max(...components.value.map((c: ComponentPos) => c.y));
+	// Also consider layer bounds
+	Object.values(layers.value).forEach((paths: any) => {
+		paths.forEach((p: any) => {
+			// Extract coordinates from SVG path string "M x -y L x -y"
+			const coords = p.d.match(/[-+]?\d+\.?\d*/g);
+			if (coords) {
+				for (let i = 0; i < coords.length; i += 2) {
+					const x = parseFloat(coords[i]);
+					const y = -parseFloat(coords[i + 1]); // Convert back from SVG Y
+					minX = Math.min(minX, x);
+					maxX = Math.max(maxX, x);
+					minY = Math.min(minY, y);
+					maxY = Math.max(maxY, y);
+				}
+			}
+		});
+	});
+
+	if (minX === Infinity) {
+		panX.value = 0;
+		panY.value = 0;
+		zoom.value = 100;
+		return;
+	}
 
 	panX.value = (minX + maxX) / 2;
 	panY.value = -(minY + maxY) / 2;
