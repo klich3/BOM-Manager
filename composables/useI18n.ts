@@ -1,90 +1,32 @@
-import { computed } from 'vue';
-import { useSettingsStore } from '@/stores/settings';
+import { computed } from "vue";
+import { useSettingsStore } from "@/stores/settings";
+import es from "@/locales/es.json";
+import en from "@/locales/en.json";
 
-const translations = {
-    es: {
-        dashboard: 'Panel de Control',
-        inventory: 'Inventario',
-        projects: 'Proyectos',
-        settings: 'Configuración',
-        search: 'Buscar...',
-        add_item: 'Agregar Item',
-        create_project: 'Crear Proyecto',
-        total_items: 'Total Items',
-        low_stock: 'Stock Bajo',
-        stock_ok: 'Stock OK',
-        total_value: 'Valor Total',
-        language: 'Idioma',
-        currency: 'Moneda',
-        theme: 'Tema',
-        dark: 'Oscuro',
-        light: 'Claro',
-        save: 'Guardar',
-        cancel: 'Cancelar',
-        edit: 'Editar',
-        delete: 'Eliminar',
-        import: 'Importar',
-        export: 'Exportar',
-        name: 'Nombre',
-        description: 'Descripción',
-        quantity: 'Cantidad',
-        price: 'Precio',
-        category: 'Categoría',
-        supplier: 'Proveedor',
-        status: 'Estado',
-        draft: 'Borrador',
-        prototype: 'Prototipo',
-        production: 'Producción',
-        archived: 'Archivado'
-    },
-    en: {
-        dashboard: 'Dashboard',
-        inventory: 'Inventory',
-        projects: 'Projects',
-        settings: 'Settings',
-        search: 'Search...',
-        add_item: 'Add Item',
-        create_project: 'Create Project',
-        total_items: 'Total Items',
-        low_stock: 'Low Stock',
-        stock_ok: 'Stock OK',
-        total_value: 'Total Value',
-        language: 'Language',
-        currency: 'Currency',
-        theme: 'Theme',
-        dark: 'Dark',
-        light: 'Light',
-        save: 'Save',
-        cancel: 'Cancel',
-        edit: 'Edit',
-        delete: 'Delete',
-        import: 'Import',
-        export: 'Export',
-        name: 'Name',
-        description: 'Description',
-        quantity: 'Quantity',
-        price: 'Price',
-        category: 'Category',
-        supplier: 'Supplier',
-        status: 'Status',
-        draft: 'Draft',
-        prototype: 'Prototype',
-        production: 'Production',
-        archived: 'Archived'
-    }
+const translations: any = {
+	es,
+	en,
 };
 
 export const useI18n = () => {
-    const settingsStore = useSettingsStore();
-    const lang = computed(() => settingsStore.settings.language as keyof typeof translations || 'es');
+	const settingsStore = useSettingsStore();
+	const lang = computed(() => (settingsStore.settings.language as keyof typeof translations) || "es");
 
-    const t = (key: string): string => {
-        const langData = translations[lang.value] || translations.es;
-        return (langData as any)[key] || key;
-    };
+	const t = (key: string, params?: Record<string, string | number>): string => {
+		const langData = translations[lang.value] || translations.es;
+		let text = langData[key] || key;
 
-    return {
-        t,
-        lang
-    };
+		if (params) {
+			Object.entries(params).forEach(([k, v]) => {
+				text = text.replace(`{${k}}`, String(v));
+			});
+		}
+
+		return text;
+	};
+
+	return {
+		t,
+		lang,
+	};
 };

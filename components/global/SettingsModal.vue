@@ -4,7 +4,7 @@
 			class="bg-card-light rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
 			<!-- Header -->
 			<div class="flex items-center justify-between mb-6">
-				<h2 class="text-xl font-semibold text-text-main-light">Configuración</h2>
+				<h2 class="text-xl font-semibold text-text-main-light">{{ t("settings") }}</h2>
 				<button @click="closeModal" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
 					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
 				</button>
@@ -15,7 +15,7 @@
 				<div class="space-y-6">
 					<!-- Currency Selection -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Moneda</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("currency") }}</label>
 						<select
 							v-model="localSettings.currency"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
@@ -29,7 +29,7 @@
 
 					<!-- Items per page -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Elementos por página</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("items_per_page") }}</label>
 						<select
 							v-model="localSettings.items_per_page"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
@@ -42,7 +42,7 @@
 
 					<!-- Decimals -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Decimales en precios</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("price_decimals") }}</label>
 						<select
 							v-model="localSettings.decimals"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
@@ -56,7 +56,7 @@
 
 					<!-- Language -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("language") }}</label>
 						<select
 							v-model="localSettings.language"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
@@ -69,18 +69,18 @@
 
 					<!-- Theme -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Tema</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("theme") }}</label>
 						<select
 							v-model="localSettings.theme"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-							<option value="light">Claro</option>
-							<option value="dark">Oscuro</option>
+							<option value="light">{{ t("light") }}</option>
+							<option value="dark">{{ t("dark") }}</option>
 						</select>
 					</div>
 
 					<!-- Country -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">País</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("country") }}</label>
 						<select
 							v-model="localSettings.country"
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
@@ -96,17 +96,18 @@
 
 					<!-- Database Export/Import Section -->
 					<div class="border-t border-gray-200 pt-6">
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Base de Datos y Archivos</h3>
+						<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+							{{ t("database_and_files") }}
+						</h3>
 
 						<!-- Full Backup (ZIP) -->
 						<div
 							class="mb-6 border border-purple-200 bg-purple-50 dark:bg-purple-900/10 dark:border-purple-800 rounded-lg p-4">
-							<label class="block text-sm font-medium text-purple-800 dark:text-purple-300 mb-3"
-								>Respaldo Completo (ZIP)</label
-							>
+							<label class="block text-sm font-medium text-purple-800 dark:text-purple-300 mb-3">{{
+								t("full_backup_zip")
+							}}</label>
 							<p class="text-sm text-purple-700 dark:text-purple-400 mb-3">
-								Exporta la base de datos junto con todos los archivos (imágenes, PDFs) en un único
-								archivo comprimido.
+								{{ t("export_all_zip_desc") }}
 							</p>
 							<div class="flex flex-wrap gap-3">
 								<button
@@ -117,14 +118,14 @@
 									<div
 										v-if="isExporting"
 										class="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-									{{ isExporting ? "Exportando ZIP..." : "Exportar Todo (ZIP)" }}
+									{{ isExporting ? t("exporting_zip") : t("export_all_zip") }}
 								</button>
 
 								<button
 									@click="triggerZipFileSelect"
 									class="inline-flex items-center px-4 py-2 border border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-medium rounded-lg transition-colors">
 									<ArrowUpTrayIcon class="w-5 h-5 mr-2" />
-									Importar Todo (ZIP)
+									{{ t("import_all_zip") }}
 								</button>
 								<input
 									ref="zipFileInputRef"
@@ -138,11 +139,11 @@
 						<!-- Export Database -->
 						<div
 							class="mb-6 border border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800 rounded-lg p-4">
-							<label class="block text-sm font-medium text-green-800 dark:text-green-300 mb-3"
-								>Exportar Base de Datos (JSON)</label
-							>
+							<label class="block text-sm font-medium text-green-800 dark:text-green-300 mb-3">{{
+								t("export_db_json")
+							}}</label>
 							<p class="text-sm text-green-700 dark:text-green-400 mb-3">
-								Exporta solo la base de datos en formato JSON.
+								{{ t("export_db_json_desc") }}
 							</p>
 							<button
 								@click="exportDatabase"
@@ -152,7 +153,7 @@
 								<div
 									v-if="isExporting"
 									class="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-								{{ isExporting ? "Exportando..." : "Exportar JSON" }}
+								{{ isExporting ? t("exporting") : t("export_json") }}
 							</button>
 						</div>
 
@@ -160,11 +161,11 @@
 						<div
 							v-if="isTauri"
 							class="mb-6 border border-indigo-200 bg-indigo-50 dark:bg-indigo-900/10 dark:border-indigo-800 rounded-lg p-4">
-							<label class="block text-sm font-medium text-indigo-800 dark:text-indigo-300 mb-3"
-								>Sincronización Git</label
-							>
+							<label class="block text-sm font-medium text-indigo-800 dark:text-indigo-300 mb-3">{{
+								t("git_sync")
+							}}</label>
 							<p class="text-sm text-indigo-700 dark:text-indigo-400 mb-3">
-								Sincroniza tu base de datos y archivos con un repositorio Git remoto.
+								{{ t("git_sync_desc") }}
 							</p>
 
 							<div class="space-y-4">
@@ -172,7 +173,7 @@
 									<input
 										v-model="gitRemoteUrl"
 										type="text"
-										placeholder="https://github.com/usuario/repo.git"
+										:placeholder="t('git_remote_placeholder')"
 										class="w-full px-3 py-2 border border-indigo-200 dark:border-indigo-800 rounded-lg bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
 								</div>
 
@@ -180,7 +181,7 @@
 									<button
 										@click="handleGitSetup"
 										class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-										Configurar Remoto
+										{{ t("setup_remote") }}
 									</button>
 									<button
 										@click="handleGitSync"
@@ -190,22 +191,21 @@
 										<div
 											v-else
 											class="w-4 h-4 mr-2 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-										{{ isSyncing ? "Sincronizando..." : "Sincronizar Ahora" }}
+										{{ isSyncing ? t("syncing") : t("sync_now") }}
 									</button>
 								</div>
 
 								<p v-if="lastSync" class="text-[10px] text-indigo-500">
-									Última sincronización: {{ lastSync }}
+									{{ t("last_sync", { date: lastSync }) }}
 								</p>
 							</div>
 						</div>
 
 						<!-- Import Database -->
 						<div class="border border-blue-200 bg-blue-50 rounded-lg p-4">
-							<label class="block text-sm font-medium text-blue-800 mb-3">Importar Base de Datos</label>
+							<label class="block text-sm font-medium text-blue-800 mb-3">{{ t("import_db") }}</label>
 							<p class="text-sm text-blue-700 mb-3">
-								Importa toda la información desde un archivo JSON previamente exportado. Esto
-								reemplazará todos los datos actuales.
+								{{ t("import_db_desc") }}
 							</p>
 
 							<div class="flex items-center gap-3">
@@ -219,7 +219,7 @@
 									@click="triggerFileSelect"
 									class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
 									<ArrowUpTrayIcon class="w-5 h-5 mr-2" />
-									Seleccionar Archivo
+									{{ t("select_file") }}
 								</button>
 								<span v-if="selectedFileName" class="text-sm text-blue-700 truncate max-w-xs">
 									{{ selectedFileName }}
@@ -235,12 +235,12 @@
 									<div
 										v-if="isImporting"
 										class="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-									{{ isImporting ? "Importando..." : "Importar Base de Datos" }}
+									{{ isImporting ? t("importing") : t("import_db") }}
 								</button>
 								<button
 									@click="cancelImport"
 									class="px-4 py-2 border border-blue-300 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition-colors">
-									Cancelar
+									{{ t("cancel_import") }}
 								</button>
 							</div>
 
@@ -252,9 +252,7 @@
 									<ExclamationTriangleIcon
 										class="w-5 h-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
 									<div class="text-sm text-yellow-800">
-										<strong>Advertencia:</strong> Esta acción reemplazará completamente todos los
-										datos actuales del sistema. Se recomienda hacer una copia de seguridad antes de
-										proceder.
+										<strong>{{ t("import_warning_title") }}:</strong> {{ t("import_warning_desc") }}
 									</div>
 								</div>
 							</div>
@@ -268,12 +266,12 @@
 				<button
 					@click="closeModal"
 					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
-					Cancelar
+					{{ t("cancel") }}
 				</button>
 				<button
 					@click="saveSettings"
 					class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-all">
-					Guardar configuración
+					{{ t("save") }}
 				</button>
 			</div>
 		</div>
@@ -293,6 +291,8 @@ import { useGitSync } from "@/composables/useGitSync";
 import { useFileManager } from "@/composables/useFileManager";
 import { ArrowPathIcon } from "@heroicons/vue/24/outline";
 
+import { useI18n } from "@/composables/useI18n";
+
 interface Props {
 	show: boolean;
 }
@@ -302,6 +302,7 @@ const emit = defineEmits<{
 	close: [];
 }>();
 
+const { t } = useI18n();
 const settingsStore = useSettingsStore();
 const localSettings = ref({
 	currency: settingsStore.settings.currency,
@@ -331,7 +332,7 @@ const gitRemoteUrl = ref("");
 // Actualizar los valores locales cuando cambien los de la tienda
 watch(
 	() => settingsStore.settings,
-	(newSettings) => {
+	(newSettings: any) => {
 		localSettings.value = {
 			currency: newSettings.currency,
 			items_per_page: newSettings.items_per_page,

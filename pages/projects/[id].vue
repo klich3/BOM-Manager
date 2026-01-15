@@ -11,10 +11,10 @@
 				</div>
 				<div>
 					<h1 class="text-2xl font-semibold text-text-main-light">
-						{{ project?.name || "Detalles del Proyecto" }}
+						{{ project?.name || t("project_details") }}
 					</h1>
 					<p class="text-sm text-text-muted-light mt-1">
-						{{ project?.description || "Proyecto sin descripción" }}
+						{{ project?.description || t("no_description") }}
 					</p>
 				</div>
 			</div>
@@ -31,31 +31,31 @@
 					@click="showGerberVisualizer = true"
 					class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
 					<MapIcon class="w-5 h-5" />
-					<span>Mapa PCB</span>
+					<span>{{ t("pcb_map") }}</span>
 				</button>
 				<button
 					@click="handleImportComponents"
 					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<ArrowDownTrayIcon class="w-4 h-4" />
-					<span>Importar Componentes</span>
+					<span>{{ t("import_components") }}</span>
 				</button>
 				<button
 					@click="consumeProjectStock"
 					class="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-amber-700 transition-colors">
 					<ArchiveBoxIcon class="w-5 h-5" />
-					<span>Consumir Stock</span>
+					<span>{{ t("consume_stock") }}</span>
 				</button>
 				<button
 					@click="exportProject"
 					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
 					<DocumentArrowDownIcon class="w-5 h-5" />
-					<span>Exportar</span>
+					<span>{{ t("export") }}</span>
 				</button>
 				<button
 					@click="goBack"
 					class="flex items-center gap-2 bg-gray-100 text-text-main-light px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
 					<ArrowLeftIcon class="w-5 h-5" />
-					<span>Volver</span>
+					<span>{{ t("back") }}</span>
 				</button>
 			</div>
 		</header>
@@ -70,7 +70,7 @@
 							<CubeIcon class="w-5 h-5 text-blue-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Total Items</p>
+							<p class="text-xs text-text-muted-light">{{ t("total_items") }}</p>
 							<p class="text-2xl font-bold text-text-main-light">
 								{{ projectItems.length }}
 							</p>
@@ -84,7 +84,7 @@
 							<CheckCircleIcon class="w-5 h-5 text-green-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Stock OK</p>
+							<p class="text-xs text-text-muted-light">{{ t("stock_ok") }}</p>
 							<p class="text-2xl font-bold text-text-main-light">
 								{{ stockOK }}
 							</p>
@@ -98,7 +98,7 @@
 							<ExclamationTriangleIcon class="w-5 h-5 text-amber-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Stock Bajo</p>
+							<p class="text-xs text-text-muted-light">{{ t("low_stock") }}</p>
 							<p class="text-2xl font-bold text-amber-600">
 								{{ lowStockCount }}
 							</p>
@@ -112,7 +112,7 @@
 							<CurrencyDollarIcon class="w-5 h-5 text-purple-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Valor Componentes</p>
+							<p class="text-xs text-text-muted-light">{{ t("component_value") }}</p>
 							<p class="text-2xl font-bold text-text-main-light">${{ totalComponentsValue }}</p>
 						</div>
 					</div>
@@ -125,7 +125,7 @@
 						</div>
 						<div>
 							<p class="text-xs text-text-muted-light">
-								Total Proyecto ({{ project?.pcbQuantity || 1 }} PCBs)
+								{{ t("total_project") }} ({{ project?.pcbQuantity || 1 }} {{ t("pcbs") }})
 							</p>
 							<p class="text-2xl font-bold text-primary">${{ totalProjectValue }}</p>
 						</div>
@@ -138,7 +138,7 @@
 							<CurrencyDollarIcon class="w-5 h-5 text-green-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Coste por PCB</p>
+							<p class="text-xs text-text-muted-light">{{ t("cost_per_pcb") }}</p>
 							<p class="text-2xl font-bold text-green-600">${{ costPerPcb }}</p>
 						</div>
 					</div>
@@ -203,6 +203,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useDialog } from "@/composables/useDialog";
+import { useI18n } from "@/composables/useI18n";
 import { useImportStore } from "@/stores/import";
 import {
 	CpuChipIcon,
@@ -250,6 +251,7 @@ import { navigateTo } from "nuxt/app";
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 const db = useDatabase();
 const { calculateProjectCost, formatCurrency, taxRate } = useCostCalculator();
 const { showConfirmation } = useDialog();

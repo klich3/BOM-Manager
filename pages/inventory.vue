@@ -4,7 +4,7 @@
 		<!-- Header -->
 		<header class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200">
 			<div>
-				<h1 class="text-2xl font-semibold text-text-main-light">Inventario de Componentes</h1>
+				<h1 class="text-2xl font-semibold text-text-main-light">{{ t("component_inventory") }}</h1>
 			</div>
 			<div class="flex items-center gap-4">
 				<button
@@ -15,31 +15,31 @@
 					<div
 						v-else
 						class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-					<span>{{ isUpdatingPrices ? "Actualizando..." : "Actualizar componentes de LSCS" }}</span>
+					<span>{{ isUpdatingPrices ? t("updating") : t("update_lcsc_prices") }}</span>
 				</button>
 				<button
 					@click="showImportModal = true"
 					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<DocumentArrowUpIcon class="w-5 h-5" />
-					<span>Importar</span>
+					<span>{{ t("import") }}</span>
 				</button>
 				<button
 					@click="createListFromSelection"
 					class="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-700 transition-colors">
 					<ClipboardDocumentListIcon class="w-5 h-5" />
-					<span>Crear Lista</span>
+					<span>{{ t("create_list") }}</span>
 				</button>
 				<button
 					@click="exportInventory"
 					class="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
 					<DocumentArrowDownIcon class="w-5 h-5" />
-					<span>Exportar</span>
+					<span>{{ t("export") }}</span>
 				</button>
 				<button
 					@click="showAddModal = true"
 					class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors">
 					<PlusIcon class="w-5 h-5" />
-					<span>Agregar Item</span>
+					<span>{{ t("add_item") }}</span>
 				</button>
 			</div>
 		</header>
@@ -54,7 +54,7 @@
 							<CubeIcon class="w-5 h-5 text-blue-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Total Items</p>
+							<p class="text-xs text-text-muted-light">{{ t("total_items") }}</p>
 							<p class="text-2xl font-bold text-text-main-light">
 								{{ filteredItems.length }}
 							</p>
@@ -68,7 +68,7 @@
 							<CheckCircleIcon class="w-5 h-5 text-green-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Stock OK</p>
+							<p class="text-xs text-text-muted-light">{{ t("stock_ok") }}</p>
 							<p class="text-2xl font-bold text-text-main-light">
 								{{ stockOK }}
 							</p>
@@ -82,7 +82,7 @@
 							<ExclamationTriangleIcon class="w-5 h-5 text-amber-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Stock Bajo</p>
+							<p class="text-xs text-text-muted-light">{{ t("low_stock") }}</p>
 							<p class="text-2xl font-bold text-amber-600">
 								{{ lowStockCount }}
 							</p>
@@ -96,7 +96,7 @@
 							<CurrencyDollarIcon class="w-5 h-5 text-purple-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Valor Total</p>
+							<p class="text-xs text-text-muted-light">{{ t("total_value") }}</p>
 							<p class="text-2xl font-bold text-text-main-light">${{ totalValue }}</p>
 						</div>
 					</div>
@@ -106,14 +106,14 @@
 			<!-- List Management Section -->
 			<div class="bg-card-light rounded-2xl p-6 shadow-sm mb-6">
 				<div class="flex justify-between items-center mb-4">
-					<h3 class="text-lg font-semibold text-text-main-light">Gestión de Listas</h3>
+					<h3 class="text-lg font-semibold text-text-main-light">{{ t("list_management") }}</h3>
 					<button
 						@click="showListsManagement = true"
 						class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
-						Gestionar Listas
+						{{ t("manage_lists") }}
 					</button>
 				</div>
-				<p class="text-text-muted-light text-sm">Tienes {{ lists.listCount }} listas guardadas</p>
+				<p class="text-text-muted-light text-sm">{{ t("saved_lists_count", { count: lists.listCount }) }}</p>
 			</div>
 
 			<!-- Search and Filters -->
@@ -125,7 +125,7 @@
 						<input
 							v-model="searchQuery"
 							type="text"
-							placeholder="Buscar por nombre, categoría, proveedor..."
+							:placeholder="t('search')"
 							class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light" />
 					</div>
 
@@ -133,8 +133,8 @@
 					<select
 						v-model="selectedListId"
 						class="px-4 py-2 bg-purple-50 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-purple-700 font-medium">
-						<option value="">Inventario Global</option>
-						<optgroup label="Mis Listas Guardadas">
+						<option value="">{{ t("global_inventory") }}</option>
+						<optgroup :label="t('my_saved_lists')">
 							<option v-for="list in lists.lists.value" :key="list.id" :value="list.id">
 								{{ list.name }}
 							</option>
@@ -144,7 +144,7 @@
 					<select
 						v-model="filterCategory"
 						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
-						<option value="">Todas las categorías</option>
+						<option value="">{{ t("all_categories") }}</option>
 						<option v-for="cat in categories" :key="cat" :value="cat">
 							{{ cat }}
 						</option>
@@ -152,9 +152,9 @@
 					<select
 						v-model="filterStock"
 						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
-						<option value="all">Todos</option>
-						<option value="ok">Stock OK</option>
-						<option value="low">Stock Bajo</option>
+						<option value="all">{{ t("all") }}</option>
+						<option value="ok">{{ t("stock_ok") }}</option>
+						<option value="low">{{ t("low_stock") }}</option>
 					</select>
 				</div>
 			</div>
@@ -174,22 +174,22 @@
 			<!-- Pagination -->
 			<div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
 				<p class="text-sm text-text-muted-light">
-					Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a
+					{{ t("showing") }} {{ (currentPage - 1) * itemsPerPage + 1 }} {{ t("to") }}
 					{{ Math.min(currentPage * itemsPerPage, filteredItems.length) }}
-					de {{ filteredItems.length }} items
+					{{ t("of") }} {{ filteredItems.length }} items
 				</p>
 				<div class="flex gap-2">
 					<button
 						@click="currentPage--"
 						:disabled="currentPage === 1"
 						class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
-						Anterior
+						{{ t("previous") }}
 					</button>
 					<button
 						@click="currentPage++"
 						:disabled="currentPage === totalPages"
 						class="px-3 py-1 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors">
-						Siguiente
+						{{ t("next") }}
 					</button>
 				</div>
 			</div>
@@ -235,6 +235,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useDialog } from "@/composables/useDialog";
+import { useI18n } from "@/composables/useI18n";
 import {
 	CpuChipIcon,
 	Squares2X2Icon,
@@ -273,6 +274,7 @@ import ListsManagementModal from "@/components/ListsManagementModal.vue";
 import InventoryTable from "@/components/inventory/InventoryTable.vue";
 
 const db = useDatabase();
+const { t } = useI18n();
 const { exportAllInventory } = useExport();
 const { parseFile } = useFileParser();
 const lists = useLists();

@@ -4,7 +4,7 @@
 		<!-- Header -->
 		<header class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200">
 			<div>
-				<h1 class="text-2xl font-semibold text-text-main-light">Component Monitoring</h1>
+				<h1 class="text-2xl font-semibold text-text-main-light">{{ t("component_monitoring") }}</h1>
 			</div>
 			<div class="flex items-center gap-4">
 				<button
@@ -15,7 +15,7 @@
 						class="bg-red-500 text-white text-xs font-bold px-1.5 rounded-full"
 						>{{ stats.lowStock + unreadNotificationsCount }}</span
 					>
-					<span>Alertas</span>
+					<span>{{ t("alerts") }}</span>
 				</button>
 			</div>
 		</header>
@@ -32,31 +32,35 @@
 					<div class="grid grid-cols-2 gap-4">
 						<StockHealthIndicator
 							:percentage="stockHealthPercentage"
-							:title="'Stock Health'"
-							:status-text="'Inventario en niveles óptimos'" />
-
-						<StatCard title="Items" :value="stats.totalItems" subtitle="Total" value-type="number">
-							<template #title>Items</template>
-							<template #subtitle>Total</template>
-						</StatCard>
+							:title="t('stock_health')"
+							:status-text="t('inventory_optimal')" />
 
 						<StatCard
-							title="Proyectos"
-							:value="stats.projects"
-							subtitle="Proyectos activos"
+							:title="t('inventory')"
+							:value="stats.totalItems"
+							:subtitle="t('total_items')"
 							value-type="number">
-							<template #title>Proyectos</template>
-							<template #subtitle>Proyectos activos</template>
+							<template #title>{{ t("inventory") }}</template>
+							<template #subtitle>{{ t("total_items") }}</template>
 						</StatCard>
 
 						<StatCard
-							title="Valor Total"
+							:title="t('projects')"
+							:value="stats.projects"
+							:subtitle="t('active_projects')"
+							value-type="number">
+							<template #title>{{ t("projects") }}</template>
+							<template #subtitle>{{ t("active_projects") }}</template>
+						</StatCard>
+
+						<StatCard
+							:title="t('total_value')"
 							:value="stats.totalValue"
-							subtitle="Inversión en inventario"
+							:subtitle="t('inventory_investment')"
 							value-type="currency"
 							:format-value="formatValue">
-							<template #title>Valor Total</template>
-							<template #subtitle>Inversión en inventario</template>
+							<template #title>{{ t("total_value") }}</template>
+							<template #subtitle>{{ t("inventory_investment") }}</template>
 						</StatCard>
 					</div>
 
@@ -68,8 +72,8 @@
 							<div class="flex justify-between items-start mb-2">
 								<DocumentArrowUpIcon class="w-5 h-5 text-text-muted-light" />
 							</div>
-							<div class="text-xs text-text-muted-light">Importar</div>
-							<div class="text-sm font-bold text-text-main-light mt-1">CSV/XLSX</div>
+							<div class="text-xs text-text-muted-light">{{ t("import") }}</div>
+							<div class="text-sm font-bold text-text-main-light mt-1">{{ t("import_csv_xlsx") }}</div>
 						</button>
 
 						<NuxtLink :to="{ name: 'inventory' }" class="block">
@@ -78,8 +82,8 @@
 								<div class="flex justify-between items-start mb-2">
 									<CubeIcon class="w-5 h-5 text-text-muted-light" />
 								</div>
-								<div class="text-xs text-text-muted-light">Ver</div>
-								<div class="text-sm font-bold text-text-main-light mt-1">Inventario</div>
+								<div class="text-xs text-text-muted-light">{{ t("view") }}</div>
+								<div class="text-sm font-bold text-text-main-light mt-1">{{ t("inventory") }}</div>
 							</button>
 						</NuxtLink>
 
@@ -89,8 +93,8 @@
 								<div class="flex justify-between items-start mb-2">
 									<RectangleStackIcon class="w-5 h-5 text-text-muted-light" />
 								</div>
-								<div class="text-xs text-text-muted-light">Gestionar</div>
-								<div class="text-sm font-bold text-text-main-light mt-1">Proyectos</div>
+								<div class="text-xs text-text-muted-light">{{ t("manage") }}</div>
+								<div class="text-sm font-bold text-text-main-light mt-1">{{ t("projects") }}</div>
 							</button>
 						</NuxtLink>
 					</div>
@@ -101,7 +105,7 @@
 					<div v-if="lowStockItems.length > 0">
 						<h3 class="text-xl font-semibold text-text-main-light mb-4 flex items-center gap-2">
 							<ExclamationTriangleIcon class="w-6 h-6 text-amber-500" />
-							Stock Bajo
+							{{ t("low_stock") }}
 						</h3>
 						<div class="bg-card-light rounded-3xl p-6 shadow-sm border border-amber-100">
 							<div class="space-y-4">
@@ -133,7 +137,7 @@
 									<NuxtLink
 										:to="{ name: 'inventory' }"
 										class="text-sm text-primary font-medium hover:underline">
-										Ver todos ({{ lowStockItems.length }})
+										{{ t("see_all") }} ({{ lowStockItems.length }})
 									</NuxtLink>
 								</div>
 							</div>
@@ -141,7 +145,7 @@
 					</div>
 
 					<div class="flex justify-between items-center">
-						<h3 class="text-xl font-semibold text-text-main-light">Actividad Reciente</h3>
+						<h3 class="text-xl font-semibold text-text-main-light">{{ t("recent_activity") }}</h3>
 					</div>
 
 					<div class="bg-card-light rounded-3xl p-6 shadow-sm">
@@ -162,8 +166,8 @@
 						</div>
 						<div v-else class="text-center py-12 text-text-muted-light">
 							<CubeIcon class="w-12 h-12 mx-auto mb-4 opacity-50" />
-							<p class="text-sm">No hay actividad reciente</p>
-							<p class="text-xs mt-2">Comienza importando tu primer archivo BOM</p>
+							<p class="text-sm">{{ t("no_recent_activity") }}</p>
+							<p class="text-xs mt-2">{{ t("start_importing_bom") }}</p>
 						</div>
 					</div>
 				</div>
@@ -182,6 +186,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useDatabase } from "@/composables/useDatabase";
+import { useI18n } from "@/composables/useI18n";
+import { useNotifications } from "@/composables/useNotifications";
 import {
 	CubeIcon,
 	DocumentArrowUpIcon,
@@ -203,6 +209,9 @@ definePageMeta({
 
 // State
 const db = useDatabase();
+const { t, lang } = useI18n();
+const { success, error: notifyError } = useNotifications();
+
 const showImportModal = ref(false);
 const unreadNotificationsCount = ref(0);
 const recentActivity = ref<any[]>([]);
@@ -218,7 +227,7 @@ const stats = ref({
 
 const currentDate = computed(() => {
 	const now = new Date();
-	return now.toLocaleDateString("es-ES", {
+	return now.toLocaleDateString(lang.value === "es" ? "es-ES" : "en-US", {
 		weekday: "short",
 		day: "numeric",
 		month: "short",
@@ -309,22 +318,16 @@ const handleImportCompleted = async (data: {
 		await loadRecentActivity(); // Refrescar también la actividad reciente
 	}
 	// Si fue a un proyecto específico, podríamos refrescar esa información también
-	showToastMessage("Items importados exitosamente", "success");
+	success(t("import"), "Items importados exitosamente");
 };
 
 const handleImportError = (message: string) => {
 	console.error("Error de importación:", message);
-	showToastMessage(`Error en la importación: ${message}`, "error");
-};
-
-// Función para mostrar mensajes de toast (si no existe)
-const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
-	// Aquí podríamos usar un sistema de notificaciones real
-	console.log(`${type}: ${message}`);
+	notifyError(t("import"), `Error en la importación: ${message}`);
 };
 
 const formatDate = (date: Date) => {
-	return date.toLocaleDateString("es-ES", {
+	return date.toLocaleDateString(lang.value === "es" ? "es-ES" : "en-US", {
 		year: "numeric",
 		month: "short",
 		day: "numeric",

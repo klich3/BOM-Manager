@@ -5,21 +5,21 @@
 		<div
 			class="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-between">
 			<div class="flex items-center gap-4">
-				<h3 class="font-semibold text-gray-900 dark:text-white">Visualizador de Componentes (Centroid/XY)</h3>
+				<h3 class="font-semibold text-gray-900 dark:text-white">{{ t("gerber.title") }}</h3>
 				<span
 					v-if="components.length"
 					class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
-					{{ components.length }} componentes detectados
+					{{ t("gerber.components_detected", { count: components.length }) }}
 				</span>
 
 				<!-- Selector de Versiones -->
 				<div v-if="versions.length > 0" class="flex items-center gap-2 ml-4">
-					<label class="text-xs font-medium text-gray-500">Historial:</label>
+					<label class="text-xs font-medium text-gray-500">{{ t("gerber.history") }}</label>
 					<select
 						v-model="selectedVersionId"
 						@change="loadVersion"
 						class="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-primary max-w-[150px]">
-						<option value="">Seleccionar...</option>
+						<option value="">{{ t("gerber.select_version") }}</option>
 						<option v-for="v in versions" :key="v.id" :value="v.id">
 							{{ v.filename }}
 						</option>
@@ -52,7 +52,7 @@
 				v-if="zipFiles.length > 0"
 				class="w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-y-auto">
 				<div class="p-4 border-b border-gray-100 dark:border-gray-800">
-					<h4 class="text-xs font-bold text-gray-400 uppercase">Archivos en ZIP</h4>
+					<h4 class="text-xs font-bold text-gray-400 uppercase">{{ t("gerber.zip_files") }}</h4>
 				</div>
 				<div class="divide-y divide-gray-50 dark:divide-gray-800">
 					<div
@@ -65,7 +65,7 @@
 							<span
 								v-if="coordinateFileName === file.name"
 								class="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full"
-								>Activo</span
+								>{{ t("gerber.active") }}</span
 							>
 						</div>
 						<div class="flex gap-2">
@@ -73,13 +73,13 @@
 								v-if="isCoordinateFile(file.name)"
 								class="text-[10px] text-primary hover:underline"
 								@click.stop="useAsCoordinates(file.name)">
-								Usar Coordenadas
+								{{ t("gerber.use_coordinates") }}
 							</button>
 							<button
 								v-if="isGerberFile(file.name)"
 								class="text-[10px] text-blue-500 hover:underline"
 								@click.stop="toggleLayer(file.name)">
-								{{ layers[file.name] ? "Ocultar Capa" : "Ver Capa" }}
+								{{ layers[file.name] ? t("gerber.hide_layer") : t("gerber.show_layer") }}
 							</button>
 						</div>
 					</div>
@@ -102,13 +102,13 @@
 							class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
 							<DocumentArrowUpIcon class="w-8 h-8 text-gray-400" />
 						</div>
-						<h4 class="text-gray-900 dark:text-white font-medium mb-1">Cargar Archivo de Ubicación</h4>
+						<h4 class="text-gray-900 dark:text-white font-medium mb-1">{{ t("gerber.upload_title") }}</h4>
 						<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-							Sube un archivo .csv, .txt, .pos o un .zip con archivos Gerber y coordenadas XY.
+							{{ t("gerber.upload_desc") }}
 						</p>
 						<label
 							class="px-4 py-2 bg-primary text-white rounded-lg font-bold cursor-pointer hover:bg-primary/90 transition-all inline-block">
-							Seleccionar Archivo
+							{{ t("gerber.select_file") }}
 							<input type="file" class="hidden" @change="handleFileUpload" accept=".csv,.txt,.pos,.zip" />
 						</label>
 					</div>
@@ -129,17 +129,17 @@
 					</defs>
 					<rect width="4000" height="4000" x="-2000" y="-2000" fill="url(#grid)" />
 
-					<!-- Gerber Layers (Simplified paths) -->
-					<g v-for="(layerPaths, fileName) in layers" :key="fileName">
+					<!-- Gerber Layers (Grouped paths for performance) -->
+					<g v-for="(layerData, fileName) in layers" :key="fileName">
 						<path
-							v-for="(p, i) in layerPaths"
-							:key="i"
-							:d="p.d"
+							:d="layerData.d"
 							fill="none"
 							stroke="currentColor"
-							:stroke-width="p.w"
+							stroke-width="0.2"
 							:class="getLayerClass(fileName)"
-							stroke-linecap="round" />
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							shape-rendering="optimizeSpeed" />
 					</g>
 
 					<!-- Components (Centroid Points) -->
@@ -207,6 +207,7 @@ import JSZip from "jszip";
 import { useDatabase } from "@/composables/useDatabase";
 import { useFileManager } from "@/composables/useFileManager";
 import { useNotifications } from "@/composables/useNotifications";
+import { useI18n } from "@/composables/useI18n";
 
 const props = defineProps<{
 	projectId?: string;
@@ -217,6 +218,7 @@ const emit = defineEmits(["close"]);
 const db = useDatabase();
 const { saveFile, getFileByName } = useFileManager();
 const { success: notifySuccess, error: notifyError, info: notifyInfo } = useNotifications();
+const { t } = useI18n();
 
 interface ComponentPos {
 	ref: string;
@@ -229,6 +231,16 @@ interface ComponentPos {
 const components = ref<ComponentPos[]>([]);
 const hoveredIndex = ref(-1);
 
+interface LayerData {
+	d: string;
+	bounds: {
+		minX: number;
+		maxX: number;
+		minY: number;
+		maxY: number;
+	};
+}
+
 // PCB Versions State
 const versions = ref<any[]>([]);
 const selectedVersionId = ref("");
@@ -237,7 +249,7 @@ const selectedVersionId = ref("");
 const zipFiles = ref<any[]>([]);
 const currentZip = ref<JSZip | null>(null);
 const coordinateFileName = ref("");
-const layers = ref<Record<string, any[]>>({});
+const layers = ref<Record<string, LayerData>>({});
 
 // Pan & Zoom State
 const zoom = ref(100); // viewBox width/height multiplier
@@ -282,7 +294,7 @@ const loadVersion = async () => {
 		}
 
 		if (!url) {
-			notifyError("Error", "No se pudo recuperar el archivo guardado");
+			notifyError(t("global.error"), t("gerber.error_recover"));
 			return;
 		}
 
@@ -293,7 +305,7 @@ const loadVersion = async () => {
 		await processFile(file, false);
 	} catch (error) {
 		console.error("Error loading version file:", error);
-		notifyError("Error", "Error al cargar la versión seleccionada");
+		notifyError(t("global.error"), t("gerber.error_load"));
 	}
 };
 
@@ -307,7 +319,7 @@ const handleFileUpload = async (event: Event) => {
 
 const selectZipFile = (name: string) => {
 	// Opcionalmente resaltar o mostrar info extra
-	notifyInfo("Archivo seleccionado", name);
+	notifyInfo(t("gerber.file_selected"), name);
 };
 
 const isCoordinateFile = (name: string) => {
@@ -345,12 +357,8 @@ const toggleLayer = async (name: string) => {
 
 	if (!currentZip.value) return;
 	const text = await currentZip.value.files[name].async("text");
-	const paths = parseGerberToSvg(text);
-	layers.value[name] = paths;
-
-	if (paths.length > 0) {
-		// autoCenter();
-	}
+	const result = parseGerberToSvg(text);
+	layers.value[name] = result;
 };
 
 const getLayerClass = (name: string) => {
@@ -394,7 +402,7 @@ const processFile = async (file: File, shouldSave: boolean) => {
 			}
 		} catch (error) {
 			console.error("Error leyendo ZIP:", error);
-			notifyError("Error", "Error al leer el archivo ZIP");
+			notifyError(t("global.error"), t("gerber.error_zip"));
 		}
 	} else {
 		const text = await file.text();
@@ -404,7 +412,7 @@ const processFile = async (file: File, shouldSave: boolean) => {
 				parseJsonCoordinates(data);
 				success = true;
 			} catch (e) {
-				notifyError("Error", "Error al parsear el archivo JSON");
+				notifyError(t("global.error"), t("gerber.error_json"));
 			}
 		} else {
 			parseCentroidFile(text);
@@ -421,9 +429,9 @@ const processFile = async (file: File, shouldSave: boolean) => {
 				filepath: file.name, // Guardamos el nombre del archivo para persistencia real en OPFS
 				file_type: file.type,
 				size: file.size,
-				title: `Versión PCB ${new Date().toLocaleString()}`,
+				title: t("gerber.pcb_version_title", { date: new Date().toLocaleString() }),
 			});
-			notifySuccess("Éxito", "Versión de PCB guardada en el proyecto");
+			notifySuccess(t("global.success"), t("gerber.success_save"));
 			await loadVersions();
 		} catch (error) {
 			console.error("Error saving PCB version:", error);
@@ -431,13 +439,11 @@ const processFile = async (file: File, shouldSave: boolean) => {
 	}
 };
 
-const parseGerberToSvg = (content: string) => {
-	const paths: any[] = [];
+const parseGerberToSvg = (content: string): LayerData => {
+	let combinedD = "";
 	const lines = content.split("\n");
 	let currentX = 0;
 	let currentY = 0;
-	let d = "";
-	let strokeWidth = 0.2;
 
 	// Gerber State
 	let unitFactor = 1; // 1 for mm, 25.4 for inches
@@ -445,20 +451,29 @@ const parseGerberToSvg = (content: string) => {
 	let formatY = { int: 2, dec: 4 };
 	let zeroSuppression = "leading"; // "leading" or "trailing"
 
+	let minX = Infinity,
+		maxX = -Infinity,
+		minY = Infinity,
+		maxY = -Infinity;
+
+	const updateBounds = (x: number, y: number) => {
+		minX = Math.min(minX, x);
+		maxX = Math.max(maxX, x);
+		minY = Math.min(minY, y);
+		maxY = Math.max(maxY, y);
+	};
+
 	const parseCoordinate = (coord: string, format: { int: number; dec: number }) => {
 		if (!coord) return 0;
 		const isNegative = coord.startsWith("-");
 		let val = coord.replace(/[-+]/, "");
 
 		if (zeroSuppression === "leading") {
-			// Add leading zeros if necessary
 			val = val.padStart(format.int + format.dec, "0");
 		} else {
-			// Add trailing zeros if necessary
 			val = val.padEnd(format.int + format.dec, "0");
 		}
 
-		// Insert decimal point
 		const splitPos = val.length - format.dec;
 		const result = parseFloat(val.slice(0, splitPos) + "." + val.slice(splitPos));
 		return (isNegative ? -result : result) * unitFactor;
@@ -478,7 +493,7 @@ const parseGerberToSvg = (content: string) => {
 			return;
 		}
 
-		// 2. Format Statement (%FSLAX24Y24*%)
+		// 2. Format Statement
 		const fsMatch = line.match(/%FS([LT])A?X(\d)(\d)Y(\d)(\d)/);
 		if (fsMatch) {
 			zeroSuppression = fsMatch[1] === "L" ? "leading" : "trailing";
@@ -496,28 +511,25 @@ const parseGerberToSvg = (content: string) => {
 			const y = yMatch ? parseCoordinate(yMatch[1], formatY) : currentY;
 
 			if (line.includes("D02") || (line.startsWith("G00") && !line.includes("D01"))) {
-				// Move to (Exposure off)
-				d += ` M ${x} ${-y}`;
+				combinedD += ` M ${x} ${-y}`;
 			} else if (line.includes("D01") || line.includes("G01") || line.includes("L")) {
-				// Line to (Exposure on)
-				if (!d.includes("M")) d = `M ${currentX} ${-currentY}` + d;
-				d += ` L ${x} ${-y}`;
+				// Asegurar que el path comience con un Move si está vacío
+				if (!combinedD) {
+					combinedD += ` M ${currentX} ${-currentY}`;
+				}
+				combinedD += ` L ${x} ${-y}`;
 			}
 
 			currentX = x;
 			currentY = y;
-		}
-
-		// End of command or flash
-		if (line.includes("*") || line.includes("D03")) {
-			if (d) {
-				paths.push({ d, w: strokeWidth });
-				d = "";
-			}
+			updateBounds(x, y);
 		}
 	});
 
-	return paths;
+	return {
+		d: combinedD,
+		bounds: { minX, maxX, minY, maxY },
+	};
 };
 
 const parseJsonCoordinates = (data: any[]) => {
@@ -629,22 +641,14 @@ const autoCenter = () => {
 		});
 	}
 
-	// Also consider layer bounds
-	Object.values(layers.value).forEach((paths: any) => {
-		paths.forEach((p: any) => {
-			// Extract coordinates from SVG path string "M x -y L x -y"
-			const coords = p.d.match(/[-+]?\d+\.?\d*/g);
-			if (coords) {
-				for (let i = 0; i < coords.length; i += 2) {
-					const x = parseFloat(coords[i]);
-					const y = -parseFloat(coords[i + 1]); // Convert back from SVG Y
-					minX = Math.min(minX, x);
-					maxX = Math.max(maxX, x);
-					minY = Math.min(minY, y);
-					maxY = Math.max(maxY, y);
-				}
-			}
-		});
+	// Use precalculated layer bounds (Much faster than regex)
+	(Object.values(layers.value) as LayerData[]).forEach((layer) => {
+		if (layer.bounds.minX !== Infinity) {
+			minX = Math.min(minX, layer.bounds.minX);
+			maxX = Math.max(maxX, layer.bounds.maxX);
+			minY = Math.min(minY, layer.bounds.minY);
+			maxY = Math.max(maxY, layer.bounds.maxY);
+		}
 	});
 
 	if (minX === Infinity) {

@@ -4,14 +4,14 @@
 		<!-- Header -->
 		<header class="h-20 px-8 flex items-center justify-between bg-background-light border-b border-gray-200">
 			<div>
-				<h1 class="text-2xl font-semibold text-text-main-light">Gestión de Proyectos</h1>
+				<h1 class="text-2xl font-semibold text-text-main-light">{{ t("project_management") }}</h1>
 			</div>
 			<div class="flex items-center gap-4">
 				<button
 					@click="showAddProjectModal = true"
 					class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<PlusIcon class="w-5 h-5" />
-					<span>Nuevo Proyecto</span>
+					<span>{{ t("new_project") }}</span>
 				</button>
 			</div>
 		</header>
@@ -26,7 +26,7 @@
 							<RectangleStackIcon class="w-6 h-6 text-purple-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Total Proyectos</p>
+							<p class="text-xs text-text-muted-light">{{ t("total_projects") }}</p>
 							<p class="text-3xl font-bold text-text-main-light">
 								{{ projects.length }}
 							</p>
@@ -40,7 +40,7 @@
 							<CheckCircleIcon class="w-6 h-6 text-green-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Proyectos Activos</p>
+							<p class="text-xs text-text-muted-light">{{ t("active_projects") }}</p>
 							<p class="text-3xl font-bold text-text-main-light">
 								{{ projects.length }}
 							</p>
@@ -54,7 +54,7 @@
 							<CurrencyDollarIcon class="w-6 h-6 text-blue-600" />
 						</div>
 						<div>
-							<p class="text-xs text-text-muted-light">Valor Total</p>
+							<p class="text-xs text-text-muted-light">{{ t("total_value") }}</p>
 							<p class="text-3xl font-bold text-text-main-light">{{ formatValue(totalValue) }}</p>
 						</div>
 					</div>
@@ -69,7 +69,7 @@
 					<input
 						v-model="searchQuery"
 						type="text"
-						placeholder="Buscar proyectos..."
+						:placeholder="t('search_projects')"
 						class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light" />
 				</div>
 			</div>
@@ -77,13 +77,13 @@
 			<!-- Projects Grid -->
 			<div v-if="filteredProjects.length === 0" class="bg-card-light rounded-2xl p-12 shadow-sm text-center">
 				<RectangleStackIcon class="w-16 h-16 mx-auto mb-4 text-gray-300" />
-				<h3 class="text-lg font-semibold text-text-main-light mb-2">No hay proyectos</h3>
-				<p class="text-text-muted-light mb-6">Comienza creando tu primer proyecto</p>
+				<h3 class="text-lg font-semibold text-text-main-light mb-2">{{ t("no_projects") }}</h3>
+				<p class="text-text-muted-light mb-6">{{ t("start_creating_project") }}</p>
 				<button
 					@click="showAddProjectModal = true"
 					class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
 					<PlusIcon class="w-5 h-5" />
-					<span>Crear Proyecto</span>
+					<span>{{ t("create_project") }}</span>
 				</button>
 			</div>
 
@@ -118,6 +118,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { useI18n } from "@/composables/useI18n";
 import {
 	CpuChipIcon,
 	Squares2X2Icon,
@@ -158,6 +159,7 @@ const { showConfirmation } = useDialog();
 // Definir metadatos de la página
 // Esta macro está disponible globalmente en Nuxt 3
 const router = useRouter();
+const { t, lang } = useI18n();
 
 // State
 const projects = ref<any[]>([]);
@@ -167,7 +169,7 @@ const editingProject = ref<any>(null);
 
 // Computed
 const totalValue = computed(() => {
-	return projects.value.reduce((sum, project) => sum + (project.totalValue || 0), 0);
+	return projects.value.reduce((sum: number, project: any) => sum + (project.totalValue || 0), 0);
 });
 
 // Computed
@@ -176,7 +178,8 @@ const filteredProjects = computed(() => {
 
 	const query = searchQuery.value.toLowerCase();
 	return projects.value.filter(
-		(project) => project.name?.toLowerCase().includes(query) || project.description?.toLowerCase().includes(query),
+		(project: any) =>
+			project.name?.toLowerCase().includes(query) || project.description?.toLowerCase().includes(query),
 	);
 });
 
@@ -252,7 +255,9 @@ const closeModal = () => {
 
 const formatDate = (dateString: string) => {
 	try {
-		return format(new Date(dateString), "dd MMM yyyy", { locale: es });
+		return format(new Date(dateString), "dd MMM yyyy", {
+			locale: lang.value === "es" ? es : undefined,
+		});
 	} catch {
 		return dateString;
 	}

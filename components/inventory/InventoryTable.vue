@@ -12,36 +12,36 @@
 								class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Nombre
+							{{ t("name") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Descripción
+							{{ t("description") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Categoría
+							{{ t("category") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Proveedor
+							{{ t("supplier") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">LCSC</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Precio Ud.
+							{{ t("unit_price") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">Total</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Cantidad Inicial
+							{{ t("initial_quantity") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Stock Actual
+							{{ t("current_stock") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Min Stock
+							{{ t("min_stock_header") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Proyecto
+							{{ t("project") }}
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-text-muted-light uppercase">
-							Acciones
+							{{ t("actions") }}
 						</th>
 					</tr>
 				</thead>
@@ -79,7 +79,7 @@
 									v-if="item.lcsc_part"
 									@click="copyToClipboard(item.lcsc_part)"
 									class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs font-medium hover:bg-green-200 transition-colors"
-									title="Copiar al portapapeles">
+									:title="t('copy_to_clipboard')">
 									{{ item.lcsc_part }}
 								</button>
 								<span v-else class="text-sm text-text-muted-light">-</span>
@@ -151,12 +151,12 @@
 				<button
 					@click="deleteSelectedItems"
 					class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none">
-					Eliminar Seleccionados
+					{{ t("delete_selected") }}
 				</button>
 				<button
 					@click="showAssignProjectModal = true"
 					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none">
-					Asignar a Proyecto
+					{{ t("assign_to_project") }}
 				</button>
 			</div>
 		</div>
@@ -183,6 +183,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { ref, watch } from "vue";
 import { useNotifications } from "@/composables/useNotifications";
+import { useI18n } from "@/composables/useI18n";
 import AssignProjectModal from "@/components/AssignProjectModal.vue";
 
 interface InventoryItem {
@@ -229,6 +230,7 @@ const emit = defineEmits<{
 	"items-assigned-to-project": [projectId: string];
 }>();
 
+const { t } = useI18n();
 const selectedItems = ref<string[]>([]);
 const selectAll = ref(false);
 const showAssignProjectModal = ref(false);
@@ -236,7 +238,7 @@ const showAssignProjectModal = ref(false);
 const toggleSelectAll = () => {
 	selectAll.value = !selectAll.value;
 	if (selectAll.value) {
-		selectedItems.value = props.items.map((item) => item.id);
+		selectedItems.value = props.items.map((item: InventoryItem) => item.id);
 	} else {
 		selectedItems.value = [];
 	}
@@ -244,7 +246,7 @@ const toggleSelectAll = () => {
 
 const toggleSelect = (id: string) => {
 	if (selectedItems.value.includes(id)) {
-		selectedItems.value = selectedItems.value.filter((i) => i !== id);
+		selectedItems.value = selectedItems.value.filter((i: string) => i !== id);
 	} else {
 		selectedItems.value = [...selectedItems.value, id];
 	}
@@ -295,11 +297,11 @@ const { success, error: showError, warning, info } = useNotifications();
 const copyToClipboard = (value: string) => {
 	navigator.clipboard.writeText(value).then(
 		() => {
-			info("Copiado", "LCSC Part Number copiado al portapapeles");
+			info(t("copied_to_clipboard"), "LCSC Part Number");
 		},
 		(err) => {
 			console.error("Failed to copy: ", err);
-			showError("Error", "No se pudo copiar al portapapeles");
+			showError(t("error"), "No se pudo copiar al portapapeles");
 		},
 	);
 };
@@ -307,7 +309,7 @@ const copyToClipboard = (value: string) => {
 // Actualizar selectAll cuando cambia el número de elementos seleccionados
 watch(
 	selectedItems,
-	(newSelected, oldSelected) => {
+	(newSelected: string[], oldSelected: string[]) => {
 		// Esta lógica ahora está en toggleSelect
 	},
 	{ immediate: true },
