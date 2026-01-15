@@ -253,6 +253,11 @@ const toggleSelect = (id: string) => {
 	selectAll.value = selectedItems.value.length === props.items.length && props.items.length > 0;
 };
 
+const clearSelection = () => {
+	selectedItems.value = [];
+	selectAll.value = false;
+};
+
 const deleteSelectedItems = () => {
 	// Emitir un evento para que el componente padre maneje la eliminación de múltiples items
 	const itemsToDelete = [...selectedItems.value];
@@ -307,6 +312,12 @@ watch(
 	},
 	{ immediate: true },
 );
+
+// Exponer para que el padre pueda acceder a los seleccionados
+defineExpose({
+	selectedItems,
+	clearSelection,
+});
 
 // Función para obtener clase de color según estado de stock
 const getStockRowClass = (in_stock: number | undefined, min_stock: number | undefined) => {

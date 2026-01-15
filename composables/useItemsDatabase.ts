@@ -1,29 +1,29 @@
-import { useDatabaseAdapter } from '@/composables/useDatabaseAdapter';
-import { useActivityDatabase } from '@/composables/useActivityDatabase';
-import { useFilesDatabase } from '@/composables/useFilesDatabase';
-import { useFileManager } from '@/composables/useFileManager';
-import { useStockMovementsDatabase } from '@/composables/useStockMovementsDatabase';
-import type { BOMItem } from '@/types/bom';
-import type { Database } from '@/types/database';
-import { convertBomItemToSnake } from '@/composables/useDatabaseUtils';
+import { useDatabaseAdapter } from "@/composables/useDatabaseAdapter";
+import { useActivityDatabase } from "@/composables/useActivityDatabase";
+import { useFilesDatabase } from "@/composables/useFilesDatabase";
+import { useFileManager } from "@/composables/useFileManager";
+import { useStockMovementsDatabase } from "@/composables/useStockMovementsDatabase";
+import type { BOMItem } from "@/types/bom";
+import type { Database } from "@/types/database";
+import { convertBomItemToSnake } from "@/composables/useDatabaseUtils";
 
 // Función para generar IDs únicos
 const generateId = (): string => {
-    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
+	return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).substr(2, 9);
 };
 
 export const useItemsDatabase = () => {
-    const { getDatabase } = useDatabaseAdapter();
-    const { logActivity } = useActivityDatabase();
-    const { logMovement } = useStockMovementsDatabase();
+	const { getDatabase } = useDatabaseAdapter();
+	const { logActivity } = useActivityDatabase();
+	const { logMovement } = useStockMovementsDatabase();
 
-    // Métodos para items
-    const getAllItems = async () => {
-        const database = await getDatabase();
-        if (!database) return [];
+	// Métodos para items
+	const getAllItems = async () => {
+		const database = await getDatabase();
+		if (!database) return [];
 
-        try {
-            const result = await database.select<any[]>(`
+		try {
+			const result = await database.select<any[]>(`
                 SELECT 
                     bi.*, 
                     p.name as project_name
@@ -32,408 +32,436 @@ export const useItemsDatabase = () => {
                 LEFT JOIN projects p ON pi.project_id = p.id
                 ORDER BY bi.created_at DESC
             `);
-            return result;
-        } catch (error) {
-            console.error('Error obteniendo items:', error);
-            return [];
-        }
-    };
+			return result;
+		} catch (error) {
+			console.error("Error obteniendo items:", error);
+			return [];
+		}
+	};
 
-    const getItemById = async (id: string) => {
-        const database = await getDatabase();
-        if (!database) return null;
+	const getItemById = async (id: string) => {
+		const database = await getDatabase();
+		if (!database) return null;
 
-        try {
-            const result = await database.select<any[]>('SELECT * FROM bom_items WHERE id = ?', [id]);
-            return result.length > 0 ? result[0] : null;
-        } catch (error) {
-            console.error('Error obteniendo item:', error);
-            return null;
-        }
-    };
+		try {
+			const result = await database.select<any[]>("SELECT * FROM bom_items WHERE id = ?", [id]);
+			return result.length > 0 ? result[0] : null;
+		} catch (error) {
+			console.error("Error obteniendo item:", error);
+			return null;
+		}
+	};
 
-    const createItem = async (item: Partial<BOMItem>) => {
-        const database = await getDatabase();
-        if (!database) return null;
+	const createItem = async (item: Partial<BOMItem>) => {
+		const database = await getDatabase();
+		if (!database) return null;
 
-        try {
-            const id = generateId();
-            const now = new Date().toISOString();
+		try {
+			const id = generateId();
+			const now = new Date().toISOString();
 
-            // Convertir los campos de camelCase a snake_case para la base de datos
-            const itemForDb = convertBomItemToSnake(item);
+			// Convertir los campos de camelCase a snake_case para la base de datos
+			const itemForDb = convertBomItemToSnake(item);
 
-            await database.execute(
-                `INSERT INTO bom_items (id, name, description, quantity, category, supplier, 
+			await database.execute(
+				`INSERT INTO bom_items (id, name, description, quantity, category, supplier, 
          part_number, lcsc_part, price, in_stock, min_stock, notes, created_at, updated_at, manufacturer, 
          customer_no, package, rohs, ext_price, lead_time, date_code_lot_no, status, pcb_designation, item_image) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-                ,
-                [
-                    id,
-                    itemForDb.name || '',
-                    itemForDb.description || null,
-                    itemForDb.quantity || 0,
-                    itemForDb.category || null,
-                    itemForDb.supplier || null,
-                    itemForDb.part_number || null,
-                    itemForDb.lcsc_part || null,
-                    itemForDb.price || null,
-                    itemForDb.in_stock !== undefined && itemForDb.in_stock !== null ? itemForDb.in_stock : 0,
-                    itemForDb.min_stock || null,
-                    itemForDb.notes || null,
-                    now,
-                    now,
-                    itemForDb.manufacturer || null,
-                    itemForDb.customer_no || null,
-                    itemForDb.package || null,
-                    itemForDb.rohs || null,
-                    itemForDb.ext_price || null,
-                    itemForDb.lead_time || null,
-                    itemForDb.date_code_lot_no || null,
-                    itemForDb.status || null,
-                    itemForDb.pcb_designation || null,
-                    itemForDb.item_image || null
-                ]
-            );
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				[
+					id,
+					itemForDb.name || "",
+					itemForDb.description || null,
+					itemForDb.quantity || 0,
+					itemForDb.category || null,
+					itemForDb.supplier || null,
+					itemForDb.part_number || null,
+					itemForDb.lcsc_part || null,
+					itemForDb.price || null,
+					itemForDb.in_stock !== undefined && itemForDb.in_stock !== null ? itemForDb.in_stock : 0,
+					itemForDb.min_stock || null,
+					itemForDb.notes || null,
+					now,
+					now,
+					itemForDb.manufacturer || null,
+					itemForDb.customer_no || null,
+					itemForDb.package || null,
+					itemForDb.rohs || null,
+					itemForDb.ext_price || null,
+					itemForDb.lead_time || null,
+					itemForDb.date_code_lot_no || null,
+					itemForDb.status || null,
+					itemForDb.pcb_designation || null,
+					itemForDb.item_image || null,
+				],
+			);
 
-            // Registrar actividad
-            await logActivity('CREATE', 'bom_items', id, `Item '${item.name || 'sin nombre'}' creado`);
+			// Registrar actividad
+			await logActivity("CREATE", "bom_items", id, `Item '${item.name || "sin nombre"}' creado`);
 
-            // Registrar movimiento inicial de stock si hay stock
-            const inStock = itemForDb.in_stock !== undefined && itemForDb.in_stock !== null ? itemForDb.in_stock : 0;
-            if (inStock > 0) {
-                await logMovement({
-                    item_id: id,
-                    type: 'IN',
-                    quantity: inStock,
-                    previous_stock: 0,
-                    new_stock: inStock,
-                    reason: 'Stock inicial al crear item'
-                });
-            }
+			// Registrar movimiento inicial de stock si hay stock
+			const inStock = itemForDb.in_stock !== undefined && itemForDb.in_stock !== null ? itemForDb.in_stock : 0;
+			if (inStock > 0) {
+				await logMovement({
+					item_id: id,
+					type: "IN",
+					quantity: inStock,
+					previous_stock: 0,
+					new_stock: inStock,
+					reason: "Stock inicial al crear item",
+				});
+			}
 
-            return id;
-        } catch (error) {
-            console.error('Error creando item:', error);
-            return null;
-        }
-    };
+			return id;
+		} catch (error) {
+			console.error("Error creando item:", error);
+			return null;
+		}
+	};
 
-    const updateItem = async (id: string, item: Partial<BOMItem>) => {
-        const database = await getDatabase();
-        if (!database) return false;
+	const updateItem = async (id: string, item: Partial<BOMItem>) => {
+		const database = await getDatabase();
+		if (!database) return false;
 
-        try {
-            const now = new Date().toISOString();
+		try {
+			const now = new Date().toISOString();
 
-            // Convertir los campos de camelCase a snake_case para la base de datos
-            const itemForDb = convertBomItemToSnake(item);
+			// Convertir los campos de camelCase a snake_case para la base de datos
+			const itemForDb = convertBomItemToSnake(item);
 
-            await database.execute(
-                `UPDATE bom_items SET name = ?, description = ?, quantity = ?, category = ?,
+			await database.execute(
+				`UPDATE bom_items SET name = ?, description = ?, quantity = ?, category = ?,
          supplier = ?, part_number = ?, lcsc_part = ?, price = ?, in_stock = ?, min_stock = ?,
          notes = ?, updated_at = ?, manufacturer = ?, customer_no = ?, package = ?,
          rohs = ?, ext_price = ?, lead_time = ?, date_code_lot_no = ?, status = ?, pcb_designation = ?, item_image = ? WHERE id = ?`,
-                [
-                    itemForDb.name,
-                    itemForDb.description,
-                    itemForDb.quantity,
-                    itemForDb.category,
-                    itemForDb.supplier,
-                    itemForDb.part_number,
-                    itemForDb.lcsc_part,
-                    itemForDb.price,
-                    itemForDb.in_stock,
-                    itemForDb.min_stock,
-                    itemForDb.notes,
-                    now,
-                    itemForDb.manufacturer,
-                    itemForDb.customer_no,
-                    itemForDb.package,
-                    itemForDb.rohs,
-                    itemForDb.ext_price,
-                    itemForDb.lead_time,
-                    itemForDb.date_code_lot_no,
-                    itemForDb.status,
-                    itemForDb.pcb_designation,
-                    itemForDb.item_image,
-                    id
-                ]
-            );
+				[
+					itemForDb.name,
+					itemForDb.description,
+					itemForDb.quantity,
+					itemForDb.category,
+					itemForDb.supplier,
+					itemForDb.part_number,
+					itemForDb.lcsc_part,
+					itemForDb.price,
+					itemForDb.in_stock,
+					itemForDb.min_stock,
+					itemForDb.notes,
+					now,
+					itemForDb.manufacturer,
+					itemForDb.customer_no,
+					itemForDb.package,
+					itemForDb.rohs,
+					itemForDb.ext_price,
+					itemForDb.lead_time,
+					itemForDb.date_code_lot_no,
+					itemForDb.status,
+					itemForDb.pcb_designation,
+					itemForDb.item_image,
+					id,
+				],
+			);
 
-            // Registrar actividad
-            await logActivity('UPDATE', 'bom_items', id, `Item '${item.name || 'sin nombre'}' actualizado`);
+			// Registrar actividad
+			await logActivity("UPDATE", "bom_items", id, `Item '${item.name || "sin nombre"}' actualizado`);
 
-            return true;
-        } catch (error) {
-            console.error('Error actualizando item:', error);
-            return false;
-        }
-    };
+			return true;
+		} catch (error) {
+			console.error("Error actualizando item:", error);
+			return false;
+		}
+	};
 
-    const deleteItem = async (id: string) => {
-        const database = await getDatabase();
-        if (!database) return false;
+	const deleteItem = async (id: string) => {
+		const database = await getDatabase();
+		if (!database) return false;
 
-        const { deleteFilesByItemId, getFilesByItemId } = useFilesDatabase();
-        const { deleteFile: deletePhysicalFile } = useFileManager();
+		const { deleteFilesByItemId, getFilesByItemId } = useFilesDatabase();
+		const { deleteFile: deletePhysicalFile } = useFileManager();
 
-        try {
-            // Registrar actividad antes de eliminar
-            const item = await getItemById(id);
+		try {
+			// Registrar actividad antes de eliminar
+			const item = await getItemById(id);
 
-            // Obtener y eliminar archivos físicos asociados
-            const files = await getFilesByItemId(id);
-            for (const file of files) {
-                try {
-                    await deletePhysicalFile(file);
-                } catch (err) {
-                    console.error(`Error deleting physical file ${file.filename}:`, err);
-                }
-            }
+			// Obtener y eliminar archivos físicos asociados
+			const files = await getFilesByItemId(id);
+			for (const file of files) {
+				try {
+					await deletePhysicalFile(file);
+				} catch (err) {
+					console.error(`Error deleting physical file ${file.filename}:`, err);
+				}
+			}
 
-            // Eliminar registros de archivos de la DB
-            await deleteFilesByItemId(id);
+			// Eliminar registros de archivos de la DB
+			await deleteFilesByItemId(id);
 
-            // Eliminar el item
-            await database.execute('DELETE FROM bom_items WHERE id = ?', [id]);
+			// Eliminar el item
+			await database.execute("DELETE FROM bom_items WHERE id = ?", [id]);
 
-            // Registrar actividad
-            await logActivity('DELETE', 'bom_items', id, `Item '${item?.name || 'sin nombre'}' eliminado`);
+			// Registrar actividad
+			await logActivity("DELETE", "bom_items", id, `Item '${item?.name || "sin nombre"}' eliminado`);
 
-            return true;
-        } catch (error) {
-            console.error('Error eliminando item:', error);
-            return false;
-        }
-    };
+			return true;
+		} catch (error) {
+			console.error("Error eliminando item:", error);
+			return false;
+		}
+	};
 
-    // Método para actualizar stock de items
-    const updateItemStock = async (id: string, newStock: number, reason?: string) => {
-        const database = await getDatabase();
-        if (!database) return false;
+	// Método para actualizar stock de items
+	const updateItemStock = async (id: string, newStock: number, reason?: string) => {
+		const database = await getDatabase();
+		if (!database) return false;
 
-        try {
-            const currentItem = await getItemById(id);
-            const previousStock = currentItem?.in_stock || 0;
-            const now = new Date().toISOString();
+		try {
+			const currentItem = await getItemById(id);
+			const previousStock = currentItem?.in_stock || 0;
+			const now = new Date().toISOString();
 
-            await database.execute(
-                'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
-                [newStock, now, id]
-            );
+			await database.execute("UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?", [
+				newStock,
+				now,
+				id,
+			]);
 
-            // Registrar movimiento
-            const quantity = Math.abs(newStock - previousStock);
-            const type = newStock > previousStock ? 'IN' : 'OUT';
+			// Registrar movimiento
+			const quantity = Math.abs(newStock - previousStock);
+			const type = newStock > previousStock ? "IN" : "OUT";
 
-            await logMovement({
-                item_id: id,
-                type: type,
-                quantity: quantity,
-                previous_stock: previousStock,
-                new_stock: newStock,
-                reason: reason || 'Ajuste manual de stock'
-            });
+			await logMovement({
+				item_id: id,
+				type: type,
+				quantity: quantity,
+				previous_stock: previousStock,
+				new_stock: newStock,
+				reason: reason || "Ajuste manual de stock",
+			});
 
-            // Obtener el nombre del item para registrar la actividad
-            await logActivity('UPDATE', 'bom_items', id, `Stock de ${currentItem?.name || 'item'} actualizado a ${newStock}`);
+			// Obtener el nombre del item para registrar la actividad
+			await logActivity(
+				"UPDATE",
+				"bom_items",
+				id,
+				`Stock de ${currentItem?.name || "item"} actualizado a ${newStock}`,
+			);
 
-            return true;
-        } catch (error) {
-            console.error('Error actualizando stock de item:', error);
-            return false;
-        }
-    };
+			return true;
+		} catch (error) {
+			console.error("Error actualizando stock de item:", error);
+			return false;
+		}
+	};
 
-    // Método para descontar stock de items basado en un BOM
-    const consumeStockFromBOM = async (bomItems: { id: string; quantity: number }[]) => {
-        const database = await getDatabase();
-        if (!database) return { success: false, message: 'No se pudo acceder a la base de datos' };
+	// Método para descontar stock de items basado en un BOM
+	const consumeStockFromBOM = async (bomItems: { id: string; quantity: number }[]) => {
+		const database = await getDatabase();
+		if (!database) return { success: false, message: "No se pudo acceder a la base de datos" };
 
-        try {
-            // Comenzar transacción
-            await database.execute('BEGIN TRANSACTION');
+		try {
+			// Comenzar transacción
+			await database.execute("BEGIN TRANSACTION");
 
-            const errors: string[] = [];
-            const now = new Date().toISOString();
+			const errors: string[] = [];
+			const now = new Date().toISOString();
 
-            for (const bomItem of bomItems) {
-                // Obtener el item
-                const currentItem = await getItemById(bomItem.id);
-                if (!currentItem) {
-                    errors.push(`Item con ID ${bomItem.id} no encontrado`);
-                    continue;
-                }
+			for (const bomItem of bomItems) {
+				// Obtener el item
+				const currentItem = await getItemById(bomItem.id);
+				if (!currentItem) {
+					errors.push(`Item con ID ${bomItem.id} no encontrado`);
+					continue;
+				}
 
-                // Descontar la cantidad requerida del stock actual
-                const newStock = (currentItem.in_stock || 0) - bomItem.quantity;
-                if (newStock < 0) {
-                    errors.push(`Stock insuficiente para ${currentItem.name}. Requerido: ${bomItem.quantity}, Disponible: ${currentItem.in_stock || 0}`);
-                    continue;
-                }
+				// Descontar la cantidad requerida del stock actual
+				const newStock = (currentItem.in_stock || 0) - bomItem.quantity;
+				if (newStock < 0) {
+					errors.push(
+						`Stock insuficiente para ${currentItem.name}. Requerido: ${bomItem.quantity}, Disponible: ${
+							currentItem.in_stock || 0
+						}`,
+					);
+					continue;
+				}
 
-                await database.execute(
-                    'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
-                    [newStock, now, bomItem.id]
-                );
+				await database.execute("UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?", [
+					newStock,
+					now,
+					bomItem.id,
+				]);
 
-                // Registrar movimiento
-                await logMovement({
-                    item_id: bomItem.id,
-                    type: 'OUT',
-                    quantity: bomItem.quantity,
-                    previous_stock: currentItem.in_stock || 0,
-                    new_stock: newStock,
-                    reason: 'Consumo por proyecto'
-                });
+				// Registrar movimiento
+				await logMovement({
+					item_id: bomItem.id,
+					type: "OUT",
+					quantity: bomItem.quantity,
+					previous_stock: currentItem.in_stock || 0,
+					new_stock: newStock,
+					reason: "Consumo por proyecto",
+				});
 
-                // Registrar actividad
-                await logActivity('UPDATE', 'bom_items', bomItem.id, `Stock de ${currentItem.name} actualizado de ${(currentItem.in_stock || 0)} a ${newStock}`);
-            }
+				// Registrar actividad
+				await logActivity(
+					"UPDATE",
+					"bom_items",
+					bomItem.id,
+					`Stock de ${currentItem.name} actualizado de ${currentItem.in_stock || 0} a ${newStock}`,
+				);
+			}
 
-            if (errors.length > 0) {
-                // Si hay errores, hacer rollback
-                await database.execute('ROLLBACK');
-                return { success: false, message: errors.join('; ') };
-            } else {
-                // Si no hay errores, hacer commit
-                await database.execute('COMMIT');
-                return { success: true, message: 'Stock actualizado correctamente' };
-            }
-        } catch (error) {
-            // En caso de error, hacer rollback
-            await database.execute('ROLLBACK');
-            console.error('Error descontando stock:', error);
-            return { success: false, message: `Error al descontar stock: ${(error as Error).message}` };
-        }
-    };
+			if (errors.length > 0) {
+				// Si hay errores, hacer rollback
+				await database.execute("ROLLBACK");
+				return { success: false, message: errors.join("; ") };
+			} else {
+				// Si no hay errores, hacer commit
+				await database.execute("COMMIT");
+				return { success: true, message: "Stock actualizado correctamente" };
+			}
+		} catch (error) {
+			// En caso de error, hacer rollback
+			await database.execute("ROLLBACK");
+			console.error("Error descontando stock:", error);
+			return { success: false, message: `Error al descontar stock: ${(error as Error).message}` };
+		}
+	};
 
-    // Método para agregar stock a items
-    const addStockToItems = async (stockUpdates: { id: string; quantity: number }[]) => {
-        const database = await getDatabase();
-        if (!database) return { success: false, message: 'No se pudo acceder a la base de datos' };
+	// Método para agregar stock a items
+	const addStockToItems = async (stockUpdates: { id: string; quantity: number }[]) => {
+		const database = await getDatabase();
+		if (!database) return { success: false, message: "No se pudo acceder a la base de datos" };
 
-        try {
-            // Comenzar transacción
-            await database.execute('BEGIN TRANSACTION');
+		try {
+			// Comenzar transacción
+			await database.execute("BEGIN TRANSACTION");
 
-            const errors: string[] = [];
-            const now = new Date().toISOString();
+			const errors: string[] = [];
+			const now = new Date().toISOString();
 
-            for (const update of stockUpdates) {
-                // Obtener el item
-                const currentItem = await getItemById(update.id);
-                if (!currentItem) {
-                    errors.push(`Item con ID ${update.id} no encontrado`);
-                    continue;
-                }
+			for (const update of stockUpdates) {
+				// Obtener el item
+				const currentItem = await getItemById(update.id);
+				if (!currentItem) {
+					errors.push(`Item con ID ${update.id} no encontrado`);
+					continue;
+				}
 
-                // Agregar la cantidad al stock actual
-                const currentStock = (currentItem.in_stock || 0);
-                const newStock = currentStock + update.quantity;
+				// Agregar la cantidad al stock actual
+				const currentStock = currentItem.in_stock || 0;
+				const newStock = currentStock + update.quantity;
 
-                await database.execute(
-                    'UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?',
-                    [newStock, now, update.id]
-                );
+				await database.execute("UPDATE bom_items SET in_stock = ?, updated_at = ? WHERE id = ?", [
+					newStock,
+					now,
+					update.id,
+				]);
 
-                // Registrar movimiento
-                await logMovement({
-                    item_id: update.id,
-                    type: 'IN',
-                    quantity: update.quantity,
-                    previous_stock: currentStock,
-                    new_stock: newStock,
-                    reason: 'Entrada de stock (Importación/Añadido)'
-                });
+				// Registrar movimiento
+				await logMovement({
+					item_id: update.id,
+					type: "IN",
+					quantity: update.quantity,
+					previous_stock: currentStock,
+					new_stock: newStock,
+					reason: "Entrada de stock (Importación/Añadido)",
+				});
 
-                // Registrar actividad
-                await logActivity('UPDATE', 'bom_items', update.id, `Stock de ${currentItem.name} actualizado de ${currentStock} a ${newStock}`);
-            }
+				// Registrar actividad
+				await logActivity(
+					"UPDATE",
+					"bom_items",
+					update.id,
+					`Stock de ${currentItem.name} actualizado de ${currentStock} a ${newStock}`,
+				);
+			}
 
-            if (errors.length > 0) {
-                // Si hay errores, hacer rollback
-                await database.execute('ROLLBACK');
-                return { success: false, message: errors.join('; ') };
-            } else {
-                // Si no hay errores, hacer commit
-                await database.execute('COMMIT');
-                return { success: true, message: 'Stock actualizado correctamente' };
-            }
-        } catch (error) {
-            // En caso de error, hacer rollback
-            await database.execute('ROLLBACK');
-            console.error('Error agregando stock:', error);
-            return { success: false, message: `Error al agregar stock: ${(error as Error).message}` };
-        }
-    };
+			if (errors.length > 0) {
+				// Si hay errores, hacer rollback
+				await database.execute("ROLLBACK");
+				return { success: false, message: errors.join("; ") };
+			} else {
+				// Si no hay errores, hacer commit
+				await database.execute("COMMIT");
+				return { success: true, message: "Stock actualizado correctamente" };
+			}
+		} catch (error) {
+			// En caso de error, hacer rollback
+			await database.execute("ROLLBACK");
+			console.error("Error agregando stock:", error);
+			return { success: false, message: `Error al agregar stock: ${(error as Error).message}` };
+		}
+	};
 
-    // Método para obtener items con bajo stock
-    const getLowStockItems = async () => {
-        const database = await getDatabase();
-        if (!database) return [];
+	// Método para obtener items con bajo stock
+	const getLowStockItems = async () => {
+		const database = await getDatabase();
+		if (!database) return [];
 
-        try {
-            // Devolver items donde el stock actual es menor o igual al stock mínimo
-            const result = await database.select<any[]>(
-                'SELECT * FROM bom_items WHERE in_stock IS NOT NULL AND min_stock IS NOT NULL AND in_stock <= min_stock'
-            );
-            return result;
-        } catch (error) {
-            console.error('Error obteniendo items con bajo stock:', error);
-            return [];
-        }
-    };
+		try {
+			// Devolver items donde el stock actual es menor o igual al stock mínimo
+			const result = await database.select<any[]>(
+				"SELECT * FROM bom_items WHERE in_stock IS NOT NULL AND min_stock IS NOT NULL AND in_stock <= min_stock",
+			);
+			return result;
+		} catch (error) {
+			console.error("Error obteniendo items con bajo stock:", error);
+			return [];
+		}
+	};
 
-    // Método para obtener archivos asociados a un item
-    const getFilesByItem = async (itemId: string) => {
-        const { getFilesByItemId } = useFilesDatabase();
-        return await getFilesByItemId(itemId);
-    };
+	// Método para obtener archivos asociados a un item
+	const getFilesByItem = async (itemId: string) => {
+		const { getFilesByItemId } = useFilesDatabase();
+		return await getFilesByItemId(itemId);
+	};
 
-    // Método para obtener solo archivos PDF asociados a un item
-    const getPdfFilesByItem = async (itemId: string) => {
-        const files = await getFilesByItem(itemId);
-        return files.filter(file => file.file_type === 'application/pdf');
-    };
+	// Método para obtener solo archivos PDF asociados a un item
+	const getPdfFilesByItem = async (itemId: string) => {
+		const files = await getFilesByItem(itemId);
+		return files.filter((file) => file.file_type === "application/pdf");
+	};
 
-    // Método para buscar un item por sus referencias (Part Number o LCSC Part)
-    const findItemByReference = async (partNumber?: string, lcscPart?: string) => {
-        const database = await getDatabase();
-        if (!database) return null;
+	// Método para buscar un item por sus referencias (Part Number o LCSC Part o Nombre)
+	const findItemByReference = async (partNumber?: string, lcscPart?: string, name?: string) => {
+		const database = await getDatabase();
+		if (!database) return null;
 
-        try {
-            if (lcscPart) {
-                const result = await database.select<any[]>('SELECT * FROM bom_items WHERE lcsc_part = ?', [lcscPart]);
-                if (result.length > 0) return result[0];
-            }
+		try {
+			if (lcscPart) {
+				const result = await database.select<any[]>("SELECT * FROM bom_items WHERE lcsc_part = ?", [lcscPart]);
+				if (result.length > 0) return result[0];
+			}
 
-            if (partNumber) {
-                const result = await database.select<any[]>('SELECT * FROM bom_items WHERE part_number = ?', [partNumber]);
-                if (result.length > 0) return result[0];
-            }
+			if (partNumber) {
+				const result = await database.select<any[]>("SELECT * FROM bom_items WHERE part_number = ?", [
+					partNumber,
+				]);
+				if (result.length > 0) return result[0];
+			}
 
-            return null;
-        } catch (error) {
-            console.error('Error buscando item por referencia:', error);
-            return null;
-        }
-    };
+			if (name) {
+				const result = await database.select<any[]>("SELECT * FROM bom_items WHERE name = ?", [name]);
+				if (result.length > 0) return result[0];
+			}
 
-    return {
-        getAllItems,
-        getItemById,
-        createItem,
-        updateItem,
-        deleteItem,
-        updateItemStock,
-        consumeStockFromBOM,
-        addStockToItems,
-        getLowStockItems,
-        getFilesByItem,
-        getPdfFilesByItem,
-        findItemByReference
-    };
+			return null;
+		} catch (error) {
+			console.error("Error buscando item por referencia:", error);
+			return null;
+		}
+	};
+
+	return {
+		getAllItems,
+		getItemById,
+		createItem,
+		updateItem,
+		deleteItem,
+		updateItemStock,
+		consumeStockFromBOM,
+		addStockToItems,
+		getLowStockItems,
+		getFilesByItem,
+		getPdfFilesByItem,
+		findItemByReference,
+	};
 };

@@ -175,23 +175,29 @@
 		@close="handleEditItemClose"
 		@save="handleEditItemSave" />
 
-	<!-- Toast Notification -->
-	<Toast :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
+	<!-- Confirm Dialog Modal -->
+	<ConfirmDialog
+		:is-open="confirmDialog.isOpen.value"
+		:options="confirmDialog.options.value"
+		@confirm="confirmDialog.handleConfirm"
+		@cancel="confirmDialog.handleCancel" />
 
 	<!-- Import Modal -->
 	<ImportModal
 		v-if="showImportModal"
 		:show="showImportModal"
-		:projectId="route.params.id as string"
+		:projectId="String(route.params.id)"
 		@close="importStore.setShowImportModal(false)"
-		@notification="(data) => showToastMessage(data.message, data.type)"
+		@notification="(data) => notifyInfo(data.message)"
 		@file-selected-to-project="handleImportToProject"
 		@import-completed="handleImportCompleted" />
 
 	<!-- Gerber/XY Visualizer Overlay -->
 	<div v-if="showGerberVisualizer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-		<div class="w-full h-full max-w-6xl max-h-[85vh]">
-			<GerberVisualizer @close="showGerberVisualizer = false" />
+		<div class="w-full h-full">
+			<GerberVisualizer
+				:project-id="String(route.params.id)"
+				@close="showGerberVisualizer = false" />
 		</div>
 	</div>
 </template>
@@ -233,9 +239,11 @@ import AddItemToProjectModal from "@/components/AddItemToProjectModal.vue";
 import EditItemInProjectModal from "@/components/EditItemInProjectModal.vue";
 import ProjectItemsTable from "@/components/project/ProjectItemsTable.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
-import Toast from "@/components/Toast.vue";
+import ConfirmDialog from "@/components/global/ConfirmDialog.vue";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import ImportModal from "@/components/ImportModal.vue";
 import GerberVisualizer from "@/components/project/GerberVisualizer.vue";
+import { useNotifications } from "@/composables/useNotifications";
 import { navigateTo } from "nuxt/app";
 
 // Define page meta properties (using Nuxt's automatic route naming)
@@ -247,6 +255,17 @@ const route = useRoute();
 const db = useDatabase();
 const { calculateProjectCost, formatCurrency, taxRate } = useCostCalculator();
 const { showConfirmation } = useDialog();
+const confirmDialog = useConfirmDialog();
+const { success: notifySuccess, error: notifyError, warning: notifyWarning, info: notifyInfo } = useNotifications();
+
+// Override showConfirmation to use our custom modal dialog
+const showCustomConfirmation = async (title: string, message: string, type: "info" | "warning" | "error" = "info") => {
+	return await confirmDialog.showConfirmation({
+		title,
+		message,
+		type,
+	});
+};
 
 // State
 const project = ref<BOMProject | null>(null);
@@ -293,9 +312,6 @@ const loadThumb = async () => {
 // const itemToDelete = ref<string | null>(null);
 
 // Toast State
-const showToast = ref(false);
-const toastMessage = ref("");
-const toastType = ref<"success" | "error" | "warning" | "info">("info");
 
 // Import Modal State
 const importStore = useImportStore();
@@ -442,9 +458,10 @@ const updateItemQuantity = async (itemId: string, newQuantity: number) => {
 const removeItemFromProject = async (itemId: string) => {
 	const projectId = route.params.id as string;
 
-	const confirmed = await showConfirmation(
+	const confirmed = await showCustomConfirmation(
 		"Remover Componente",
 		"¿Estás seguro de remover este componente del proyecto? Esta acción no se puede deshacer.",
+		"warning",
 	);
 
 	if (confirmed) {
@@ -456,20 +473,21 @@ const removeItemFromProject = async (itemId: string) => {
 					projectItems.value.splice(index, 1);
 					// Recalcular costos
 					calculateProjectCostMethod();
-					showToastMessage("Componente removido del proyecto exitosamente", "success");
+					notifySuccess("Componente removido", "Componente removido del proyecto exitosamente");
 				}
 			}
 		} catch (error) {
 			console.error("Error removiendo item del proyecto:", error);
-			showToastMessage("Error al remover el componente del proyecto", "error");
+			notifyError("Error", "Error al remover el componente del proyecto");
 		}
 	}
 };
 
 const removeSelectedItemsFromProject = async (ids: string[]) => {
-	const confirmed = await showConfirmation(
+	const confirmed = await showCustomConfirmation(
 		"Remover Componentes",
 		`¿Estás seguro de remover ${ids.length} componentes seleccionados del proyecto? Esta acción no se puede deshacer.`,
+		"warning",
 	);
 
 	if (confirmed) {
@@ -488,10 +506,10 @@ const removeSelectedItemsFromProject = async (ids: string[]) => {
 			}
 			// Recalcular costos
 			calculateProjectCostMethod();
-			showToastMessage(`${removedCount} componentes removidos del proyecto exitosamente`, "success");
+			notifySuccess("Componentes removidos", `${removedCount} componentes removidos del proyecto exitosamente`);
 		} catch (error) {
 			console.error("Error removiendo items del proyecto:", error);
-			showToastMessage("Error al remover los componentes del proyecto", "error");
+			notifyError("Error", "Error al remover los componentes del proyecto");
 		}
 	}
 };
@@ -511,12 +529,12 @@ const handleEditItemSave = async (itemData: any) => {
 		await loadProject();
 		calculateProjectCostMethod();
 
-		showToastMessage("Componente actualizado exitosamente", "success");
+		notifySuccess("Éxito", "Componente actualizado exitosamente");
 		showEditItemModal.value = false;
 		editingItem.value = null;
 	} catch (error) {
 		console.error("Error actualizando componente:", error);
-		showToastMessage("Error al actualizar el componente", "error");
+		notifyError("Error", "Error al actualizar el componente");
 	}
 };
 
@@ -532,7 +550,7 @@ const addItemToProject = async (item: any) => {
 		// Verificar si el item ya está en el proyecto
 		const existingItem = projectItems.value.find((i) => i.id === item.id);
 		if (existingItem) {
-			showToastMessage("Este item ya está en el proyecto", "warning");
+			notifyWarning("Advertencia", "Este item ya está en el proyecto");
 			return;
 		}
 
@@ -543,11 +561,11 @@ const addItemToProject = async (item: any) => {
 			projectItems.value.push(itemToAdd);
 			closeAddItemModal();
 			calculateProjectCostMethod();
-			showToastMessage("Componente agregado al proyecto exitosamente", "success");
+			notifySuccess("Éxito", "Componente agregado al proyecto exitosamente");
 		}
 	} catch (error) {
 		console.error("Error agregando item al proyecto:", error);
-		showToastMessage("Error al agregar el componente al proyecto", "error");
+		notifyError("Error", "Error al agregar el componente al proyecto");
 	}
 };
 
@@ -568,14 +586,15 @@ const calculateProjectCostMethod = () => {
 };
 
 const exportProject = () => {
-	showToastMessage("Funcionalidad de exportación del proyecto en desarrollo", "info");
+	notifyInfo("Información", "Funcionalidad de exportación del proyecto en desarrollo");
 	// TODO: Implementar exportación del proyecto
 };
 
 const consumeProjectStock = async () => {
-	const confirmed = await showConfirmation(
+	const confirmed = await showCustomConfirmation(
 		"Consumir Stock",
 		"¿Estás seguro de descontar las cantidades de este proyecto del inventario global? Esta acción afectará el stock real disponible.",
+		"warning",
 	);
 
 	if (confirmed) {
@@ -587,10 +606,10 @@ const consumeProjectStock = async () => {
 
 			await db.consumeStockFromBOM(itemsToConsume);
 			await loadProject();
-			showToastMessage("Stock consumido exitosamente", "success");
+			notifySuccess("Éxito", "Stock consumido exitosamente");
 		} catch (error) {
 			console.error("Error al consumir stock:", error);
-			showToastMessage("Error al consumir stock", "error");
+			notifyError("Error", "Error al consumir stock");
 		}
 	}
 };
@@ -645,13 +664,18 @@ const handleImportToProject = async (data: { file: File; projectId: string }) =>
 				message += ` Errores: ${errors.length}.`;
 				console.error("Errores durante la importación:", errors);
 			}
-			showToastMessage(message, importedCount > 0 ? "success" : "error");
+
+			if (importedCount > 0) {
+				notifySuccess("Importación completada", message);
+			} else {
+				notifyError("Error en la importación", message);
+			}
 		} else {
-			showToastMessage(`Error en la importación: ${result.errors.join(", ")}`, "error");
+			notifyError("Error en la importación", result.errors.join(", "));
 		}
 	} catch (error) {
 		console.error("Error al importar archivo al proyecto:", error);
-		showToastMessage("Error al importar archivo al proyecto", "error");
+		notifyError("Error", "Error al importar archivo al proyecto");
 	}
 };
 
@@ -670,21 +694,15 @@ const handleImportCompleted = async (data: {
 		if (data.errors.length > 0) {
 			message += ` Errores: ${data.errors.length}.`;
 		}
-		showToastMessage(message, data.importedCount > 0 ? "success" : "error");
+
+		if (data.importedCount > 0) {
+			notifySuccess("Importación completada", message);
+		} else {
+			notifyError("Error en la importación", message);
+		}
 	} else {
-		showToastMessage("Items importados exitosamente", "success");
+		notifySuccess("Éxito", "Items importados exitosamente");
 	}
-};
-
-const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
-	toastMessage.value = message;
-	toastType.value = type;
-	showToast.value = true;
-
-	// Auto-hide after 3 seconds
-	setTimeout(() => {
-		showToast.value = false;
-	}, 3000);
 };
 
 // Lifecycle

@@ -101,7 +101,12 @@
 								"
 								class="block w-full text-xs border-gray-300 rounded-md focus:ring-primary focus:border-primary">
 								<option value="create">Crear nuevo</option>
-								<option v-if="item.importStatus === 'exists'" value="update_stock">Sumar stock</option>
+								<option v-if="item.importStatus === 'exists'" value="update_stock">
+									Sumar stock (Rellenar)
+								</option>
+								<option v-if="item.importStatus === 'exists'" value="consume_stock">
+									Restar stock (Quitar)
+								</option>
 								<option v-if="item.importStatus === 'exists'" value="merge">Combinar datos</option>
 								<option value="ignore">Ignorar</option>
 							</select>
@@ -380,12 +385,12 @@ const getRowClass = (item: any) => {
 };
 
 const getStatusBadgeClass = (item: any) => {
-	if (item.importStatus === "exists") return "bg-amber-100 text-amber-800";
+	if (item.importStatus === "exists") return "bg-blue-100 text-blue-800";
 	return "bg-green-100 text-green-800";
 };
 
 const getStatusLabel = (item: any) => {
-	if (item.importStatus === "exists") return "Ya existe en inventario";
+	if (item.importStatus === "exists") return "MATCHED / ENCONTRADO";
 	return "Nuevo item";
 };
 </script>

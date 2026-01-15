@@ -15,7 +15,7 @@
 					<div
 						v-else
 						class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-					<span>{{ isUpdatingPrices ? "Actualizando..." : "Actualizar Precios" }}</span>
+					<span>{{ isUpdatingPrices ? "Actualizando..." : "Actualizar componentes de LSCS" }}</span>
 				</button>
 				<button
 					@click="showImportModal = true"
@@ -128,6 +128,19 @@
 							placeholder="Buscar por nombre, categoría, proveedor..."
 							class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light" />
 					</div>
+
+					<!-- List Selector -->
+					<select
+						v-model="selectedListId"
+						class="px-4 py-2 bg-purple-50 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-purple-700 font-medium">
+						<option value="">Inventario Global</option>
+						<optgroup label="Mis Listas Guardadas">
+							<option v-for="list in lists.lists.value" :key="list.id" :value="list.id">
+								{{ list.name }}
+							</option>
+						</optgroup>
+					</select>
+
 					<select
 						v-model="filterCategory"
 						class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
@@ -148,6 +161,7 @@
 
 			<!-- Items Table -->
 			<InventoryTable
+				ref="inventoryTableRef"
 				:items="paginatedItems"
 				@edit-item="editItem"
 				@delete-item="deleteItemConfirm"
@@ -205,17 +219,17 @@
 		@import-completed="handleImportCompleted" />
 
 	<!-- List Manager Modal -->
-	<ListManager v-if="showListManager" v-model="showListManager" :items="[]" @saved="saveList" />
+	<ListManager v-if="showListManager" v-model="showListManager" :items="selectedItemsForList" @saved="saveList" />
 
 	<!-- Lists Management Modal -->
 	<ListsManagementModal
 		v-if="showListsManagement"
 		:lists="lists.lists.value"
 		@close="showListsManagement = false"
-		@merge-lists="handleMergeLists" />
+		@merge-lists="handleMergeLists"
+		@create-group="handleCreateGroup" />
 
 	<!-- Toast Notification -->
-	<Toast :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
 </template>
 
 <script setup lang="ts">
@@ -240,7 +254,6 @@ import {
 	XMarkIcon,
 	ClipboardDocumentListIcon,
 	GlobeAltIcon,
-	ShoppingCartIcon,
 	ArrowPathIcon,
 } from "@heroicons/vue/24/outline";
 import { useDatabase } from "@/composables/useDatabase";
@@ -249,12 +262,12 @@ import { useExternalLink } from "@/composables/useExternalLink";
 import { useFileParser } from "@/composables/useFileParser";
 import { useLists } from "@/composables/useLists";
 import { useLCSC } from "@/composables/useLCSC";
+import { useNotifications } from "@/composables/useNotifications";
 import FileUpload from "@/components/FileUpload.vue";
 import ListManager from "@/components/ListManager.vue";
 import LCSCPreview from "@/components/LCSCPreview.vue";
 import AddItemToInventoryModal from "@/components/AddItemToInventoryModal.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
-import Toast from "@/components/Toast.vue";
 import ImportModal from "@/components/ImportModal.vue";
 import ListsManagementModal from "@/components/ListsManagementModal.vue";
 import InventoryTable from "@/components/inventory/InventoryTable.vue";
@@ -265,17 +278,21 @@ const { parseFile } = useFileParser();
 const lists = useLists();
 const { showConfirmation } = useDialog();
 const { massUpdatePrices } = useLCSC();
+const { success: notifySuccess, error: notifyError, warning: notifyWarning, info: notifyInfo } = useNotifications();
 
 // State
 const items = ref<any[]>([]);
+const inventoryTableRef = ref<any>(null);
 const searchQuery = ref("");
 const filterCategory = ref("");
 const filterStock = ref("all");
+const selectedListId = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 100; //TODO: hacer un selector para que user pueda poner cantidad por pagina
 const showAddModal = ref(false);
 const showImportModal = ref(false);
 const showListManager = ref(false);
+const selectedItemsForList = ref<any[]>([]);
 const showListsManagement = ref(false);
 const isUpdatingPrices = ref(false);
 const selectedListsForMerge = ref<string[]>([]);
@@ -303,10 +320,10 @@ const showLCSCPreview = ref(false);
 const lcscPartNumber = ref<string>("");
 const lcscItemId = ref<string>("");
 
-// Toast State
-const showToast = ref(false);
-const toastMessage = ref("");
-const toastType = ref<"success" | "error" | "warning" | "info">("info");
+// Toast State - Eliminated
+// const showToast = ref(false);
+// const toastMessage = ref("");
+// const toastType = ref<"success" | "error" | "warning" | "info">("info");
 
 // Computed
 const categories = computed(() => {
@@ -316,6 +333,15 @@ const categories = computed(() => {
 
 const filteredItems = computed(() => {
 	let filtered = items.value;
+
+	// Filter by selected list
+	if (selectedListId.value) {
+		const selectedList = lists.getListById(selectedListId.value);
+		if (selectedList) {
+			const listItemIds = selectedList.items.map((i: any) => i.id);
+			filtered = filtered.filter((item) => listItemIds.includes(item.id));
+		}
+	}
 
 	// Search filter
 	if (searchQuery.value) {
@@ -421,23 +447,12 @@ const deleteItemConfirm = async (id: string) => {
 		try {
 			await db.deleteItem(id);
 			await loadItems();
-			showToastMessage("Componente eliminado exitosamente", "success");
+			notifySuccess("Éxito", "Componente eliminado exitosamente");
 		} catch (error) {
 			console.error("Error eliminando componente:", error);
-			showToastMessage("Error al eliminar el componente", "error");
+			notifyError("Error", "Error al eliminar el componente");
 		}
 	}
-};
-
-const showToastMessage = (message: string, type: "success" | "error" | "warning" | "info" = "info") => {
-	toastMessage.value = message;
-	toastType.value = type;
-	showToast.value = true;
-
-	// Auto-hide after 3 seconds
-	setTimeout(() => {
-		showToast.value = false;
-	}, 3000);
 };
 
 const exportInventory = () => {
@@ -491,13 +506,13 @@ const handleFileImport = async (file: File) => {
 
 			await loadItems();
 			showImportModal.value = false;
-			showToastMessage(`Importación exitosa: ${result.items.length} items agregados`, "success");
+			notifySuccess("Importación exitosa", `${result.items.length} items agregados`);
 		} else {
-			showToastMessage(`Error en la importación: ${result.errors.join(", ")}`, "error");
+			notifyError("Error en la importación", result.errors.join(", "));
 		}
 	} catch (error) {
 		console.error("Error importando archivo:", error);
-		showToastMessage("Error al importar archivo", "error");
+		notifyError("Error", "Error al importar archivo");
 	}
 };
 
@@ -516,7 +531,7 @@ const handleImportCompleted = async (data: {
 		filterStock.value = "";
 		currentPage.value = 1;
 	}
-	showToastMessage("Items importados exitosamente", "success");
+	notifySuccess("Éxito", "Items importados exitosamente");
 };
 
 const handleImportError = (message: string) => {
@@ -524,29 +539,47 @@ const handleImportError = (message: string) => {
 };
 
 const createListFromSelection = () => {
-	// Crear una nueva lista con los items filtrados
-	const selectedItems = filteredItems.value.map((item) => ({
-		id: item.id,
-		name: item.name,
-		part_number: item.part_number,
-		lcsc_part: item.lcsc_part,
-		unit: item.unit,
-		quantity: item.quantity || 1,
-	}));
+	// Obtener los IDs seleccionados del componente InventoryTable
+	const selectedIds = inventoryTableRef.value?.selectedItems || [];
+
+	let selectedItems = [];
+
+	if (selectedIds.length > 0) {
+		// Si hay selección manual, usar esos items
+		selectedItems = items.value
+			.filter(item => selectedIds.includes(item.id))
+			.map(item => ({
+				id: item.id,
+				name: item.name,
+				part_number: item.part_number,
+				lcsc_part: item.lcsc_part,
+				unit: item.unit || "pcs",
+				quantity: item.quantity && item.quantity > 0 ? item.quantity : 1
+			}));
+	} else {
+		// Si no hay selección manual, usar los items filtrados (comportamiento anterior)
+		selectedItems = filteredItems.value.map((item) => ({
+			id: item.id,
+			name: item.name,
+			part_number: item.part_number,
+			lcsc_part: item.lcsc_part,
+			unit: item.unit || "pcs",
+			quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
+		}));
+	}
 
 	if (selectedItems.length === 0) {
-		showToastMessage("No hay items para agregar a la lista", "warning");
+		notifyWarning("Advertencia", "No hay items seleccionados para crear la lista");
 		return;
 	}
 
+	selectedItemsForList.value = selectedItems;
 	showListManager.value = true;
-	// Usar nextTick para asegurar que el componente esté montado
-	setTimeout(() => {
-		const listManager = document.querySelector("list-manager");
-		if (listManager && (listManager as any).addItems) {
-			(listManager as any).addItems(selectedItems);
-		}
-	}, 100);
+
+	// Limpiar selección después de abrir el modal
+	if (inventoryTableRef.value) {
+		inventoryTableRef.value.clearSelection();
+	}
 };
 
 const saveList = (list: any) => {
@@ -556,7 +589,7 @@ const saveList = (list: any) => {
 		items: list.items,
 	});
 	showListManager.value = false;
-	showToastMessage(`Lista "${list.name}" guardada exitosamente`, "success");
+	notifySuccess("Éxito", `Lista "${list.name}" guardada exitosamente`);
 };
 
 const openLcscPreview = (partNumber: string, itemId?: string) => {
@@ -577,12 +610,12 @@ const openLcscPurchase = (lcscPart: string) => {
 
 const mergeSelectedLists = () => {
 	if (selectedListsForMerge.value.length < 2) {
-		showToastMessage("Selecciona al menos 2 listas para mezclar", "warning");
+		notifyWarning("Advertencia", "Selecciona al menos 2 listas para mezclar");
 		return;
 	}
 
 	if (!mergeListName.value.trim()) {
-		showToastMessage("Ingresa un nombre para la lista combinada", "warning");
+		notifyWarning("Advertencia", "Ingresa un nombre para la lista combinada");
 		return;
 	}
 
@@ -591,10 +624,10 @@ const mergeSelectedLists = () => {
 		showListsManagement.value = false;
 		selectedListsForMerge.value = [];
 		mergeListName.value = "";
-		showToastMessage("Listas combinadas exitosamente", "success");
+		notifySuccess("Éxito", "Listas combinadas exitosamente");
 	} catch (error: any) {
 		console.error("Error al mezclar listas:", error);
-		showToastMessage("Error al mezclar las listas: " + error.message, "error");
+		notifyError("Error", "Error al mezclar las listas: " + error.message);
 	}
 };
 
@@ -604,10 +637,24 @@ const handleMergeLists = (listIds: string[], newListName: string) => {
 		showListsManagement.value = false;
 		selectedListsForMerge.value = [];
 		mergeListName.value = "";
-		showToastMessage("Listas combinadas exitosamente", "success");
+		notifySuccess("Éxito", "Listas combinadas exitosamente");
 	} catch (error: any) {
 		console.error("Error al mezclar listas:", error);
-		showToastMessage("Error al mezclar las listas: " + error.message, "error");
+		notifyError("Error", "Error al mezclar las listas: " + error.message);
+	}
+};
+
+const handleCreateGroup = (items: any[], newListName: string) => {
+	try {
+		lists.createList({
+			name: newListName,
+			description: `Grupo creado desde gestión de listas`,
+			items: items,
+		});
+		notifySuccess("Éxito", `Grupo "${newListName}" creado exitosamente`);
+	} catch (error: any) {
+		console.error("Error al crear grupo:", error);
+		notifyError("Error", "Error al crear el grupo: " + error.message);
 	}
 };
 
@@ -623,10 +670,10 @@ const deleteSelectedItemsConfirm = async (ids: string[]) => {
 				await db.deleteItem(id);
 			}
 			await loadItems();
-			showToastMessage(`${ids.length} componentes eliminados exitosamente`, "success");
+			notifySuccess("Éxito", `${ids.length} componentes eliminados exitosamente`);
 		} catch (error) {
 			console.error("Error eliminando componentes:", error);
-			showToastMessage("Error al eliminar los componentes", "error");
+			notifyError("Error", "Error al eliminar los componentes");
 		}
 	}
 };
@@ -637,7 +684,7 @@ const updateLcscPrices = async () => {
 		.map((item) => ({ id: item.id, lcsc_part: item.lcsc_part }));
 
 	if (itemsWithLcsc.length === 0) {
-		showToastMessage("No hay items con referencia LCSC para actualizar", "warning");
+		notifyWarning("Advertencia", "No hay items con referencia LCSC para actualizar");
 		return;
 	}
 
@@ -651,10 +698,10 @@ const updateLcscPrices = async () => {
 		try {
 			const updatedCount = await massUpdatePrices(itemsWithLcsc);
 			await loadItems();
-			showToastMessage(`Se han actualizado ${updatedCount} precios correctamente`, "success");
+			notifySuccess("Éxito", `Se han actualizado ${updatedCount} precios correctamente`);
 		} catch (error) {
 			console.error("Error al actualizar precios:", error);
-			showToastMessage("Ocurrió un error al actualizar los precios", "error");
+			notifyError("Error", "Ocurrió un error al actualizar los precios");
 		} finally {
 			isUpdatingPrices.value = false;
 		}
