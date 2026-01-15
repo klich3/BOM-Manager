@@ -1,4 +1,4 @@
-import { computed } from "vue";
+import { computed, unref } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 import es from "@/locales/es.json";
 import en from "@/locales/en.json";
@@ -38,7 +38,7 @@ export const useI18n = () => {
 
 		if (params) {
 			Object.entries(params).forEach(([k, v]) => {
-				text = text.replace(`{${k}}`, String(v));
+				text = text.replace(`{${k}}`, String(unref(v)));
 			});
 		}
 

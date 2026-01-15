@@ -113,7 +113,7 @@
 						{{ t("manage_lists") }}
 					</button>
 				</div>
-				<p class="text-text-muted-light text-sm">{{ t("saved_lists_count", { count: lists.listCount }) }}</p>
+				<p class="text-text-muted-light text-sm">{{ t("saved_lists_count", { count: lists.listCount.value }) }}</p>
 			</div>
 
 			<!-- Search and Filters -->
