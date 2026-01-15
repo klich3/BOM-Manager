@@ -723,7 +723,7 @@ onMounted(async () => {
 	<!-- Gerber/XY Visualizer Overlay -->
 	<div v-if="showGerberVisualizer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
 		<div class="w-full h-full">
-			<GerberVisualizer
+			<ProjectGerberVisualizer
 				:project-id="String(route.params.id)"
 				:selected-ref="highlightedRef"
 				@close="closeGerberVisualizer" />
