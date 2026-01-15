@@ -1,198 +1,3 @@
-<template>
-	<div
-		class="flex flex-col h-full bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-		<!-- Toolbar -->
-		<div
-			class="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-between">
-			<div class="flex items-center gap-4">
-				<h3 class="font-semibold text-gray-900 dark:text-white">{{ t("gerber.title") }}</h3>
-				<span
-					v-if="components.length"
-					class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
-					{{ t("gerber.components_detected", { count: components.length }) }}
-				</span>
-
-				<!-- Selector de Versiones -->
-				<div v-if="versions.length > 0" class="flex items-center gap-2 ml-4">
-					<label class="text-xs font-medium text-gray-500">{{ t("gerber.history") }}</label>
-					<select
-						v-model="selectedVersionId"
-						@change="loadVersion"
-						class="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-primary max-w-[150px]">
-						<option value="">{{ t("gerber.select_version") }}</option>
-						<option v-for="v in versions" :key="v.id" :value="v.id">
-							{{ v.filename }}
-						</option>
-					</select>
-				</div>
-			</div>
-			<div class="flex items-center gap-2">
-				<button
-					v-if="components.length"
-					@click="autoCenter"
-					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500"
-					:title="t('gerber.center_view')">
-					<ArrowsPointingInIcon class="w-5 h-5" />
-				</button>
-				<button
-					@click="resetView"
-					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500"
-					:title="t('gerber.reset_view')">
-					<ArrowPathIcon class="w-5 h-5" />
-				</button>
-				<button @click="close" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500">
-					<XMarkIcon class="w-5 h-5" />
-				</button>
-			</div>
-		</div>
-
-		<div class="flex-1 flex overflow-hidden">
-			<!-- Left Panel: File Explorer (only if ZIP) -->
-			<div
-				v-if="zipFiles.length > 0"
-				class="w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-y-auto">
-				<div class="p-4 border-b border-gray-100 dark:border-gray-800">
-					<h4 class="text-xs font-bold text-gray-400 uppercase">{{ t("gerber.zip_files") }}</h4>
-				</div>
-				<div class="divide-y divide-gray-50 dark:divide-gray-800">
-					<div
-						v-for="file in zipFiles"
-						:key="file.name"
-						class="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer group flex flex-col gap-1"
-						@click="selectZipFile(file.name)">
-						<div class="flex items-center justify-between">
-							<span class="text-xs font-medium truncate flex-1">{{ file.name }}</span>
-							<span
-								v-if="coordinateFileName === file.name"
-								class="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full"
-								>{{ t("gerber.active") }}</span
-							>
-						</div>
-						<div class="flex gap-2">
-							<button
-								v-if="isCoordinateFile(file.name)"
-								class="text-[10px] text-primary hover:underline"
-								@click.stop="useAsCoordinates(file.name)">
-								{{ t("gerber.use_coordinates") }}
-							</button>
-							<button
-								v-if="isGerberFile(file.name)"
-								class="text-[10px] text-blue-500 hover:underline"
-								@click.stop="toggleLayer(file.name)">
-								{{ layers[file.name] ? t("gerber.hide_layer") : t("gerber.show_layer") }}
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Main Canvas Area -->
-			<div
-				class="flex-1 relative overflow-hidden cursor-move bg-[#1a1a1a]"
-				@mousedown="startPan"
-				@mousemove="doPan"
-				@mouseup="endPan"
-				@mouseleave="endPan"
-				@wheel="handleZoom">
-				<div
-					v-if="!components.length && !Object.keys(layers).length"
-					class="absolute inset-0 flex items-center justify-center p-8 text-center bg-gray-50">
-					<div class="max-w-xs">
-						<div
-							class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-							<DocumentArrowUpIcon class="w-8 h-8 text-gray-400" />
-						</div>
-						<h4 class="text-gray-900 dark:text-white font-medium mb-1">{{ t("gerber.upload_title") }}</h4>
-						<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-							{{ t("gerber.upload_desc") }}
-						</p>
-						<label
-							class="px-4 py-2 bg-primary text-white rounded-lg font-bold cursor-pointer hover:bg-primary/90 transition-all inline-block">
-							{{ t("gerber.select_file") }}
-							<input type="file" class="hidden" @change="handleFileUpload" accept=".csv,.txt,.pos,.zip" />
-						</label>
-					</div>
-				</div>
-
-				<!-- Canvas Drawing -->
-				<svg v-else class="w-full h-full" :viewBox="viewBox">
-					<!-- Grid -->
-					<defs>
-						<pattern id="grid" width="10" height="10" patternUnits="userSpaceOnAdd">
-							<path
-								d="M 10 0 L 0 0 0 10"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="0.05"
-								class="text-gray-700" />
-						</pattern>
-					</defs>
-					<rect width="4000" height="4000" x="-2000" y="-2000" fill="url(#grid)" />
-
-					<!-- Gerber Layers (Grouped paths for performance) -->
-					<g v-for="(layerData, fileName) in layers" :key="fileName">
-						<path
-							:d="layerData.d"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="0.2"
-							:class="getLayerClass(fileName)"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							shape-rendering="optimizeSpeed" />
-					</g>
-
-					<!-- Components (Centroid Points) -->
-					<g v-for="(comp, index) in components" :key="index">
-						<circle
-							:cx="comp.x"
-							:cy="-comp.y"
-							:r="hoveredIndex === index ? 1.5 : 0.8"
-							:class="[
-								'transition-all duration-200 cursor-pointer',
-								hoveredIndex === index ? 'fill-primary' : 'fill-blue-500/80',
-							]"
-							@mouseenter="hoveredIndex = index"
-							@mouseleave="hoveredIndex = -1" />
-						<text
-							v-if="zoom < 100 && (hoveredIndex === index || zoom < 20)"
-							:x="comp.x + 1"
-							:y="-comp.y - 1"
-							class="text-[1.5px] fill-white font-bold pointer-events-none drop-shadow-sm">
-							{{ comp.ref }}
-						</text>
-					</g>
-				</svg>
-
-				<!-- Overlay Info -->
-				<div
-					v-if="hoveredIndex !== -1"
-					class="absolute bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 pointer-events-none">
-					<p class="text-xs font-bold text-primary">{{ components[hoveredIndex].ref }}</p>
-					<p class="text-sm text-gray-900 dark:text-white">{{ components[hoveredIndex].val }}</p>
-					<p class="text-[10px] text-gray-500">
-						X: {{ components[hoveredIndex].x }}mm, Y: {{ components[hoveredIndex].y }}mm
-					</p>
-				</div>
-
-				<!-- Zoom & Controls -->
-				<div class="absolute bottom-4 right-4 flex flex-col gap-2">
-					<button
-						@click="adjustZoom(0.7)"
-						class="p-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur rounded-lg shadow border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50">
-						<PlusIcon class="w-5 h-5" />
-					</button>
-					<button
-						@click="adjustZoom(1.4)"
-						class="p-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur rounded-lg shadow border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50">
-						<MinusIcon class="w-5 h-5" />
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import {
@@ -747,6 +552,201 @@ watch(
 	},
 );
 </script>
+
+<template>
+	<div
+		class="flex flex-col h-full bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+		<!-- Toolbar -->
+		<div
+			class="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-between">
+			<div class="flex items-center gap-4">
+				<h3 class="font-semibold text-gray-900 dark:text-white">{{ t("gerber.title") }}</h3>
+				<span
+					v-if="components.length"
+					class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
+					{{ t("gerber.components_detected", { count: components.length }) }}
+				</span>
+
+				<!-- Selector de Versiones -->
+				<div v-if="versions.length > 0" class="flex items-center gap-2 ml-4">
+					<label class="text-xs font-medium text-gray-500">{{ t("gerber.history") }}</label>
+					<select
+						v-model="selectedVersionId"
+						@change="loadVersion"
+						class="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-primary max-w-[150px]">
+						<option value="">{{ t("gerber.select_version") }}</option>
+						<option v-for="v in versions" :key="v.id" :value="v.id">
+							{{ v.filename }}
+						</option>
+					</select>
+				</div>
+			</div>
+			<div class="flex items-center gap-2">
+				<button
+					v-if="components.length"
+					@click="autoCenter"
+					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500"
+					:title="t('gerber.center_view')">
+					<ArrowsPointingInIcon class="w-5 h-5" />
+				</button>
+				<button
+					@click="resetView"
+					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500"
+					:title="t('gerber.reset_view')">
+					<ArrowPathIcon class="w-5 h-5" />
+				</button>
+				<button @click="close" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500">
+					<XMarkIcon class="w-5 h-5" />
+				</button>
+			</div>
+		</div>
+
+		<div class="flex-1 flex overflow-hidden">
+			<!-- Left Panel: File Explorer (only if ZIP) -->
+			<div
+				v-if="zipFiles.length > 0"
+				class="w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-y-auto">
+				<div class="p-4 border-b border-gray-100 dark:border-gray-800">
+					<h4 class="text-xs font-bold text-gray-400 uppercase">{{ t("gerber.zip_files") }}</h4>
+				</div>
+				<div class="divide-y divide-gray-50 dark:divide-gray-800">
+					<div
+						v-for="file in zipFiles"
+						:key="file.name"
+						class="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer group flex flex-col gap-1"
+						@click="selectZipFile(file.name)">
+						<div class="flex items-center justify-between">
+							<span class="text-xs font-medium truncate flex-1">{{ file.name }}</span>
+							<span
+								v-if="coordinateFileName === file.name"
+								class="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full"
+								>{{ t("gerber.active") }}</span
+							>
+						</div>
+						<div class="flex gap-2">
+							<button
+								v-if="isCoordinateFile(file.name)"
+								class="text-[10px] text-primary hover:underline"
+								@click.stop="useAsCoordinates(file.name)">
+								{{ t("gerber.use_coordinates") }}
+							</button>
+							<button
+								v-if="isGerberFile(file.name)"
+								class="text-[10px] text-blue-500 hover:underline"
+								@click.stop="toggleLayer(file.name)">
+								{{ layers[file.name] ? t("gerber.hide_layer") : t("gerber.show_layer") }}
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Main Canvas Area -->
+			<div
+				class="flex-1 relative overflow-hidden cursor-move bg-[#1a1a1a]"
+				@mousedown="startPan"
+				@mousemove="doPan"
+				@mouseup="endPan"
+				@mouseleave="endPan"
+				@wheel="handleZoom">
+				<div
+					v-if="!components.length && !Object.keys(layers).length"
+					class="absolute inset-0 flex items-center justify-center p-8 text-center bg-gray-50">
+					<div class="max-w-xs">
+						<div
+							class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+							<DocumentArrowUpIcon class="w-8 h-8 text-gray-400" />
+						</div>
+						<h4 class="text-gray-900 dark:text-white font-medium mb-1">{{ t("gerber.upload_title") }}</h4>
+						<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+							{{ t("gerber.upload_desc") }}
+						</p>
+						<label
+							class="px-4 py-2 bg-primary text-white rounded-lg font-bold cursor-pointer hover:bg-primary/90 transition-all inline-block">
+							{{ t("gerber.select_file") }}
+							<input type="file" class="hidden" @change="handleFileUpload" accept=".csv,.txt,.pos,.zip" />
+						</label>
+					</div>
+				</div>
+
+				<!-- Canvas Drawing -->
+				<svg v-else class="w-full h-full" :viewBox="viewBox">
+					<!-- Grid -->
+					<defs>
+						<pattern id="grid" width="10" height="10" patternUnits="userSpaceOnAdd">
+							<path
+								d="M 10 0 L 0 0 0 10"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="0.05"
+								class="text-gray-700" />
+						</pattern>
+					</defs>
+					<rect width="4000" height="4000" x="-2000" y="-2000" fill="url(#grid)" />
+
+					<!-- Gerber Layers (Grouped paths for performance) -->
+					<g v-for="(layerData, fileName) in layers" :key="fileName">
+						<path
+							:d="layerData.d"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="0.2"
+							:class="getLayerClass(fileName)"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							shape-rendering="optimizeSpeed" />
+					</g>
+
+					<!-- Components (Centroid Points) -->
+					<g v-for="(comp, index) in components" :key="index">
+						<circle
+							:cx="comp.x"
+							:cy="-comp.y"
+							:r="hoveredIndex === index ? 1.5 : 0.8"
+							:class="[
+								'transition-all duration-200 cursor-pointer',
+								hoveredIndex === index ? 'fill-primary' : 'fill-blue-500/80',
+							]"
+							@mouseenter="hoveredIndex = index"
+							@mouseleave="hoveredIndex = -1" />
+						<text
+							v-if="zoom < 100 && (hoveredIndex === index || zoom < 20)"
+							:x="comp.x + 1"
+							:y="-comp.y - 1"
+							class="text-[1.5px] fill-white font-bold pointer-events-none drop-shadow-sm">
+							{{ comp.ref }}
+						</text>
+					</g>
+				</svg>
+
+				<!-- Overlay Info -->
+				<div
+					v-if="hoveredIndex !== -1"
+					class="absolute bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 pointer-events-none">
+					<p class="text-xs font-bold text-primary">{{ components[hoveredIndex].ref }}</p>
+					<p class="text-sm text-gray-900 dark:text-white">{{ components[hoveredIndex].val }}</p>
+					<p class="text-[10px] text-gray-500">
+						X: {{ components[hoveredIndex].x }}mm, Y: {{ components[hoveredIndex].y }}mm
+					</p>
+				</div>
+
+				<!-- Zoom & Controls -->
+				<div class="absolute bottom-4 right-4 flex flex-col gap-2">
+					<button
+						@click="adjustZoom(0.7)"
+						class="p-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur rounded-lg shadow border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+						<PlusIcon class="w-5 h-5" />
+					</button>
+					<button
+						@click="adjustZoom(1.4)"
+						class="p-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur rounded-lg shadow border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+						<MinusIcon class="w-5 h-5" />
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
 
 <style scoped>
 .cursor-move {

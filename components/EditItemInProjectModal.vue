@@ -1,152 +1,9 @@
-<template>
-	<div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-		<div class="bg-card-light rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-auto">
-			<!-- Header -->
-			<div class="flex items-center justify-between mb-6">
-				<h2 class="text-xl font-semibold text-text-main-light">Editar Componente</h2>
-				<button @click="closeModal" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
-				</button>
-			</div>
-
-			<!-- Form -->
-			<form @submit.prevent="saveItem" class="space-y-4">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Nombre *</label>
-						<input
-							v-model="form.name"
-							type="text"
-							required
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Nombre del componente" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Cantidad *</label>
-						<input
-							v-model.number="form.quantity"
-							type="number"
-							required
-							min="1"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Cantidad" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Categoría</label>
-						<input
-							v-model="form.category"
-							type="text"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Categoría" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Proveedor</label>
-						<input
-							v-model="form.supplier"
-							type="text"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Proveedor" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Número de parte</label>
-						<input
-							v-model="form.partNumber"
-							type="text"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Número de parte" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Referencia LCSC</label>
-						<input
-							v-model="form.lcscPart"
-							type="text"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Referencia LCSC" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Precio por unidad</label>
-						<input
-							v-model.number="form.price"
-							type="number"
-							step="0.0001"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Precio" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Stock actual</label>
-						<input
-							v-model.number="form.inStock"
-							type="number"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Stock actual" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Stock mínimo</label>
-						<input
-							v-model.number="form.minStock"
-							type="number"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Stock mínimo" />
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-1">Fabricante</label>
-						<input
-							v-model="form.manufacturer"
-							type="text"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Fabricante" />
-					</div>
-
-					<div class="md:col-span-2">
-						<label class="block text-sm font-medium text-text-main-light mb-1">Descripción</label>
-						<textarea
-							v-model="form.description"
-							rows="3"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Descripción del componente"></textarea>
-					</div>
-
-					<div class="md:col-span-2">
-						<label class="block text-sm font-medium text-text-main-light mb-1">Notas</label>
-						<textarea
-							v-model="form.notes"
-							rows="2"
-							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							placeholder="Notas adicionales"></textarea>
-					</div>
-				</div>
-
-				<!-- Action buttons -->
-				<div class="flex justify-end items-center gap-4 mt-6 pt-6 border-t border-gray-200">
-					<button
-						type="button"
-						@click="closeModal"
-						class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
-						Cancelar
-					</button>
-					<button
-						type="submit"
-						class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-all">
-						Guardar cambios
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts">
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 import { ref, watch } from "vue";
+import { useI18n } from "@/composables/useI18n";
+
+const { t } = useI18n();
 
 // Definir los eventos que emite este componente
 const emit = defineEmits<{
@@ -239,3 +96,159 @@ watch(
 	{ immediate: true },
 );
 </script>
+
+<template>
+	<div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-card-light rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-auto">
+			<!-- Header -->
+			<div class="flex items-center justify-between mb-6">
+				<h2 class="text-xl font-semibold text-text-main-light">{{ t("edit_component") }}</h2>
+				<button @click="closeModal" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
+				</button>
+			</div>
+
+			<!-- Form -->
+			<form @submit.prevent="saveItem" class="space-y-4">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{ t("name") }} *</label>
+						<input
+							v-model="form.name"
+							type="text"
+							required
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('placeholder_name')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{ t("quantity") }} *</label>
+						<input
+							v-model.number="form.quantity"
+							type="number"
+							required
+							min="1"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('quantity')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{ t("category") }}</label>
+						<input
+							v-model="form.category"
+							type="text"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('category')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{ t("supplier") }}</label>
+						<input
+							v-model="form.supplier"
+							type="text"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('supplier')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{
+							t("part_number")
+						}}</label>
+						<input
+							v-model="form.partNumber"
+							type="text"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('part_number')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{ t("lcsc_part") }}</label>
+						<input
+							v-model="form.lcscPart"
+							type="text"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('lcsc_part')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{ t("unit_price") }}</label>
+						<input
+							v-model.number="form.price"
+							type="number"
+							step="0.0001"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('price')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{
+							t("current_stock")
+						}}</label>
+						<input
+							v-model.number="form.inStock"
+							type="number"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('current_stock')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{
+							t("min_stock_header")
+						}}</label>
+						<input
+							v-model.number="form.minStock"
+							type="number"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('min_stock_header')" />
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{
+							t("manufacturer")
+						}}</label>
+						<input
+							v-model="form.manufacturer"
+							type="text"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('manufacturer')" />
+					</div>
+
+					<div class="md:col-span-2">
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{
+							t("description")
+						}}</label>
+						<textarea
+							v-model="form.description"
+							rows="3"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('placeholder_description')"></textarea>
+					</div>
+
+					<div class="md:col-span-2">
+						<label class="block text-sm font-medium text-text-main-light mb-1">{{ t("notes") }}</label>
+						<textarea
+							v-model="form.notes"
+							rows="2"
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+							:placeholder="t('placeholder_notes')"></textarea>
+					</div>
+				</div>
+
+				<!-- Action buttons -->
+				<div class="flex justify-end items-center gap-4 mt-6 pt-6 border-t border-gray-200">
+					<button
+						type="button"
+						@click="closeModal"
+						class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
+						{{ t("cancel") }}
+					</button>
+					<button
+						type="submit"
+						class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-all">
+						{{ t("save_changes") }}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</template>

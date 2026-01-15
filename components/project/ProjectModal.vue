@@ -1,190 +1,13 @@
-<template>
-	<div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-		<div class="bg-card-light rounded-2xl shadow-xl max-w-lg w-full p-6">
-			<div class="flex items-center justify-between mb-6">
-				<h2 class="text-xl font-semibold text-text-main-light">
-					{{ editingProject ? "Editar Proyecto" : "Nuevo Proyecto" }}
-				</h2>
-				<button @click="closeModal" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
-				</button>
-			</div>
-
-			<form @submit.prevent="saveProject" class="space-y-4">
-				<div>
-					<label class="block text-sm font-medium text-text-main-light mb-2"> Nombre del Proyecto * </label>
-					<input
-						v-model="projectForm.name"
-						type="text"
-						required
-						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-						placeholder="ej. PCB Main Controller v2.4" />
-				</div>
-
-				<div>
-					<label class="block text-sm font-medium text-text-main-light mb-2"> Descripción </label>
-					<textarea
-						v-model="projectForm.description"
-						rows="4"
-						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light resize-none"
-						placeholder="Describe el proyecto..."></textarea>
-				</div>
-
-				<div class="grid grid-cols-2 gap-4">
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-2"> Estado </label>
-						<select
-							v-model="projectForm.status"
-							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
-							<option value="Draft">Borrador</option>
-							<option value="Prototype">Prototipo</option>
-							<option value="Production">Producción</option>
-							<option value="Archived">Archivado</option>
-						</select>
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-text-main-light mb-2"> Cantidad de PCBs </label>
-						<input
-							v-model.number="projectForm.pcbQuantity"
-							type="number"
-							min="1"
-							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-							placeholder="ej. 5" />
-					</div>
-				</div>
-
-				<div>
-					<label class="block text-sm font-medium text-text-main-light mb-2"> Coste por PCB ($) </label>
-					<input
-						v-model.number="projectForm.pcbCost"
-						type="number"
-						step="0.01"
-						min="0"
-						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-						placeholder="ej. 2.50" />
-				</div>
-
-				<!-- Thumbnail Upload -->
-				<div>
-					<label class="block text-sm font-medium text-text-main-light mb-2">
-						Imagen del Proyecto (Thumbnail)
-					</label>
-					<div
-						class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
-						@click="triggerThumbUpload"
-						@drop.prevent="handleThumbDrop"
-						@dragover.prevent>
-						<input
-							ref="thumbInputRef"
-							type="file"
-							accept="image/*"
-							@change="handleThumbSelect"
-							class="hidden" />
-						<div v-if="!projectForm.thumb" class="space-y-2">
-							<PhotoIcon class="w-12 h-12 text-gray-400 mx-auto" />
-							<p class="text-gray-500">Arrastra una imagen o haz clic para seleccionar</p>
-							<p class="text-xs text-gray-400">Formatos: JPG, PNG, WEBP</p>
-						</div>
-						<div v-else class="relative">
-							<img
-								:src="thumbUrl || projectForm.thumb"
-								:alt="projectForm.name || 'Thumbnail'"
-								class="w-32 h-32 object-cover rounded-lg mx-auto" />
-							<button
-								type="button"
-								@click.stop="removeThumb"
-								class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
-								<XMarkIcon class="w-4 h-4" />
-							</button>
-						</div>
-					</div>
-				</div>
-
-				<!-- Links Section -->
-				<div class="border-t border-gray-200 pt-4">
-					<h3 class="text-md font-medium text-text-main-light mb-3">Enlaces del Proyecto</h3>
-
-					<div class="space-y-3">
-						<div>
-							<label class="block text-sm font-medium text-text-main-light mb-1"> Repositorio Git </label>
-							<input
-								v-model="projectForm.git"
-								type="url"
-								class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-								placeholder="https://github.com/user/project" />
-						</div>
-
-						<div>
-							<label class="block text-sm font-medium text-text-main-light mb-1"> Sitio Web </label>
-							<input
-								v-model="projectForm.web"
-								type="url"
-								class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
-								placeholder="https://project-website.com" />
-						</div>
-
-						<div>
-							<label class="block text-sm font-medium text-text-main-light mb-1"> Documento PDF </label>
-							<div class="flex gap-2">
-								<div v-if="!projectForm.pdf" class="flex-1">
-									<input
-										ref="pdfInputRef"
-										type="file"
-										accept=".pdf"
-										@change="handlePdfSelect"
-										class="hidden" />
-									<button
-										type="button"
-										@click="triggerPdfUpload"
-										class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm transition-colors">
-										Subir PDF
-									</button>
-								</div>
-								<div v-else class="flex items-center gap-2 flex-1">
-									<div
-										class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-										<DocumentTextIcon class="w-5 h-5 text-blue-600" />
-										<span class="text-sm text-text-main-light truncate max-w-xs">{{
-											getFileNameFromPath(projectForm.pdf)
-										}}</span>
-									</div>
-									<button
-										type="button"
-										@click="removePdf"
-										class="p-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors">
-										<XMarkIcon class="w-4 h-4" />
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="flex gap-3 pt-4">
-					<button
-						type="button"
-						@click="closeModal"
-						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors">
-						Cancelar
-					</button>
-					<button
-						type="submit"
-						class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium">
-						{{ editingProject ? "Guardar" : "Crear" }}
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, nextTick } from "vue";
 import { XMarkIcon, PhotoIcon, DocumentTextIcon } from "@heroicons/vue/24/outline";
 import { useFileManager } from "@/composables/useFileManager";
 import { useActivityDatabase } from "@/composables/useActivityDatabase";
 import { useProjectsDatabase } from "@/composables/useProjectsDatabase";
 import { useFilesDatabase } from "@/composables/useFilesDatabase";
+import { useI18n } from "@/composables/useI18n";
+
+const { t } = useI18n();
 
 interface Project {
 	id?: string;
@@ -197,6 +20,8 @@ interface Project {
 	pdf?: string;
 	createdAt?: string;
 	updatedAt?: string;
+	pcbQuantity?: number;
+	pcbCost?: number;
 }
 
 interface ProjectModalProps {
@@ -260,20 +85,6 @@ const loadProjectData = async () => {
 				try {
 					const projectFiles = await getFilesByProjectId(props.editingProject.id);
 
-					/*
-					{
-						"id": "file_1767477887302_1npcwrr7r",
-						"project_id": "id-mjyq5dal-74pcsqr2m",
-						"filename": "thumb-prj-id-mjyq5dal-74pcsqr2m.png",
-						"filepath": "blob:http://localhost:3000/da80688b-3153-4004-a35e-845aafa4b074",
-						"file_type": "image/png",
-						"size": 36622,
-						"title": "Thumbnail para openHPA trigger board sensors",
-						"description": "Imagen de thumbnail para el proyecto openHPA trigger board sensors",
-						"created_at": "2026-01-03T22:04:47.302Z"
-					}
-					*/
-
 					// Buscar thumbnail
 					const thumbFile = projectFiles.find((f) => f.filename.startsWith("thumb-prj-"));
 					if (thumbFile) {
@@ -327,10 +138,10 @@ const loadProjectData = async () => {
 	projectForm.value.thumb = "";
 	projectForm.value.pdf = "";
 	// Usar nextTick para asegurar que se procese el cambio vacío antes de asignar el valor real
-	setTimeout(() => {
+	nextTick(() => {
 		projectForm.value.thumb = currentThumb;
 		projectForm.value.pdf = currentPdf;
-	}, 0);
+	});
 };
 
 // Cargar datos cuando se monta el componente
@@ -350,7 +161,7 @@ watch(
 // Watch para actualizar la URL del thumbnail cuando cambia
 watch(
 	() => projectForm.value.thumb,
-	async (newThumb) => {
+	async (newThumb: string) => {
 		if (newThumb && !newThumb.startsWith("data:")) {
 			if (newThumb.startsWith("blob:")) {
 				// Si es una URL blob, intentar cargar el archivo desde OPFS usando el nombre de archivo
@@ -398,7 +209,7 @@ const pdfUrl = ref("");
 // Watch para actualizar la URL del PDF cuando cambia
 watch(
 	() => projectForm.value.pdf,
-	async (newPdf) => {
+	async (newPdf: string) => {
 		if (newPdf && !newPdf.startsWith("data:")) {
 			if (newPdf.startsWith("blob:")) {
 				// Si es una URL blob, intentar cargar el archivo desde OPFS usando el nombre de archivo
@@ -699,11 +510,12 @@ const saveProject = async () => {
 		}
 
 		// Incluir el ID del proyecto en los datos si está editando
+		const formData = projectForm.value;
 		const { thumb, pdf, ...projectData } = {
-			...projectForm.value,
+			...formData,
 			id: props.editingProject?.id || undefined,
 		};
-		emit("save", projectData);
+		emit("save", projectData as Project);
 	} catch (error) {
 		console.error("Error guardando proyecto:", error);
 		alert("Error al guardar el proyecto");
@@ -734,3 +546,193 @@ const getFileNameFromPath = (path: string): string => {
 	return path.split("/").pop()?.split("\\").pop() || `pdf-prj-${props.editingProject?.id || `new_${Date.now()}`}.pdf`;
 };
 </script>
+
+<template>
+	<div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-card-light rounded-2xl shadow-xl max-w-lg w-full p-6">
+			<div class="flex items-center justify-between mb-6">
+				<h2 class="text-xl font-semibold text-text-main-light">
+					{{ editingProject ? t("edit_project") : t("new_project") }}
+				</h2>
+				<button @click="closeModal" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
+				</button>
+			</div>
+
+			<form @submit.prevent="saveProject" class="space-y-4">
+				<div>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
+						{{ t("project_name") }} *
+					</label>
+					<input
+						v-model="projectForm.name"
+						type="text"
+						required
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+						:placeholder="t('placeholder_project_name')" />
+				</div>
+
+				<div>
+					<label class="block text-sm font-medium text-text-main-light mb-2"> {{ t("description") }} </label>
+					<textarea
+						v-model="projectForm.description"
+						rows="4"
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light resize-none"
+						:placeholder="t('placeholder_description')"></textarea>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-2"> {{ t("status") }} </label>
+						<select
+							v-model="projectForm.status"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light">
+							<option value="Draft">{{ t("status_draft") }}</option>
+							<option value="Prototype">{{ t("status_prototype") }}</option>
+							<option value="Production">{{ t("status_production") }}</option>
+							<option value="Archived">{{ t("status_archived") }}</option>
+						</select>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-text-main-light mb-2">
+							{{ t("pcb_quantity") }}
+						</label>
+						<input
+							v-model.number="projectForm.pcbQuantity"
+							type="number"
+							min="1"
+							class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+							:placeholder="t('pcb_quantity')" />
+					</div>
+				</div>
+
+				<div>
+					<label class="block text-sm font-medium text-text-main-light mb-2"> {{ t("pcb_cost") }} ($) </label>
+					<input
+						v-model.number="projectForm.pcbCost"
+						type="number"
+						step="0.01"
+						min="0"
+						class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+						:placeholder="t('pcb_cost')" />
+				</div>
+
+				<!-- Thumbnail Upload -->
+				<div>
+					<label class="block text-sm font-medium text-text-main-light mb-2">
+						{{ t("project_image") }} (Thumbnail)
+					</label>
+					<div
+						class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+						@click="triggerThumbUpload"
+						@drop.prevent="handleThumbDrop"
+						@dragover.prevent>
+						<input
+							ref="thumbInputRef"
+							type="file"
+							accept="image/*"
+							@change="handleThumbSelect"
+							class="hidden" />
+						<div v-if="!projectForm.thumb" class="space-y-2">
+							<PhotoIcon class="w-12 h-12 text-gray-400 mx-auto" />
+							<p class="text-gray-500">{{ t("drag_image_placeholder") }}</p>
+							<p class="text-xs text-gray-400">{{ t("formats_supported") }}: JPG, PNG, WEBP</p>
+						</div>
+						<div v-else class="relative">
+							<img
+								:src="thumbUrl || projectForm.thumb"
+								:alt="projectForm.name || 'Thumbnail'"
+								class="w-32 h-32 object-cover rounded-lg mx-auto" />
+							<button
+								type="button"
+								@click.stop="removeThumb"
+								class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+								<XMarkIcon class="w-4 h-4" />
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Links Section -->
+				<div class="border-t border-gray-200 pt-4">
+					<h3 class="text-md font-medium text-text-main-light mb-3">{{ t("project_links") }}</h3>
+
+					<div class="space-y-3">
+						<div>
+							<label class="block text-sm font-medium text-text-main-light mb-1">
+								{{ t("git_repository") }}
+							</label>
+							<input
+								v-model="projectForm.git"
+								type="url"
+								class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+								placeholder="https://github.com/user/project" />
+						</div>
+
+						<div>
+							<label class="block text-sm font-medium text-text-main-light mb-1">
+								{{ t("website") }}
+							</label>
+							<input
+								v-model="projectForm.web"
+								type="url"
+								class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-text-main-light"
+								placeholder="https://project-website.com" />
+						</div>
+
+						<div>
+							<label class="block text-sm font-medium text-text-main-light mb-1">
+								{{ t("pdf_document") }}
+							</label>
+							<div class="flex gap-2">
+								<div v-if="!projectForm.pdf" class="flex-1">
+									<input
+										ref="pdfInputRef"
+										type="file"
+										accept=".pdf"
+										@change="handlePdfSelect"
+										class="hidden" />
+									<button
+										type="button"
+										@click="triggerPdfUpload"
+										class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm transition-colors">
+										{{ t("upload_pdf") }}
+									</button>
+								</div>
+								<div v-else class="flex items-center gap-2 flex-1">
+									<div
+										class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+										<DocumentTextIcon class="w-5 h-5 text-blue-600" />
+										<span class="text-sm text-text-main-light truncate max-w-xs">{{
+											getFileNameFromPath(projectForm.pdf)
+										}}</span>
+									</div>
+									<button
+										type="button"
+										@click="removePdf"
+										class="p-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors">
+										<XMarkIcon class="w-4 h-4" />
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="flex gap-3 pt-4">
+					<button
+						type="button"
+						@click="closeModal"
+						class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors">
+						{{ t("cancel") }}
+					</button>
+					<button
+						type="submit"
+						class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium">
+						{{ editingProject ? t("save") : t("create") }}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</template>

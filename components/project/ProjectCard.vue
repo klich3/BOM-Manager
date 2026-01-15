@@ -1,67 +1,3 @@
-<template>
-	<div
-		class="bg-card-light rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/50 overflow-hidden"
-		@click="onViewProject">
-		<div class="flex items-start justify-between mb-4">
-			<div class="flex items-center gap-3">
-				<div
-					class="relative w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center overflow-hidden">
-					<img v-if="thumbUrl" :src="thumbUrl" class="w-full h-full object-cover" />
-					<RectangleStackIcon v-else class="w-6 h-6 text-primary" />
-				</div>
-				<div v-if="project.status" class="flex items-center">
-					<span
-						:class="statusClass"
-						class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-						{{ statusLabel }}
-					</span>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<button @click.stop="onEditProject" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-					<PencilIcon class="w-4 h-4 text-blue-600" />
-				</button>
-				<button @click.stop="onDeleteProject" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-					<TrashIcon class="w-4 h-4 text-red-600" />
-				</button>
-			</div>
-		</div>
-
-		<!-- Content area with consistent layout -->
-		<div class="mt-4">
-			<h3 class="text-lg font-semibold text-text-main-light mb-2">
-				{{ project.name }}
-			</h3>
-			<p class="text-sm text-text-muted-light mb-4 line-clamp-2">
-				{{ project.description || "Sin descripción" }}
-			</p>
-
-			<div class="flex items-center justify-between text-xs text-text-muted-light">
-				<span>{{ formatDate(project.createdAt) }}</span>
-				<div class="flex flex-col items-end gap-1">
-					<div class="flex items-center gap-2">
-						<div class="flex items-center gap-1">
-							<CubeIcon class="w-4 h-4" />
-							<span>{{ project.itemCount || 0 }} items</span>
-						</div>
-						<div class="flex items-center gap-1">
-							<CurrencyDollarIcon class="w-4 h-4 text-green-600" />
-							<span class="font-medium" title="Valor Total Proyecto">{{
-								formatValue(project.totalValue || 0)
-							}}</span>
-						</div>
-					</div>
-					<div
-						v-if="project.pcbQuantity && project.pcbQuantity > 0"
-						class="flex items-center gap-1 text-primary font-semibold">
-						<span>{{ formatValue(costPerPcb) }} / PCB</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts">
 import {
 	RectangleStackIcon,
@@ -183,3 +119,67 @@ const formatValue = (value: number | string) => {
 	});
 };
 </script>
+
+<template>
+	<div
+		class="bg-card-light rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-primary/50 overflow-hidden"
+		@click="onViewProject">
+		<div class="flex items-start justify-between mb-4">
+			<div class="flex items-center gap-3">
+				<div
+					class="relative w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center overflow-hidden">
+					<img v-if="thumbUrl" :src="thumbUrl" class="w-full h-full object-cover" />
+					<RectangleStackIcon v-else class="w-6 h-6 text-primary" />
+				</div>
+				<div v-if="project.status" class="flex items-center">
+					<span
+						:class="statusClass"
+						class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+						{{ statusLabel }}
+					</span>
+				</div>
+			</div>
+			<div class="flex gap-2">
+				<button @click.stop="onEditProject" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+					<PencilIcon class="w-4 h-4 text-blue-600" />
+				</button>
+				<button @click.stop="onDeleteProject" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+					<TrashIcon class="w-4 h-4 text-red-600" />
+				</button>
+			</div>
+		</div>
+
+		<!-- Content area with consistent layout -->
+		<div class="mt-4">
+			<h3 class="text-lg font-semibold text-text-main-light mb-2">
+				{{ project.name }}
+			</h3>
+			<p class="text-sm text-text-muted-light mb-4 line-clamp-2">
+				{{ project.description || "Sin descripción" }}
+			</p>
+
+			<div class="flex items-center justify-between text-xs text-text-muted-light">
+				<span>{{ formatDate(project.createdAt) }}</span>
+				<div class="flex flex-col items-end gap-1">
+					<div class="flex items-center gap-2">
+						<div class="flex items-center gap-1">
+							<CubeIcon class="w-4 h-4" />
+							<span>{{ project.itemCount || 0 }} items</span>
+						</div>
+						<div class="flex items-center gap-1">
+							<CurrencyDollarIcon class="w-4 h-4 text-green-600" />
+							<span class="font-medium" title="Valor Total Proyecto">{{
+								formatValue(project.totalValue || 0)
+							}}</span>
+						</div>
+					</div>
+					<div
+						v-if="project.pcbQuantity && project.pcbQuantity > 0"
+						class="flex items-center gap-1 text-primary font-semibold">
+						<span>{{ formatValue(costPerPcb) }} / PCB</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>

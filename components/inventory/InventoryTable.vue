@@ -1,3 +1,173 @@
+<script setup lang="ts">
+import {
+	CubeIcon,
+	PencilIcon,
+	TrashIcon,
+	GlobeAltIcon,
+	ShoppingCartIcon,
+	ArrowDownTrayIcon,
+	DocumentTextIcon,
+} from "@heroicons/vue/24/outline";
+import { ref, watch } from "vue";
+import { useNotifications } from "@/composables/useNotifications";
+import { useI18n } from "@/composables/useI18n";
+
+interface InventoryItem {
+	id: string;
+	name: string;
+	description?: string;
+	quantity?: number; // Cantidad comprada inicial
+	unit?: string;
+	category?: string;
+	in_stock?: number; // Stock actual
+	min_stock?: number;
+	supplier?: string;
+	part_number?: string;
+	lcsc_part?: string;
+	price?: number;
+	notes?: string;
+	manufacturer?: string;
+	customer_no?: string;
+	package?: string;
+	rohs?: string;
+	ext_price?: number;
+	lead_time?: number;
+	date_code_lot_no?: string;
+	status?: string;
+	pcb_designation?: string;
+	item_image?: string;
+	project_name?: string;
+}
+
+interface Props {
+	items: InventoryItem[];
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<{
+	"edit-item": [item: InventoryItem];
+	"remove-item": [id: string];
+	"remove-items": [ids: string[]];
+	"open-lcsc-preview": [partNumber: string, itemId?: string];
+	"open-lcsc-purchase": [partNumber: string];
+	"add-first-item": [];
+	"delete-item": [id: string];
+	"delete-selected-items": [ids: string[]];
+	"items-assigned-to-project": [projectId: string];
+}>();
+
+const { t } = useI18n();
+const selectedItems = ref<string[]>([]);
+const selectAll = ref(false);
+const showAssignProjectModal = ref(false);
+
+const toggleSelectAll = () => {
+	selectAll.value = !selectAll.value;
+	if (selectAll.value) {
+		selectedItems.value = props.items.map((item: InventoryItem) => item.id);
+	} else {
+		selectedItems.value = [];
+	}
+};
+
+const toggleSelect = (id: string) => {
+	if (selectedItems.value.includes(id)) {
+		selectedItems.value = selectedItems.value.filter((i: string) => i !== id);
+	} else {
+		selectedItems.value = [...selectedItems.value, id];
+	}
+
+	// Actualizar el estado de selectAll según la selección actual
+	selectAll.value = selectedItems.value.length === props.items.length && props.items.length > 0;
+};
+
+const clearSelection = () => {
+	selectedItems.value = [];
+	selectAll.value = false;
+};
+
+const deleteSelectedItems = () => {
+	// Emitir un evento para que el componente padre maneje la eliminación de múltiples items
+	const itemsToDelete = [...selectedItems.value];
+	selectedItems.value = [];
+	selectAll.value = false;
+	emit("remove-items", itemsToDelete);
+	emit("delete-selected-items", itemsToDelete);
+};
+
+const onItemsAssignedToProject = (projectId: string) => {
+	showAssignProjectModal.value = false;
+	// Mostrar notificación de éxito
+	const { success } = useNotifications();
+	success("Éxito", `Items asignados al proyecto`);
+	// Limpiar selección después de asignar
+	selectedItems.value = [];
+	selectAll.value = false;
+	// Emitir evento para que el componente padre actualice los datos
+	emit("items-assigned-to-project", projectId);
+};
+
+const openLcscPreview = (item: InventoryItem) => {
+	if (item.lcsc_part) {
+		emit("open-lcsc-preview", item.lcsc_part, item.id);
+	}
+};
+
+const openLcscPurchase = (partNumber: string) => {
+	emit("open-lcsc-purchase", partNumber);
+};
+
+// Initialize notifications composable
+const { success, error: showError, warning, info } = useNotifications();
+
+const copyToClipboard = (value: string) => {
+	navigator.clipboard.writeText(value).then(
+		() => {
+			info(t("copied_to_clipboard"), "LCSC Part Number");
+		},
+		(err) => {
+			console.error("Failed to copy: ", err);
+			showError(t("error"), "No se pudo copiar al portapapeles");
+		},
+	);
+};
+
+// Actualizar selectAll cuando cambia el número de elementos seleccionados
+watch(
+	() => selectedItems.value,
+	(newSelected: string[]) => {
+		// Esta lógica ahora está en toggleSelect
+	},
+	{ immediate: true },
+);
+
+// Exponer para que el padre pueda acceder a los seleccionados
+defineExpose({
+	selectedItems,
+	clearSelection,
+});
+
+// Función para obtener clase de color según estado de stock
+const getStockRowClass = (in_stock: number | undefined, min_stock: number | undefined) => {
+	const stock = in_stock || 0;
+	const min = min_stock || 0;
+
+	if (stock <= 0) {
+		// Agotado - rojo claro
+		return "bg-red-50";
+	} else if (stock <= min) {
+		// Stock bajo - naranja claro
+		return "bg-orange-50";
+	} else {
+		// Stock OK - blanco
+		return "bg-white";
+	}
+};
+
+// Por ahora la prop para mostrar checkboxes siempre está en true, si cambiamos este valor no muestra nada.
+const showSelect = ref(true);
+</script>
+
 <template>
 	<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
 		<div class="overflow-x-auto">
@@ -170,174 +340,3 @@
 		@close="showAssignProjectModal = false"
 		@assigned="onItemsAssignedToProject" />
 </template>
-
-<script setup lang="ts">
-import {
-	CubeIcon,
-	PencilIcon,
-	TrashIcon,
-	GlobeAltIcon,
-	ShoppingCartIcon,
-	ArrowDownTrayIcon,
-	DocumentTextIcon,
-} from "@heroicons/vue/24/outline";
-import { ref, watch } from "vue";
-import { useNotifications } from "@/composables/useNotifications";
-import { useI18n } from "@/composables/useI18n";
-import AssignProjectModal from "@/components/AssignProjectModal.vue";
-
-interface InventoryItem {
-	id: string;
-	name: string;
-	description?: string;
-	quantity?: number; // Cantidad comprada inicial
-	unit?: string;
-	category?: string;
-	in_stock?: number; // Stock actual
-	min_stock?: number;
-	supplier?: string;
-	part_number?: string;
-	lcsc_part?: string;
-	price?: number;
-	notes?: string;
-	manufacturer?: string;
-	customer_no?: string;
-	package?: string;
-	rohs?: string;
-	ext_price?: number;
-	lead_time?: number;
-	date_code_lot_no?: string;
-	status?: string;
-	pcb_designation?: string;
-	item_image?: string;
-	project_name?: string;
-}
-
-interface Props {
-	items: InventoryItem[];
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<{
-	"edit-item": [item: InventoryItem];
-	"remove-item": [id: string];
-	"remove-items": [ids: string[]];
-	"open-lcsc-preview": [partNumber: string, itemId?: string];
-	"open-lcsc-purchase": [partNumber: string];
-	"add-first-item": [];
-	"delete-item": [id: string];
-	"delete-selected-items": [ids: string[]];
-	"items-assigned-to-project": [projectId: string];
-}>();
-
-const { t } = useI18n();
-const selectedItems = ref<string[]>([]);
-const selectAll = ref(false);
-const showAssignProjectModal = ref(false);
-
-const toggleSelectAll = () => {
-	selectAll.value = !selectAll.value;
-	if (selectAll.value) {
-		selectedItems.value = props.items.map((item: InventoryItem) => item.id);
-	} else {
-		selectedItems.value = [];
-	}
-};
-
-const toggleSelect = (id: string) => {
-	if (selectedItems.value.includes(id)) {
-		selectedItems.value = selectedItems.value.filter((i: string) => i !== id);
-	} else {
-		selectedItems.value = [...selectedItems.value, id];
-	}
-
-	// Actualizar el estado de selectAll según la selección actual
-	selectAll.value = selectedItems.value.length === props.items.length && props.items.length > 0;
-};
-
-const clearSelection = () => {
-	selectedItems.value = [];
-	selectAll.value = false;
-};
-
-const deleteSelectedItems = () => {
-	// Emitir un evento para que el componente padre maneje la eliminación de múltiples items
-	const itemsToDelete = [...selectedItems.value];
-	selectedItems.value = [];
-	selectAll.value = false;
-	emit("remove-items", itemsToDelete);
-	emit("delete-selected-items", itemsToDelete);
-};
-
-const onItemsAssignedToProject = (projectId: string) => {
-	showAssignProjectModal.value = false;
-	// Mostrar notificación de éxito
-	const { success } = useNotifications();
-	success("Éxito", `Items asignados al proyecto`);
-	// Limpiar selección después de asignar
-	selectedItems.value = [];
-	selectAll.value = false;
-	// Emitir evento para que el componente padre actualice los datos
-	emit("items-assigned-to-project", projectId);
-};
-
-const openLcscPreview = (item: InventoryItem) => {
-	if (item.lcsc_part) {
-		emit("open-lcsc-preview", item.lcsc_part, item.id);
-	}
-};
-
-const openLcscPurchase = (partNumber: string) => {
-	emit("open-lcsc-purchase", partNumber);
-};
-
-// Initialize notifications composable
-const { success, error: showError, warning, info } = useNotifications();
-
-const copyToClipboard = (value: string) => {
-	navigator.clipboard.writeText(value).then(
-		() => {
-			info(t("copied_to_clipboard"), "LCSC Part Number");
-		},
-		(err) => {
-			console.error("Failed to copy: ", err);
-			showError(t("error"), "No se pudo copiar al portapapeles");
-		},
-	);
-};
-
-// Actualizar selectAll cuando cambia el número de elementos seleccionados
-watch(
-	selectedItems,
-	(newSelected: string[], oldSelected: string[]) => {
-		// Esta lógica ahora está en toggleSelect
-	},
-	{ immediate: true },
-);
-
-// Exponer para que el padre pueda acceder a los seleccionados
-defineExpose({
-	selectedItems,
-	clearSelection,
-});
-
-// Función para obtener clase de color según estado de stock
-const getStockRowClass = (in_stock: number | undefined, min_stock: number | undefined) => {
-	const stock = in_stock || 0;
-	const min = min_stock || 0;
-
-	if (stock <= 0) {
-		// Agotado - rojo claro
-		return "bg-red-50";
-	} else if (stock <= min) {
-		// Stock bajo - naranja claro
-		return "bg-orange-50";
-	} else {
-		// Stock OK - blanco
-		return "bg-white";
-	}
-};
-
-// Por ahora la prop para mostrar checkboxes siempre está en true, si cambiamos este valor no muestra nada.
-const showSelect = ref(true);
-</script>

@@ -1,3 +1,39 @@
+<script setup lang="ts">
+import { XMarkIcon } from "@heroicons/vue/24/outline";
+import { useI18n } from "@/composables/useI18n";
+
+const { t } = useI18n();
+
+interface Props {
+	show: boolean;
+	title: string;
+	message: string;
+	confirmText: string;
+}
+
+interface Emits {
+	(e: "confirm"): void;
+	(e: "close"): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+	title: "",
+	message: "",
+	confirmText: "",
+});
+
+const emit = defineEmits<Emits>();
+
+const closeModal = () => {
+	emit("close");
+};
+
+const confirmAction = () => {
+	emit("confirm");
+	closeModal();
+};
+</script>
+
 <template>
 	<Teleport to="body">
 		<div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -16,7 +52,7 @@
 						<button
 							@click="closeModal"
 							class="px-4 py-2 rounded-lg text-text-main-light font-medium hover:bg-gray-100">
-							Cancelar
+							{{ t("cancel") }}
 						</button>
 						<button
 							@click="confirmAction"
@@ -29,36 +65,3 @@
 		</div>
 	</Teleport>
 </template>
-
-<script setup lang="ts">
-import { XMarkIcon } from "@heroicons/vue/24/outline";
-
-interface Props {
-	show: boolean;
-	title: string;
-	message: string;
-	confirmText: string;
-}
-
-interface Emits {
-	(e: "confirm"): void;
-	(e: "close"): void;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-	title: "Confirmar acción",
-	message: "¿Estás seguro de que deseas continuar?",
-	confirmText: "Confirmar",
-});
-
-const emit = defineEmits<Emits>();
-
-const closeModal = () => {
-	emit("close");
-};
-
-const confirmAction = () => {
-	emit("confirm");
-	closeModal();
-};
-</script>

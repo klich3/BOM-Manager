@@ -1,3 +1,41 @@
+<script setup lang="ts">
+import { ref, watch } from "vue";
+import { XMarkIcon, DocumentTextIcon, ArrowDownTrayIcon, ExclamationCircleIcon } from "@heroicons/vue/24/outline";
+
+interface Props {
+	show: boolean;
+	pdfUrl: string;
+	title?: string;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<{
+	close: [];
+}>();
+
+const isLoading = ref(true);
+const hasError = ref(false);
+
+watch(
+	() => props.show,
+	(newValue: boolean) => {
+		if (newValue) {
+			isLoading.value = true;
+			hasError.value = false;
+		}
+	},
+);
+
+const closeModal = () => {
+	emit("close");
+};
+
+const handleError = () => {
+	isLoading.value = false;
+	hasError.value = true;
+};
+</script>
+
 <template>
 	<div v-if="show" class="fixed inset-0 bg-black/75 flex items-center justify-center z-[60] p-0 sm:p-4">
 		<div class="bg-white dark:bg-gray-900 w-full h-full sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
@@ -80,41 +118,3 @@
 		</div>
 	</div>
 </template>
-
-<script setup lang="ts">
-import { ref, watch } from "vue";
-import { XMarkIcon, DocumentTextIcon, ArrowDownTrayIcon, ExclamationCircleIcon } from "@heroicons/vue/24/outline";
-
-interface Props {
-	show: boolean;
-	pdfUrl: string;
-	title?: string;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<{
-	close: [];
-}>();
-
-const isLoading = ref(true);
-const hasError = ref(false);
-
-watch(
-	() => props.show,
-	(newValue) => {
-		if (newValue) {
-			isLoading.value = true;
-			hasError.value = false;
-		}
-	},
-);
-
-const closeModal = () => {
-	emit("close");
-};
-
-const handleError = () => {
-	isLoading.value = false;
-	hasError.value = true;
-};
-</script>

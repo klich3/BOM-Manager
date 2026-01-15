@@ -1,3 +1,20 @@
+<script setup>
+const props = defineProps({
+	isOpen: Boolean,
+	options: Object,
+});
+
+const emit = defineEmits(["confirm", "cancel"]);
+
+const handleConfirm = () => {
+	emit("confirm", true);
+};
+
+const handleCancel = () => {
+	emit("cancel", false);
+};
+</script>
+
 <template>
 	<div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
 		<!-- Backdrop -->
@@ -84,20 +101,3 @@
 		</div>
 	</div>
 </template>
-
-<script setup>
-const props = defineProps({
-	isOpen: Boolean,
-	options: Object,
-});
-
-const emit = defineEmits(["confirm", "cancel"]);
-
-const handleConfirm = () => {
-	emit("confirm", true);
-};
-
-const handleCancel = () => {
-	emit("cancel", false);
-};
-</script>

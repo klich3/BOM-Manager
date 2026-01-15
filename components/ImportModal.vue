@@ -1,303 +1,23 @@
-<template>
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-		<div
-			:class="
-				step == 1
-					? 'bg-card-light rounded-2xl shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 ease-in-out'
-					: 'bg-card-light rounded-2xl shadow-xl w-[calc(100vw-2rem)] h-[calc(100vh-2rem)] p-6 overflow-hidden flex flex-col transition-all duration-300 ease-in-out'
-			">
-			<!-- Header -->
-			<div class="flex items-center justify-between mb-6">
-				<h2 class="text-xl font-semibold text-text-main-light">{{ t("import_modal.title") }}</h2>
-				<button @click="handleClose" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
-				</button>
-			</div>
-
-			<!-- Progress indicator -->
-			<div class="mb-6">
-				<div class="flex justify-between items-center mb-2">
-					<span class="text-primary text-sm font-bold uppercase tracking-wider">{{ t("import_modal.step_x_of_y", { current: step, total: 3 }) }}</span>
-					<span class="text-text-main-light text-sm font-medium">{{ getStepTitle() }}</span>
-				</div>
-				<div class="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-					<div
-						class="absolute top-0 left-0 h-full bg-primary rounded-full"
-						:style="{ width: getProgressWidth() }"></div>
-				</div>
-				<div class="flex justify-between text-xs text-text-muted-light font-medium mt-1">
-					<span>{{ t("import_modal.step_upload") }}</span>
-					<span class="text-text-main-light">{{ t("import_modal.step_mapping") }}</span>
-					<span>{{ t("import_modal.step_validation") }}</span>
-				</div>
-			</div>
-
-			<!-- Content based on step -->
-			<div class="flex-1 overflow-auto">
-				<div v-if="step === 1">
-					<!-- Step 1: File Upload -->
-					<div class="space-y-4">
-						<FileUpload @file-selected="handleFileImport" @error="handleImportError" />
-
-						<div v-if="selectedFile" class="mt-6 p-4 bg-gray-50 rounded-xl">
-							<div class="flex items-center justify-between">
-								<div>
-									<p class="font-medium text-gray-900">
-										{{ selectedFile.name }}
-									</p>
-									<p class="text-sm text-gray-500">
-										{{ formatFileSize(selectedFile?.size || 0) }} •
-										{{ selectedFile?.type || t("all") }}
-									</p>
-								</div>
-								<button
-									@click="resetImport"
-									class="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-									{{ t("import_modal.change_file") }}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div v-if="step === 2">
-					<!-- Step 2: Data Mapping -->
-					<div class="mb-6">
-						<!-- Preview of final table in InventoryTable style -->
-						<div>
-							<h3 class="text-lg font-medium text-gray-900 mb-4">{{ t("import_modal.final_table_preview") }}</h3>
-							<p class="text-gray-600 mb-4">
-								{{ t("import_modal.rows_selected", { count: countSelectedRowsStep2, total: sampleData?.rows?.length || 0 }) }}
-							</p>
-							<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
-								<div class="overflow-x-auto">
-									<table class="w-full">
-										<thead class="bg-gray-50">
-											<tr>
-											<th
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase w-[40px]">
-													{{ t("all") }}
-												</th>
-												<th
-													v-for="(header, headerIndex) in originalHeaders"
-													:key="'preview-header-' + headerIndex"
-													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
-													{{ header }}
-													<span
-														v-if="getMappedField(header)"
-														class="block text-xs text-gray-500">
-														→ {{ getFieldName(getMappedField(header)) }}
-													</span>
-												</th>
-											</tr>
-											<!-- Row with field names and selectors -->
-											<tr class="bg-gray-100">
-												<th
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40px]">
-													<!-- Empty header for the checkbox column -->
-												</th>
-												<th
-													v-for="(header, headerIndex) in originalHeaders"
-													:key="'selector-header-' + headerIndex"
-													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-													<select
-														:value="getMappedField(header) || ''"
-														@change="(e) => updateColumnMapping(header, e.target.value)"
-														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-														<option value="">{{ t("import_modal.select_field_placeholder") }}</option>
-														<optgroup :label="t('import_modal.required_fields')">
-															<option value="name">{{ t("name") }}</option>
-															<option value="quantity">{{ t("quantity") }}</option>
-														</optgroup>
-														<optgroup :label="t('import_modal.optional_fields')">
-															<option value="description">{{ t("description") }}</option>
-															<option value="category">{{ t("category") }}</option>
-															<option value="supplier">{{ t("supplier") }}</option>
-															<option value="partNumber">{{ t("partNumber") }}</option>
-															<option value="lcscPart">{{ t("lcscPart") }}</option>
-															<option value="price">{{ t("unit_price") }}</option>
-															<option value="inStock">{{ t("current_stock") }}</option>
-															<option value="minStock">{{ t("min_stock_header") }}</option>
-															<option value="notes">{{ t("notes") }}</option>
-															<option value="manufacturer">{{ t("manufacturer") }}</option>
-															<option value="package">{{ t("package") }}</option>
-															<option value="status">{{ t("status") }}</option>
-														</optgroup>
-													</select>
-												</th>
-											</tr>
-										</thead>
-										<tbody class="divide-y divide-gray-200">
-											<tr v-if="previewItems.length === 0">
-												<td
-													:colspan="originalHeaders.length + 1"
-													class="px-6 py-12 text-center">
-													<p class="text-text-muted-light">{{ t("import_modal.no_data_preview") }}</p>
-												</td>
-											</tr>
-											<tr
-												v-for="(row, index) in sampleData?.rows"
-												:key="index"
-												class="hover:bg-gray-50 transition-colors">
-												<td class="px-6 py-4 text-sm text-gray-900 w-[40px]">
-													<input
-														type="checkbox"
-														:checked="isRowSelectedStep2(index)"
-														@change="toggleRowSelectionStep2(index)"
-														class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
-												</td>
-												<td
-													v-for="(header, headerIndex) in originalHeaders"
-													:key="'cell-' + index + '-' + headerIndex"
-													class="px-6 py-4 text-sm text-text-main-light">
-													{{ row[headerIndex] || "-" }}
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div v-if="step === 3">
-					<!-- Step 3: Import Preview -->
-					<div class="mb-6">
-						<h3 class="text-lg font-medium text-gray-900 mb-4">{{ t("import_modal.import_review") }}</h3>
-						<p class="text-gray-600 mb-4">{{ t("import_modal.items_will_be_imported", { count: mappedItems.length }) }}</p>
-
-						<!-- Selección de destino de importación -->
-						<div class="mb-4 p-4 bg-gray-50 rounded-lg">
-							<label class="block text-sm font-medium text-gray-700 mb-2">{{ t("import_modal.import_destination") }}</label>
-							<div class="flex gap-4">
-								<div class="flex items-center">
-									<input
-										type="radio"
-										v-model="importDestination"
-										value="global"
-										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
-									<label class="ml-2 block text-sm text-gray-700">{{ t("import_modal.global_inventory") }}</label>
-								</div>
-								<div v-if="projects.length > 0" class="flex items-center">
-									<input
-										type="radio"
-										v-model="importDestination"
-										value="project"
-										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
-									<label class="ml-2 block text-sm text-gray-700">{{ t("import_modal.existing_project") }}</label>
-								</div>
-								<div class="flex items-center">
-									<input
-										type="radio"
-										v-model="importDestination"
-										value="new_project"
-										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
-									<label class="ml-2 block text-sm text-gray-700">{{ t("import_modal.new_project") }}</label>
-								</div>
-							</div>
-
-							<div v-if="importDestination === 'project' && projects.length > 0" class="mt-3">
-								<select
-									v-model="selectedProjectId"
-									class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
-									<option value="">{{ t("import_modal.select_project_placeholder") }}</option>
-									<option v-for="project in projects" :key="project.id" :value="project.id">
-										{{ project.name }}
-									</option>
-								</select>
-							</div>
-							<div v-else-if="importDestination === 'new_project'" class="mt-3">
-								<input
-									type="text"
-									v-model="newProjectName"
-									:placeholder="t('import_modal.new_project_name_placeholder')"
-									class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
-							</div>
-							<div
-								v-else-if="importDestination === 'project' && projects.length === 0"
-								class="mt-2 text-sm text-amber-600">
-								{{ t("import_modal.no_projects_available") }}
-							</div>
-						</div>
-
-						<div v-if="parseResult.errors.length > 0" class="mb-4">
-							<h4 class="font-medium text-red-600 mb-2">{{ t("import_modal.errors_detected") }}</h4>
-							<ul class="list-disc list-inside text-red-600 text-sm space-y-1">
-								<li v-for="(error, index) in parseResult.errors" :key="index">
-									{{ error }}
-								</li>
-							</ul>
-						</div>
-
-						<div v-if="parseResult.warnings.length > 0" class="mb-4">
-							<h4 class="font-medium text-amber-600 mb-2">{{ t("import_modal.warnings") }}</h4>
-							<ul class="list-disc list-inside text-amber-600 text-sm space-y-1">
-								<li v-for="(warning, index) in parseResult.warnings" :key="index">
-									{{ warning }}
-								</li>
-							</ul>
-						</div>
-
-						<ImportPreviewTable
-							:items="parsedItems"
-							:editable="true"
-							:field-mappings="columnMapping"
-							@update-item="updateEditableItem" />
-					</div>
-				</div>
-			</div>
-
-			<!-- Action buttons -->
-			<div class="flex justify-end items-center gap-4 mt-6 pt-6 border-t border-gray-200">
-				<button
-					@click="handleClose"
-					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
-					{{ t("cancel") }}
-				</button>
-				<button
-					v-if="step > 1"
-					@click="previousStep"
-					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
-					{{ t("previous") }}
-				</button>
-				<button
-					v-if="step < 3 && !isProcessing"
-					@click="nextStep"
-					:disabled="!canProceed"
-					class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-					<span>{{ step === 1 ? t("import_modal.process_file") : t("next") }}</span>
-					<ArrowRightIcon class="w-5 h-5" v-if="step < 3" />
-				</button>
-				<button
-					v-if="step === 3 && !isProcessing"
-					@click="confirmImport"
-					class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold transition-all flex items-center gap-2">
-					<span>{{ t("import_modal.import_data") }}</span>
-				</button>
-				<div v-if="isProcessing" class="flex items-center gap-2 text-gray-600">
-					<div class="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-					<span>{{ t("import_modal.processing") }}</span>
-				</div>
-			</div>
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts">
-import { XMarkIcon, ArrowRightIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/outline";
-import FileUpload from "@/components/FileUpload.vue";
-import { useFileParser, type ParseResult } from "@/composables/useFileParser";
-import type { BOMItem } from "@/types/bom";
 import { computed, ref, watch } from "vue";
+import { XMarkIcon, ArrowRightIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { useI18n } from "@/composables/useI18n";
+import { useFileParser } from "@/composables/useFileParser";
 import { useDatabase } from "@/composables/useDatabase";
 import { useImportStore } from "@/stores/import";
 import { storeToRefs } from "pinia";
 import { useNotifications } from "@/composables/useNotifications";
-import ImportPreviewTable from "@/components/ImportPreviewTable.vue";
 import { convertBomItemToSnake } from "@/composables/useDatabaseUtils";
+import type { BOMItem } from "@/types/bom";
+import type { ParseResult } from "@/composables/useFileParser";
 
-// Definir los eventos que emite este componente
+// Props y Emits
+interface Props {
+	show?: boolean;
+	projectId?: string;
+}
+const props = defineProps<Props>();
+
 const emit = defineEmits<{
 	close: [];
 	"file-selected": [file: File];
@@ -309,19 +29,15 @@ const emit = defineEmits<{
 	];
 }>();
 
-// Definir las props si es necesario
-interface Props {
-	show?: boolean;
-	projectId?: string; // ID del proyecto actual si se está importando desde una página de proyecto
-}
-const props = defineProps<Props>();
-
-// State
+// Composables
+const i18n = useI18n();
+const t = i18n.t;
 const { parseFile, detectColumnMapping } = useFileParser();
 const db = useDatabase();
 const importStore = useImportStore();
+const { success, error: showError, warning, info } = useNotifications();
 
-// Access state from store using storeToRefs
+// State from store
 const {
 	step,
 	selectedFile,
@@ -335,9 +51,6 @@ const {
 	selectedProjectId,
 	newProjectName,
 } = storeToRefs(importStore);
-
-// Initialize notifications composable
-const { success, error: showError, warning, info } = useNotifications();
 
 // Reactive variables for component matching
 const rowComponentMatches = ref<Record<number, string>>({});
@@ -355,13 +68,13 @@ const previewItems = computed(() => {
 
 	// Return the original data rows as they are from the CSV
 	return sampleData.value.rows
-		.map((row, index) => ({ row, index }))
-		.filter(({ index }) => selectedRowsStep2.value[index] !== false)
-		.map(({ row }) => {
+		.map((row: any[], index: number) => ({ row, index }))
+		.filter(({ index }: { index: number }) => selectedRowsStep2.value[index] !== false)
+		.map(({ row }: { row: any[] }) => {
 			const item: any = {};
 
 			// For each header in the original CSV, map it to the corresponding value
-			originalHeaders.value.forEach((header, index) => {
+			originalHeaders.value.forEach((header: string, index: number) => {
 				if (header && row[index] !== undefined && row[index] !== null) {
 					// Use the header as field name with its corresponding value
 					item[header] = row[index];
@@ -380,20 +93,25 @@ const mappedItems = computed(() => {
 	if (!sampleData.value?.rows || !originalHeaders.value || !columnMapping.value) return [];
 
 	return sampleData.value.rows
-		.map((row, index) => ({ row, index }))
-		.filter(({ index }) => selectedRowsStep2.value[index] !== false)
-		.map(({ row }) => {
+		.map((row: any[], index: number) => ({ row, index }))
+		.filter(({ index }: { index: number }) => selectedRowsStep2.value[index] !== false)
+		.map(({ row }: { row: any[] }) => {
 			const item: any = {};
 
 			// Create a mapping from headers to values for this row
 			const rowValues: Record<string, any> = {};
-			originalHeaders.value.forEach((header, index) => {
+			originalHeaders.value.forEach((header: string, index: number) => {
 				rowValues[header] = row[index];
 			});
 
 			// Apply column mapping: for each field in the schema, find the corresponding header
 			for (const [header, field] of Object.entries(columnMapping.value)) {
-				if (field && rowValues[header] !== undefined && rowValues[header] !== null) {
+				if (
+					field &&
+					typeof field === "string" &&
+					rowValues[header] !== undefined &&
+					rowValues[header] !== null
+				) {
 					item[field] = rowValues[header];
 				}
 			}
@@ -407,7 +125,7 @@ const mappedItems = computed(() => {
 // Initialize editable items when mappedItems changes
 watch(
 	mappedItems,
-	(newMappedItems) => {
+	(newMappedItems: any[]) => {
 		if (newMappedItems && newMappedItems.length > 0) {
 			editableItems.value = JSON.parse(JSON.stringify(newMappedItems));
 		}
@@ -429,7 +147,7 @@ const loadExistingComponents = async () => {
 // Load existing components when sample data is available
 watch(
 	() => sampleData.value,
-	async (newSampleData) => {
+	async (newSampleData: any) => {
 		if (newSampleData && newSampleData.rows.length > 0) {
 			await loadExistingComponents();
 			// Set original headers from sample data
@@ -615,11 +333,11 @@ const getColumnMappingLabel = (header: string): string | null => {
 	}
 
 	for (const [fieldKey, fieldLabel] of Object.entries({
-		...Object.fromEntries(importStore.requiredFields.map((f) => [f.key, f.label])),
-		...Object.fromEntries(importStore.optionalFields.map((f) => [f.key, f.label])),
+		...Object.fromEntries(importStore.requiredFields.map((f: any) => [f.key, f.label])),
+		...Object.fromEntries(importStore.optionalFields.map((f: any) => [f.key, f.label])),
 	})) {
 		if (columnMapping.value[fieldKey] === header) {
-			return fieldLabel;
+			return fieldLabel as string;
 		}
 	}
 	return null;
@@ -637,6 +355,11 @@ const updateColumnMapping = (header: string, field: string) => {
 		...importStore.columnMapping,
 		[header]: field,
 	};
+};
+
+const handleColumnMappingChange = (header: string, event: Event) => {
+	const target = event.target as HTMLSelectElement;
+	updateColumnMapping(header, target.value);
 };
 
 // Función para obtener el header mapeado a un campo específico
@@ -660,7 +383,7 @@ const isRowSelectedStep2 = (index: number): boolean => {
 // Función para contar filas seleccionadas en el paso 2
 const countSelectedRowsStep2 = computed(() => {
 	if (!selectedRowsStep2.value || !sampleData.value?.rows) return 0;
-	return sampleData.value.rows.filter((row, index) => selectedRowsStep2.value[index] !== false).length;
+	return sampleData.value.rows.filter((row: any[], index: number) => selectedRowsStep2.value[index] !== false).length;
 });
 
 // Función para seleccionar/deseleccionar todos los elementos en la vista previa
@@ -668,7 +391,7 @@ const toggleSelectAllPreview = () => {
 	if (selectedPreviewItems.value.length === previewItems.value.length) {
 		selectedPreviewItems.value = [];
 	} else {
-		selectedPreviewItems.value = previewItems.value.map((_, index) => index);
+		selectedPreviewItems.value = previewItems.value.map((_: any, index: number) => index);
 	}
 };
 
@@ -766,3 +489,316 @@ const confirmImport = async () => {
 	}
 };
 </script>
+
+<template>
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div
+			:class="
+				step == 1
+					? 'bg-card-light rounded-2xl shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 ease-in-out'
+					: 'bg-card-light rounded-2xl shadow-xl w-[calc(100vw-2rem)] h-[calc(100vh-2rem)] p-6 overflow-hidden flex flex-col transition-all duration-300 ease-in-out'
+			">
+			<!-- Header -->
+			<div class="flex items-center justify-between mb-6">
+				<h2 class="text-xl font-semibold text-text-main-light">{{ t("import_modal.title") }}</h2>
+				<button @click="handleClose" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
+				</button>
+			</div>
+
+			<!-- Progress indicator -->
+			<div class="mb-6">
+				<div class="flex justify-between items-center mb-2">
+					<span class="text-primary text-sm font-bold uppercase tracking-wider">{{
+						t("import_modal.step_x_of_y", { current: step, total: 3 })
+					}}</span>
+					<span class="text-text-main-light text-sm font-medium">{{ getStepTitle() }}</span>
+				</div>
+				<div class="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+					<div
+						class="absolute top-0 left-0 h-full bg-primary rounded-full"
+						:style="{ width: getProgressWidth() }"></div>
+				</div>
+				<div class="flex justify-between text-xs text-text-muted-light font-medium mt-1">
+					<span>{{ t("import_modal.step_upload") }}</span>
+					<span class="text-text-main-light">{{ t("import_modal.step_mapping") }}</span>
+					<span>{{ t("import_modal.step_validation") }}</span>
+				</div>
+			</div>
+
+			<!-- Content based on step -->
+			<div class="flex-1 overflow-auto">
+				<div v-if="step === 1">
+					<!-- Step 1: File Upload -->
+					<div class="space-y-4">
+						<FileUpload @file-selected="handleFileImport" @error="handleImportError" />
+
+						<div v-if="selectedFile" class="mt-6 p-4 bg-gray-50 rounded-xl">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="font-medium text-gray-900">
+										{{ selectedFile.name }}
+									</p>
+									<p class="text-sm text-gray-500">
+										{{ formatFileSize(selectedFile?.size || 0) }} •
+										{{ selectedFile?.type || t("all") }}
+									</p>
+								</div>
+								<button
+									@click="resetImport"
+									class="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+									{{ t("import_modal.change_file") }}
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div v-if="step === 2">
+					<!-- Step 2: Data Mapping -->
+					<div class="mb-6">
+						<!-- Preview of final table in InventoryTable style -->
+						<div>
+							<h3 class="text-lg font-medium text-gray-900 mb-4">
+								{{ t("import_modal.final_table_preview") }}
+							</h3>
+							<p class="text-gray-600 mb-4">
+								{{
+									t("import_modal.rows_selected", {
+										count: countSelectedRowsStep2,
+										total: sampleData?.rows?.length || 0,
+									})
+								}}
+							</p>
+							<div class="bg-card-light rounded-2xl shadow-sm overflow-hidden">
+								<div class="overflow-x-auto">
+									<table class="w-full">
+										<thead class="bg-gray-50">
+											<tr>
+												<th
+													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase w-[40px]">
+													{{ t("all") }}
+												</th>
+												<th
+													v-for="(header, headerIndex) in originalHeaders"
+													:key="'preview-header-' + headerIndex"
+													class="px-6 py-4 text-left text-xs font-semibold text-text-muted-light uppercase">
+													{{ header }}
+													<span
+														v-if="getMappedField(header)"
+														class="block text-xs text-gray-500">
+														→ {{ getFieldName(getMappedField(header)) }}
+													</span>
+												</th>
+											</tr>
+											<!-- Row with field names and selectors -->
+											<tr class="bg-gray-100">
+												<th
+													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40px]">
+													<!-- Empty header for the checkbox column -->
+												</th>
+												<th
+													v-for="(header, headerIndex) in originalHeaders"
+													:key="'selector-header-' + headerIndex"
+													class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+													<select
+														:value="getMappedField(header) || ''"
+														@change="(e) => handleColumnMappingChange(header, e)"
+														class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+														<option value="">
+															{{ t("import_modal.select_field_placeholder") }}
+														</option>
+														<optgroup :label="t('import_modal.required_fields')">
+															<option value="name">{{ t("name") }}</option>
+															<option value="quantity">{{ t("quantity") }}</option>
+														</optgroup>
+														<optgroup :label="t('import_modal.optional_fields')">
+															<option value="description">{{ t("description") }}</option>
+															<option value="category">{{ t("category") }}</option>
+															<option value="supplier">{{ t("supplier") }}</option>
+															<option value="partNumber">{{ t("partNumber") }}</option>
+															<option value="lcscPart">{{ t("lcscPart") }}</option>
+															<option value="price">{{ t("unit_price") }}</option>
+															<option value="inStock">{{ t("current_stock") }}</option>
+															<option value="minStock">
+																{{ t("min_stock_header") }}
+															</option>
+															<option value="notes">{{ t("notes") }}</option>
+															<option value="manufacturer">
+																{{ t("manufacturer") }}
+															</option>
+															<option value="package">{{ t("package") }}</option>
+															<option value="status">{{ t("status") }}</option>
+														</optgroup>
+													</select>
+												</th>
+											</tr>
+										</thead>
+										<tbody class="divide-y divide-gray-200">
+											<tr v-if="previewItems.length === 0">
+												<td
+													:colspan="originalHeaders.length + 1"
+													class="px-6 py-12 text-center">
+													<p class="text-text-muted-light">
+														{{ t("import_modal.no_data_preview") }}
+													</p>
+												</td>
+											</tr>
+											<tr
+												v-for="(row, index) in sampleData?.rows"
+												:key="index"
+												class="hover:bg-gray-50 transition-colors">
+												<td class="px-6 py-4 text-sm text-gray-900 w-[40px]">
+													<input
+														type="checkbox"
+														:checked="isRowSelectedStep2(index)"
+														@change="toggleRowSelectionStep2(index)"
+														class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
+												</td>
+												<td
+													v-for="(header, headerIndex) in originalHeaders"
+													:key="'cell-' + index + '-' + headerIndex"
+													class="px-6 py-4 text-sm text-text-main-light">
+													{{ row[headerIndex] || "-" }}
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div v-if="step === 3">
+					<!-- Step 3: Import Preview -->
+					<div class="mb-6">
+						<h3 class="text-lg font-medium text-gray-900 mb-4">{{ t("import_modal.import_review") }}</h3>
+						<p class="text-gray-600 mb-4">
+							{{ t("import_modal.items_will_be_imported", { count: mappedItems.length }) }}
+						</p>
+
+						<!-- Selección de destino de importación -->
+						<div class="mb-4 p-4 bg-gray-50 rounded-lg">
+							<label class="block text-sm font-medium text-gray-700 mb-2">{{
+								t("import_modal.import_destination")
+							}}</label>
+							<div class="flex gap-4">
+								<div class="flex items-center">
+									<input
+										type="radio"
+										v-model="importDestination"
+										value="global"
+										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
+									<label class="ml-2 block text-sm text-gray-700">{{
+										t("import_modal.global_inventory")
+									}}</label>
+								</div>
+								<div v-if="projects.length > 0" class="flex items-center">
+									<input
+										type="radio"
+										v-model="importDestination"
+										value="project"
+										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
+									<label class="ml-2 block text-sm text-gray-700">{{
+										t("import_modal.existing_project")
+									}}</label>
+								</div>
+								<div class="flex items-center">
+									<input
+										type="radio"
+										v-model="importDestination"
+										value="new_project"
+										class="h-4 w-4 text-primary focus:ring-primary border-gray-300" />
+									<label class="ml-2 block text-sm text-gray-700">{{
+										t("import_modal.new_project")
+									}}</label>
+								</div>
+							</div>
+
+							<div v-if="importDestination === 'project' && projects.length > 0" class="mt-3">
+								<select
+									v-model="selectedProjectId"
+									class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+									<option value="">{{ t("import_modal.select_project_placeholder") }}</option>
+									<option v-for="project in projects" :key="project.id" :value="project.id">
+										{{ project.name }}
+									</option>
+								</select>
+							</div>
+							<div v-else-if="importDestination === 'new_project'" class="mt-3">
+								<input
+									type="text"
+									v-model="newProjectName"
+									:placeholder="t('import_modal.new_project_name_placeholder')"
+									class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+							</div>
+							<div
+								v-else-if="importDestination === 'project' && projects.length === 0"
+								class="mt-2 text-sm text-amber-600">
+								{{ t("import_modal.no_projects_available") }}
+							</div>
+						</div>
+
+						<div v-if="parseResult.errors.length > 0" class="mb-4">
+							<h4 class="font-medium text-red-600 mb-2">{{ t("import_modal.errors_detected") }}</h4>
+							<ul class="list-disc list-inside text-red-600 text-sm space-y-1">
+								<li v-for="(error, index) in parseResult.errors" :key="index">
+									{{ error }}
+								</li>
+							</ul>
+						</div>
+
+						<div v-if="parseResult.warnings.length > 0" class="mb-4">
+							<h4 class="font-medium text-amber-600 mb-2">{{ t("import_modal.warnings") }}</h4>
+							<ul class="list-disc list-inside text-amber-600 text-sm space-y-1">
+								<li v-for="(warning, index) in parseResult.warnings" :key="index">
+									{{ warning }}
+								</li>
+							</ul>
+						</div>
+
+						<ImportPreviewTable
+							:items="parsedItems"
+							:editable="true"
+							:field-mappings="columnMapping"
+							@update-item="updateEditableItem" />
+					</div>
+				</div>
+			</div>
+
+			<!-- Action buttons -->
+			<div class="flex justify-end items-center gap-4 mt-6 pt-6 border-t border-gray-200">
+				<button
+					@click="handleClose"
+					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
+					{{ t("cancel") }}
+				</button>
+				<button
+					v-if="step > 1"
+					@click="previousStep"
+					class="px-6 py-2.5 rounded-lg border border-gray-300 text-text-main-light font-medium hover:bg-gray-100 transition-colors">
+					{{ t("previous") }}
+				</button>
+				<button
+					v-if="step < 3 && !isProcessing"
+					@click="nextStep"
+					:disabled="!canProceed"
+					class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+					<span>{{ step === 1 ? t("import_modal.process_file") : t("next") }}</span>
+					<ArrowRightIcon class="w-5 h-5" v-if="step < 3" />
+				</button>
+				<button
+					v-if="step === 3 && !isProcessing"
+					@click="confirmImport"
+					class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold transition-all flex items-center gap-2">
+					<span>{{ t("import_modal.import_data") }}</span>
+				</button>
+				<div v-if="isProcessing" class="flex items-center gap-2 text-gray-600">
+					<div class="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+					<span>{{ t("import_modal.processing") }}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>

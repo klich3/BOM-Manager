@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { useI18n } from "./useI18n";
 
 interface ConfirmOptions {
 	title: string;
@@ -20,9 +21,15 @@ const options = ref<ConfirmOptions>({
 let resolvePromise: ((value: boolean) => void) | null = null;
 
 export const useConfirmDialog = () => {
+	const { t } = useI18n();
+
 	const showConfirmation = (opts: ConfirmOptions): Promise<boolean> => {
 		return new Promise((resolve) => {
-			options.value = { ...opts };
+			options.value = {
+				confirmText: t("confirm") || "Confirmar",
+				cancelText: t("cancel") || "Cancelar",
+				...opts,
+			};
 			isOpen.value = true;
 			resolvePromise = resolve;
 		});

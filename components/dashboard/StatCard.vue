@@ -1,26 +1,3 @@
-<template>
-	<div
-		:class="[
-			'bg-card-light rounded-3xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer',
-			borderClass,
-		]">
-		<div class="flex justify-between items-start">
-			<div class="flex items-center gap-2 text-text-muted-light">
-				<component :is="iconComponent" class="w-5 h-5" :class="iconColorClass" />
-				<span class="text-sm font-medium"
-					><slot name="title">{{ title }}</slot></span
-				>
-			</div>
-		</div>
-		<div>
-			<span :class="['text-4xl font-bold', valueColorClass]">{{ formattedValue }}</span>
-			<p class="text-xs text-text-muted-light mt-2">
-				<slot name="subtitle">{{ subtitle }}</slot>
-			</p>
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts">
 import { computed } from "vue";
 import { RectangleStackIcon, CurrencyDollarIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
@@ -101,3 +78,26 @@ const valueColorClass = computed(() => {
 	return "text-text-main-light";
 });
 </script>
+
+<template>
+	<div
+		:class="[
+			'bg-card-light rounded-3xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer',
+			borderClass,
+		]">
+		<div class="flex justify-between items-start">
+			<div class="flex items-center gap-2 text-text-muted-light">
+				<component :is="iconComponent" class="w-5 h-5" :class="iconColorClass" />
+				<span class="text-sm font-medium"
+					><slot name="title">{{ title }}</slot></span
+				>
+			</div>
+		</div>
+		<div>
+			<span :class="['text-4xl font-bold', valueColorClass]">{{ formattedValue }}</span>
+			<p class="text-xs text-text-muted-light mt-2">
+				<slot name="subtitle">{{ subtitle }}</slot>
+			</p>
+		</div>
+	</div>
+</template>

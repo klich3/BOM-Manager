@@ -1,187 +1,12 @@
-<template>
-	<div
-		class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-	>
-		<div
-			class="bg-card-light rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-		>
-			<div class="flex items-center justify-between mb-6 p-6 pb-4">
-				<h2 class="text-xl font-semibold text-text-main-light">
-					Procesar BOM y Actualizar Stock
-				</h2>
-				<button
-					@click="closeModal"
-					class="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-				>
-					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
-				</button>
-			</div>
-
-			<div class="px-6 pb-6 space-y-6">
-				<!-- Sección de carga de BOM -->
-				<div>
-					<h3 class="text-lg font-medium text-text-main-light mb-4">
-						Cargar Archivo BOM
-					</h3>
-					<FileUpload
-						@file-selected="handleFileSelected"
-						@error="handleFileError"
-					/>
-
-					<div
-						v-if="bomData && bomData.length > 0"
-						class="mt-4 p-4 bg-gray-50 rounded-xl"
-					>
-						<div class="flex justify-between items-center mb-2">
-							<h4 class="font-medium text-text-main-light">
-								Vista Previa del BOM
-							</h4>
-							<span class="text-sm text-text-muted-light">
-								{{ bomData.length }} componentes
-							</span>
-						</div>
-
-						<div class="overflow-x-auto">
-							<table class="min-w-full divide-y divide-gray-200">
-								<thead class="bg-gray-100">
-									<tr>
-										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
-										>
-											Componente
-										</th>
-										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
-										>
-											Cantidad Requerida
-										</th>
-										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
-										>
-											Stock Actual
-										</th>
-										<th
-											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase"
-										>
-											Disponible
-										</th>
-									</tr>
-								</thead>
-								<tbody class="divide-y divide-gray-200">
-									<tr v-for="(item, index) in bomData" :key="index">
-										<td class="px-4 py-3">
-											<div>
-												<p class="font-medium text-text-main-light">
-													{{ item.name }}
-												</p>
-												<p class="text-xs text-text-muted-light">
-													{{ item.partNumber || "N/A" }}
-												</p>
-											</div>
-										</td>
-										<td class="px-4 py-3 text-text-main-light">
-											{{ item.quantity }}
-										</td>
-										<td class="px-4 py-3 text-text-main-light">
-											{{ item.currentStock }}
-										</td>
-										<td class="px-4 py-3">
-											<span
-												:class="[
-													item.currentStock >= item.quantity
-														? 'text-green-600'
-														: 'text-red-600',
-												]"
-											>
-												{{
-													item.currentStock >= item.quantity
-														? "Suficiente"
-														: "Insuficiente"
-												}}
-											</span>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-
-				<!-- Sección de resumen y confirmación -->
-				<div v-if="bomData && bomData.length > 0">
-					<h3 class="text-lg font-medium text-text-main-light mb-4">
-						Resumen de Operación
-					</h3>
-
-					<div class="p-4 bg-gray-50 rounded-xl mb-4">
-						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-							<div class="text-center">
-								<p class="text-2xl font-bold text-primary">
-									{{ totalComponents }}
-								</p>
-								<p class="text-sm text-text-muted-light">Componentes</p>
-							</div>
-							<div class="text-center">
-								<p class="text-2xl font-bold text-green-600">
-									{{ sufficientStockCount }}
-								</p>
-								<p class="text-sm text-text-muted-light">Stock Suficiente</p>
-							</div>
-							<div class="text-center">
-								<p class="text-2xl font-bold text-red-600">
-									{{ insufficientStockCount }}
-								</p>
-								<p class="text-sm text-text-muted-light">Stock Insuficiente</p>
-							</div>
-						</div>
-					</div>
-
-					<div
-						v-if="insufficientStockCount > 0"
-						class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl"
-					>
-						<div class="flex items-start gap-3">
-							<ExclamationTriangleIcon
-								class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
-							/>
-							<div>
-								<p class="text-sm font-medium text-red-600">Advertencia</p>
-								<p class="text-sm text-red-600/80 mt-1">
-									Hay {{ insufficientStockCount }} componente(s) con stock
-									insuficiente. La operación no se podrá completar hasta que se
-									resuelva este problema.
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<div class="flex gap-3">
-						<button
-							@click="closeModal"
-							class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors"
-						>
-							Cancelar
-						</button>
-						<button
-							@click="processBOM"
-							:disabled="insufficientStockCount > 0"
-							class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Procesar BOM y Actualizar Stock
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { XMarkIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import FileUpload from "@/components/FileUpload.vue";
 import { useFileParser } from "@/composables/useFileParser";
 import { useDatabase } from "@/composables/useDatabase";
+import { useI18n } from "@/composables/useI18n";
+
+const { t } = useI18n();
 
 // Definición de tipos
 interface BOMItem {
@@ -216,12 +41,8 @@ const isProcessing = ref(false);
 
 // Computed properties
 const totalComponents = computed(() => bomData.value.length);
-const sufficientStockCount = computed(
-	() => bomData.value.filter((item) => item.available).length
-);
-const insufficientStockCount = computed(
-	() => bomData.value.filter((item) => !item.available).length
-);
+const sufficientStockCount = computed(() => bomData.value.filter((item) => item.available).length);
+const insufficientStockCount = computed(() => bomData.value.filter((item) => !item.available).length);
 
 // Methods
 const closeModal = () => {
@@ -258,7 +79,7 @@ const handleFileSelected = async (file: File) => {
 				dbItem = allItems.find(
 					(dbItem) =>
 						dbItem.part_number === item.partNumber ||
-						dbItem.part_number === (item.partNumber || "").toString()
+						dbItem.part_number === (item.partNumber || "").toString(),
 				);
 			}
 
@@ -267,10 +88,8 @@ const handleFileSelected = async (file: File) => {
 				const allItems = await db.getAllItems();
 				dbItem = allItems.find(
 					(dbItem) =>
-						dbItem.name
-							.toLowerCase()
-							.includes((item.name || "").toLowerCase()) ||
-						(item.name || "").toLowerCase().includes(dbItem.name.toLowerCase())
+						dbItem.name.toLowerCase().includes((item.name || "").toLowerCase()) ||
+						(item.name || "").toLowerCase().includes(dbItem.name.toLowerCase()),
 				);
 			}
 
@@ -316,9 +135,7 @@ const handleFileError = (message: string) => {
 
 const processBOM = async () => {
 	if (insufficientStockCount.value > 0) {
-		alert(
-			"No se puede procesar el BOM: hay componentes con stock insuficiente."
-		);
+		alert("No se puede procesar el BOM: hay componentes con stock insuficiente.");
 		return;
 	}
 
@@ -354,6 +171,157 @@ defineExpose({
 	processBOM,
 });
 </script>
+
+<template>
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-card-light rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+			<div class="flex items-center justify-between mb-6 p-6 pb-4">
+				<h2 class="text-xl font-semibold text-text-main-light">
+					{{ t("process_bom_title") }}
+				</h2>
+				<button @click="closeModal" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+					<XMarkIcon class="w-6 h-6 text-text-muted-light" />
+				</button>
+			</div>
+
+			<div class="px-6 pb-6 space-y-6">
+				<!-- Sección de carga de BOM -->
+				<div>
+					<h3 class="text-lg font-medium text-text-main-light mb-4">
+						{{ t("upload_bom_file") }}
+					</h3>
+					<FileUpload @file-selected="handleFileSelected" @error="handleFileError" />
+
+					<div v-if="bomData && bomData.length > 0" class="mt-4 p-4 bg-gray-50 rounded-xl">
+						<div class="flex justify-between items-center mb-2">
+							<h4 class="font-medium text-text-main-light">
+								{{ t("bom_preview") }}
+							</h4>
+							<span class="text-sm text-text-muted-light">
+								{{ bomData.length }} {{ t("components") }}
+							</span>
+						</div>
+
+						<div class="overflow-x-auto">
+							<table class="min-w-full divide-y divide-gray-200">
+								<thead class="bg-gray-100">
+									<tr>
+										<th
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase">
+											{{ t("component") }}
+										</th>
+										<th
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase">
+											{{ t("required_quantity") }}
+										</th>
+										<th
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase">
+											{{ t("current_stock") }}
+										</th>
+										<th
+											class="px-4 py-3 text-left text-xs font-medium text-text-muted-light uppercase">
+											{{ t("available") }}
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200">
+									<tr v-for="(item, index) in bomData" :key="index">
+										<td class="px-4 py-3">
+											<div>
+												<p class="font-medium text-text-main-light">
+													{{ item.name }}
+												</p>
+												<p class="text-xs text-text-muted-light">
+													{{ item.partNumber || "N/A" }}
+												</p>
+											</div>
+										</td>
+										<td class="px-4 py-3 text-text-main-light">
+											{{ item.quantity }}
+										</td>
+										<td class="px-4 py-3 text-text-main-light">
+											{{ item.currentStock }}
+										</td>
+										<td class="px-4 py-3">
+											<span
+												:class="[
+													item.currentStock >= item.quantity
+														? 'text-green-600'
+														: 'text-red-600',
+												]">
+												{{
+													item.currentStock >= item.quantity
+														? t("sufficient")
+														: t("insufficient")
+												}}
+											</span>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<!-- Sección de resumen y confirmación -->
+				<div v-if="bomData && bomData.length > 0">
+					<h3 class="text-lg font-medium text-text-main-light mb-4">
+						{{ t("operation_summary") }}
+					</h3>
+
+					<div class="p-4 bg-gray-50 rounded-xl mb-4">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+							<div class="text-center">
+								<p class="text-2xl font-bold text-primary">
+									{{ totalComponents }}
+								</p>
+								<p class="text-sm text-text-muted-light">{{ t("components") }}</p>
+							</div>
+							<div class="text-center">
+								<p class="text-2xl font-bold text-green-600">
+									{{ sufficientStockCount }}
+								</p>
+								<p class="text-sm text-text-muted-light">{{ t("sufficient_stock") }}</p>
+							</div>
+							<div class="text-center">
+								<p class="text-2xl font-bold text-red-600">
+									{{ insufficientStockCount }}
+								</p>
+								<p class="text-sm text-text-muted-light">{{ t("insufficient_stock") }}</p>
+							</div>
+						</div>
+					</div>
+
+					<div v-if="insufficientStockCount > 0" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+						<div class="flex items-start gap-3">
+							<ExclamationTriangleIcon class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+							<div>
+								<p class="text-sm font-medium text-red-600">{{ t("warning") }}</p>
+								<p class="text-sm text-red-600/80 mt-1">
+									{{ t("insufficient_stock_warning", { count: insufficientStockCount }) }}
+								</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="flex gap-3">
+						<button
+							@click="closeModal"
+							class="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-text-main-light hover:bg-gray-50 transition-colors">
+							{{ t("cancel") }}
+						</button>
+						<button
+							@click="processBOM"
+							:disabled="insufficientStockCount > 0"
+							class="flex-1 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+							{{ t("process_bom_button") }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
 
 <style scoped>
 .bg-card-light {

@@ -1,3 +1,29 @@
+<script setup lang="ts">
+import {
+	CpuChipIcon,
+	Squares2X2Icon,
+	CubeIcon,
+	RectangleStackIcon,
+	Cog6ToothIcon,
+	UserIcon,
+} from "@heroicons/vue/24/outline";
+import { useSettingsStore } from "@/stores/settings";
+import SettingsModal from "@/components/global/SettingsModal.vue";
+import { ref, computed } from "vue";
+
+const settingsStore = useSettingsStore();
+const showSettingsModal = ref(false);
+
+const isDarkMode = computed(() => settingsStore.settings.theme === "dark");
+
+// Cargar la configuración cuando se monte el componente
+settingsStore.loadSettings();
+
+const openSettings = () => {
+	showSettingsModal.value = true;
+};
+</script>
+
 <template>
 	<div :class="{ dark: isDarkMode }" class="min-h-screen bg-background-light transition-colors duration-300">
 		<div class="dark:bg-background-dark min-h-screen">
@@ -57,29 +83,3 @@
 		</div>
 	</div>
 </template>
-
-<script setup lang="ts">
-import {
-	CpuChipIcon,
-	Squares2X2Icon,
-	CubeIcon,
-	RectangleStackIcon,
-	Cog6ToothIcon,
-	UserIcon,
-} from "@heroicons/vue/24/outline";
-import { useSettingsStore } from "@/stores/settings";
-import SettingsModal from "@/components/global/SettingsModal.vue";
-import { ref, computed } from "vue";
-
-const settingsStore = useSettingsStore();
-const showSettingsModal = ref(false);
-
-const isDarkMode = computed(() => settingsStore.settings.theme === "dark");
-
-// Cargar la configuración cuando se monte el componente
-settingsStore.loadSettings();
-
-const openSettings = () => {
-	showSettingsModal.value = true;
-};
-</script>

@@ -1,3 +1,60 @@
+<script setup lang="ts">
+import { ref, watch } from "vue";
+import PdfViewerModal from "@/components/global/PdfViewerModal.vue";
+import { useLCSC } from "@/composables/useLCSC";
+import { useExternalLink } from "@/composables/useExternalLink";
+
+interface Props {
+	itemData?: any;
+	show: boolean;
+	partNumber?: string;
+	itemId?: string;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits(["close"]);
+
+const imageError = ref(false);
+const imageErrorIndexes = ref<number[]>([]);
+const { isLoading, error, searchComponent, getPurchaseLink } = useLCSC();
+const lcscData = ref<any>(null);
+
+const showPreview = ref(false);
+const showPdfViewer = ref(false);
+const pdfToView = ref("");
+
+const { openExternalLink } = useExternalLink();
+
+watch(
+	() => props.show,
+	async (newShow: boolean) => {
+		showPreview.value = newShow;
+
+		if (newShow && (props.partNumber || (props.itemData && props.itemData.lcsc_part))) {
+			imageError.value = false;
+			// Usar props.partNumber si está definido, de lo contrario usar props.itemData.lcsc_part
+			const partNumber = props.partNumber || props.itemData?.lcsc_part;
+			const itemId = props.itemId || props.itemData?.id;
+			lcscData.value = await searchComponent(partNumber, itemId);
+		}
+	},
+);
+
+const closePreview = () => {
+	showPreview.value = false;
+	emit("close");
+};
+
+const handleImageError = (index: number) => {
+	imageErrorIndexes.value.push(index);
+};
+
+const openDatasheet = (url: string) => {
+	pdfToView.value = url;
+	showPdfViewer.value = true;
+};
+</script>
+
 <template>
 	<div v-if="showPreview" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 		<!-- Pdf Viewer Modal -->
@@ -43,8 +100,8 @@
 								:src="img"
 								:alt="`${lcscData.name || lcscData.partNumber} - Imagen ${Number(index) + 1}`"
 								class="max-h-48 object-contain"
-								@error="handleImageError(index as number)"
-								:class="{ 'opacity-50': imageErrorIndexes.includes(index as number) }" />
+								@error="handleImageError(Number(index))"
+								:class="{ 'opacity-50': imageErrorIndexes.includes(Number(index)) }" />
 						</div>
 						<!-- Mostrar imagen única si no hay múltiples imágenes -->
 						<img
@@ -154,60 +211,3 @@
 		</div>
 	</div>
 </template>
-
-<script setup lang="ts">
-import { ref, watch } from "vue";
-import PdfViewerModal from "@/components/global/PdfViewerModal.vue";
-import { useLCSC } from "@/composables/useLCSC";
-import { useExternalLink } from "@/composables/useExternalLink";
-
-interface Props {
-	itemData?: any;
-	show: boolean;
-	partNumber?: string;
-	itemId?: string;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits(["close"]);
-
-const imageError = ref(false);
-const imageErrorIndexes = ref<number[]>([]);
-const { isLoading, error, searchComponent, getPurchaseLink } = useLCSC();
-const lcscData = ref<any>(null);
-
-const showPreview = ref(false);
-const showPdfViewer = ref(false);
-const pdfToView = ref("");
-
-const { openExternalLink } = useExternalLink();
-
-watch(
-	() => props.show,
-	async (newShow) => {
-		showPreview.value = newShow;
-
-		if (newShow && (props.partNumber || (props.itemData && props.itemData.lcsc_part))) {
-			imageError.value = false;
-			// Usar props.partNumber si está definido, de lo contrario usar props.itemData.lcsc_part
-			const partNumber = props.partNumber || props.itemData?.lcsc_part;
-			const itemId = props.itemId || props.itemData?.id;
-			lcscData.value = await searchComponent(partNumber, itemId);
-		}
-	},
-);
-
-const closePreview = () => {
-	showPreview.value = false;
-	emit("close");
-};
-
-const handleImageError = (index: number) => {
-	imageErrorIndexes.value.push(index);
-};
-
-const openDatasheet = (url: string) => {
-	pdfToView.value = url;
-	showPdfViewer.value = true;
-};
-</script>

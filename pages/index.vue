@@ -1,3 +1,169 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
+import { useDatabase } from "@/composables/useDatabase";
+import { useI18n } from "@/composables/useI18n";
+import { useNotifications } from "@/composables/useNotifications";
+import {
+	CubeIcon,
+	DocumentArrowUpIcon,
+	RectangleStackIcon,
+	BellIcon,
+	Squares2X2Icon,
+	ExclamationTriangleIcon,
+	ShoppingCartIcon,
+} from "@heroicons/vue/24/outline";
+import StatCard from "@/components/dashboard/StatCard.vue";
+import StockHealthIndicator from "@/components/dashboard/StockHealthIndicator.vue";
+import ImportModal from "@/components/ImportModal.vue";
+
+// Definir metadatos de la página
+definePageMeta({
+	name: "home",
+	layout: "default",
+});
+
+// State
+const db = useDatabase();
+const { t, lang } = useI18n();
+const { success, error: notifyError } = useNotifications();
+
+const showImportModal = ref(false);
+const unreadNotificationsCount = ref(0);
+const recentActivity = ref<any[]>([]);
+const loading = ref(true);
+const lowStockItems = ref<any[]>([]);
+
+const stats = ref({
+	totalItems: 0,
+	lowStock: 0,
+	totalValue: 0,
+	projects: 0,
+});
+
+const currentDate = computed(() => {
+	const now = new Date();
+	return now.toLocaleDateString(lang.value === "es" ? "es-ES" : "en-US", {
+		weekday: "short",
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+});
+
+const stockHealthPercentage = computed(() => {
+	if (stats.value.totalItems === 0) return 100;
+	const healthyItems = stats.value.totalItems - stats.value.lowStock;
+	return Math.round((healthyItems / stats.value.totalItems) * 100);
+});
+
+const formatValue = (value: number | string) => {
+	let v = typeof value === "string" ? parseFloat(value) : value;
+
+	return v.toLocaleString("es-ES", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	});
+};
+
+const loadStats = async () => {
+	try {
+		// Cargar total de items
+		const items = await db.getAllItems();
+		stats.value.totalItems = items.length;
+
+		// Items con stock bajo
+		lowStockItems.value = items.filter(
+			(item) =>
+				(item.in_stock !== undefined && item.in_stock !== null ? item.in_stock : 0) < (item.min_stock || 0) &&
+				(item.min_stock || 0) > 0,
+		);
+
+		// Calcular stock bajo usando in_stock
+		stats.value.lowStock = items.filter(
+			(item) =>
+				(item.in_stock !== undefined && item.in_stock !== null ? item.in_stock : 0) < (item.min_stock || 0) &&
+				(item.min_stock || 0) > 0,
+		).length;
+
+		// Calcular valor total basado en price e in_stock (valor actual del inventario)
+		stats.value.totalValue = items.reduce((sum, item) => sum + (item.price || 0) * (item.in_stock || 0), 0);
+
+		// Cargar proyectos
+		const projects = await db.getAllProjects();
+		stats.value.projects = projects.length;
+	} catch (error) {
+		console.error("Error cargando estadísticas:", error);
+	}
+};
+
+const loadUnreadNotificationsCount = async () => {
+	try {
+		unreadNotificationsCount.value = await db.getUnreadNotificationsCount();
+	} catch (error) {
+		console.error("Error cargando conteo de notificaciones:", error);
+		unreadNotificationsCount.value = 0;
+	}
+};
+
+const loadRecentActivity = async () => {
+	try {
+		const activity = await db.getAllActivity(10); // Obtener las últimas 10 actividades
+		recentActivity.value = activity.map((item: any) => ({
+			id: item.id,
+			description: item.description,
+			date: formatDate(new Date(item.created_at)),
+		}));
+	} catch (error) {
+		console.error("Error cargando actividad reciente:", error);
+		recentActivity.value = [];
+	}
+};
+
+const handleImportCompleted = async (data: {
+	importedCount: number;
+	errors: string[];
+	destination: "global" | "project";
+	projectId?: string;
+}) => {
+	// Actualizar las estadísticas después de la importación si fue al inventario global
+	if (data.destination === "global") {
+		await loadStats();
+		await loadRecentActivity(); // Refrescar también la actividad reciente
+	}
+	// Si fue a un proyecto específico, podríamos refrescar esa información también
+	success(t("import"), t("import_modal.items_imported_success"));
+};
+
+const handleImportError = (message: string) => {
+	console.error("Error de importación:", message);
+	notifyError(t("import"), t("import_modal.import_error_msg", { message }));
+};
+
+const formatDate = (date: Date) => {
+	return date.toLocaleDateString(lang.value === "es" ? "es-ES" : "en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+};
+
+onMounted(async () => {
+	try {
+		await loadStats();
+		await loadUnreadNotificationsCount();
+		await loadRecentActivity();
+	} catch (error) {
+		console.error("Error en mounted:", error);
+	} finally {
+		loading.value = false;
+	}
+});
+</script>
+
 <template>
 	<!-- Main Content -->
 	<main class="min-h-screen">
@@ -182,172 +348,6 @@
 		@import-completed="handleImportCompleted"
 		@error="handleImportError" />
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useDatabase } from "@/composables/useDatabase";
-import { useI18n } from "@/composables/useI18n";
-import { useNotifications } from "@/composables/useNotifications";
-import {
-	CubeIcon,
-	DocumentArrowUpIcon,
-	RectangleStackIcon,
-	BellIcon,
-	Squares2X2Icon,
-	ExclamationTriangleIcon,
-	ShoppingCartIcon,
-} from "@heroicons/vue/24/outline";
-import StatCard from "@/components/dashboard/StatCard.vue";
-import StockHealthIndicator from "@/components/dashboard/StockHealthIndicator.vue";
-import ImportModal from "@/components/ImportModal.vue";
-
-// Definir metadatos de la página
-definePageMeta({
-	name: "home",
-	layout: "default",
-});
-
-// State
-const db = useDatabase();
-const { t, lang } = useI18n();
-const { success, error: notifyError } = useNotifications();
-
-const showImportModal = ref(false);
-const unreadNotificationsCount = ref(0);
-const recentActivity = ref<any[]>([]);
-const loading = ref(true);
-const lowStockItems = ref<any[]>([]);
-
-const stats = ref({
-	totalItems: 0,
-	lowStock: 0,
-	totalValue: 0,
-	projects: 0,
-});
-
-const currentDate = computed(() => {
-	const now = new Date();
-	return now.toLocaleDateString(lang.value === "es" ? "es-ES" : "en-US", {
-		weekday: "short",
-		day: "numeric",
-		month: "short",
-		year: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	});
-});
-
-const stockHealthPercentage = computed(() => {
-	if (stats.value.totalItems === 0) return 100;
-	const healthyItems = stats.value.totalItems - stats.value.lowStock;
-	return Math.round((healthyItems / stats.value.totalItems) * 100);
-});
-
-const formatValue = (value: number | string) => {
-	let v = typeof value === "string" ? parseFloat(value) : value;
-
-	return v.toLocaleString("es-ES", {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-	});
-};
-
-const loadStats = async () => {
-	try {
-		// Cargar total de items
-		const items = await db.getAllItems();
-		stats.value.totalItems = items.length;
-
-		// Items con stock bajo
-		lowStockItems.value = items.filter(
-			(item) =>
-				(item.in_stock !== undefined && item.in_stock !== null ? item.in_stock : 0) < (item.min_stock || 0) &&
-				(item.min_stock || 0) > 0,
-		);
-
-		// Calcular stock bajo usando in_stock
-		stats.value.lowStock = items.filter(
-			(item) =>
-				(item.in_stock !== undefined && item.in_stock !== null ? item.in_stock : 0) < (item.min_stock || 0) &&
-				(item.min_stock || 0) > 0,
-		).length;
-
-		// Calcular valor total basado en price e in_stock (valor actual del inventario)
-		stats.value.totalValue = items.reduce((sum, item) => sum + (item.price || 0) * (item.in_stock || 0), 0);
-
-		// Cargar proyectos
-		const projects = await db.getAllProjects();
-		stats.value.projects = projects.length;
-	} catch (error) {
-		console.error("Error cargando estadísticas:", error);
-	}
-};
-
-const loadUnreadNotificationsCount = async () => {
-	try {
-		unreadNotificationsCount.value = await db.getUnreadNotificationsCount();
-	} catch (error) {
-		console.error("Error cargando conteo de notificaciones:", error);
-		unreadNotificationsCount.value = 0;
-	}
-};
-
-const loadRecentActivity = async () => {
-	try {
-		const activity = await db.getAllActivity(10); // Obtener las últimas 10 actividades
-		recentActivity.value = activity.map((item: any) => ({
-			id: item.id,
-			description: item.description,
-			date: formatDate(new Date(item.created_at)),
-		}));
-	} catch (error) {
-		console.error("Error cargando actividad reciente:", error);
-		recentActivity.value = [];
-	}
-};
-
-const handleImportCompleted = async (data: {
-	importedCount: number;
-	errors: string[];
-	destination: "global" | "project";
-	projectId?: string;
-}) => {
-	// Actualizar las estadísticas después de la importación si fue al inventario global
-	if (data.destination === "global") {
-		await loadStats();
-		await loadRecentActivity(); // Refrescar también la actividad reciente
-	}
-	// Si fue a un proyecto específico, podríamos refrescar esa información también
-	success(t("import"), t("import_modal.items_imported_success"));
-};
-
-const handleImportError = (message: string) => {
-	console.error("Error de importación:", message);
-	notifyError(t("import"), t("import_modal.import_error_msg", { message }));
-};
-
-const formatDate = (date: Date) => {
-	return date.toLocaleDateString(lang.value === "es" ? "es-ES" : "en-US", {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	});
-};
-
-onMounted(async () => {
-	try {
-		await loadStats();
-		await loadUnreadNotificationsCount();
-		await loadRecentActivity();
-	} catch (error) {
-		console.error("Error en mounted:", error);
-	} finally {
-		loading.value = false;
-	}
-});
-</script>
 
 <style scoped>
 /* Estilos movidos a assets/css/app.css */

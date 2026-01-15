@@ -1,3 +1,77 @@
+<script setup lang="ts">
+import { useI18n } from "@/composables/useI18n";
+
+interface Props {
+	items: any[];
+	editable?: boolean;
+	fieldMappings?: Record<string, string>;
+	selectedRows?: Record<number, boolean>;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+	editable: true,
+	fieldMappings: () => ({}),
+});
+
+// Define the emit
+const emit = defineEmits<{
+	"update-item": [data: { index: number; field: string; value: any }];
+}>();
+
+const i18n = useI18n();
+const t = i18n.t;
+
+// Función para verificar si un campo está mapeado
+const isFieldMapped = (field: string): boolean => {
+	if (!props.fieldMappings || Object.keys(props.fieldMappings).length === 0) {
+		return false;
+	}
+
+	// Buscar si este campo específico está mapeado
+	// El fieldMappings podría tener la estructura { 'Nombre Original': 'nombre_campo' }
+	const mappedFields = Object.values(props.fieldMappings);
+	return mappedFields.includes(field);
+};
+
+// Función para verificar si una columna está seleccionada para importar
+const isColumnSelected = (field: string): boolean => {
+	// En ImportPreviewTable no tenemos información sobre selección de columnas
+	// Por lo tanto, devolvemos true por defecto
+	return true;
+};
+
+const getRowClass = (item: any) => {
+	if (item.selectedAction === "ignore") return "bg-gray-100 opacity-60";
+
+	// Lógica de marcado según stock para "por pedir"
+	if (item.selectedStockType === "to_order") {
+		const inStock = item.existingItem?.inStock || 0;
+		const needed = item.quantity || 0;
+
+		if (inStock >= needed) {
+			return "bg-green-50 border-l-4 border-green-500"; // Tenemos todo
+		} else if (inStock > 0) {
+			return "bg-amber-50 border-l-4 border-amber-500"; // Tenemos algo
+		} else {
+			return "bg-red-50 border-l-4 border-red-500"; // Hay que comprar todo
+		}
+	}
+
+	if (item.importStatus === "exists") return "bg-amber-50";
+	return "";
+};
+
+const getStatusBadgeClass = (item: any) => {
+	if (item.importStatus === "exists") return "bg-blue-100 text-blue-800";
+	return "bg-green-100 text-green-800";
+};
+
+const getStatusLabel = (item: any) => {
+	if (item.importStatus === "exists") return t("matched_found");
+	return t("new_item");
+};
+</script>
+
 <template>
 	<div v-if="items.length > 0" class="overflow-x-auto">
 		<table class="min-w-full divide-y divide-gray-200">
@@ -107,7 +181,9 @@
 								<option v-if="item.importStatus === 'exists'" value="consume_stock">
 									{{ t("action_consume_stock") }}
 								</option>
-								<option v-if="item.importStatus === 'exists'" value="merge">{{ t("action_merge") }}</option>
+								<option v-if="item.importStatus === 'exists'" value="merge">
+									{{ t("action_merge") }}
+								</option>
 								<option value="ignore">{{ t("action_ignore") }}</option>
 							</select>
 							<select
@@ -325,76 +401,3 @@
 		<p>{{ t("no_items_to_show") }}</p>
 	</div>
 </template>
-
-<script setup lang="ts">
-import { useI18n } from "@/composables/useI18n";
-
-const { t } = useI18n();
-
-interface Props {
-	items: any[];
-	editable?: boolean;
-	fieldMappings?: Record<string, string>;
-	selectedRows?: Record<number, boolean>;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-	editable: true,
-	fieldMappings: () => ({}),
-});
-
-// Define the emit
-const emit = defineEmits<{
-	"update-item": [data: { index: number; field: string; value: any }];
-}>();
-
-// Función para verificar si un campo está mapeado
-const isFieldMapped = (field: string): boolean => {
-	if (!props.fieldMappings || Object.keys(props.fieldMappings).length === 0) {
-		return false;
-	}
-
-	// Buscar si este campo específico está mapeado
-	// El fieldMappings podría tener la estructura { 'Nombre Original': 'nombre_campo' }
-	const mappedFields = Object.values(props.fieldMappings);
-	return mappedFields.includes(field);
-};
-
-// Función para verificar si una columna está seleccionada para importar
-const isColumnSelected = (field: string): boolean => {
-	// En ImportPreviewTable no tenemos información sobre selección de columnas
-	// Por lo tanto, devolvemos true por defecto
-	return true;
-};
-
-const getRowClass = (item: any) => {
-	if (item.selectedAction === "ignore") return "bg-gray-100 opacity-60";
-
-	// Lógica de marcado según stock para "por pedir"
-	if (item.selectedStockType === "to_order") {
-		const inStock = item.existingItem?.inStock || 0;
-		const needed = item.quantity || 0;
-
-		if (inStock >= needed) {
-			return "bg-green-50 border-l-4 border-green-500"; // Tenemos todo
-		} else if (inStock > 0) {
-			return "bg-amber-50 border-l-4 border-amber-500"; // Tenemos algo
-		} else {
-			return "bg-red-50 border-l-4 border-red-500"; // Hay que comprar todo
-		}
-	}
-
-	if (item.importStatus === "exists") return "bg-amber-50";
-	return "";
-};
-
-const getStatusBadgeClass = (item: any) => {
-	if (item.importStatus === "exists") return "bg-blue-100 text-blue-800";
-	return "bg-green-100 text-green-800";
-};
-
-const getStatusLabel = (item: any) => {
-	if (item.importStatus === "exists") return t("matched_found");
-	return t("new_item");
-};
-</script>

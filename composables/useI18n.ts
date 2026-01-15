@@ -20,11 +20,11 @@ export const useI18n = () => {
 
 	const t = (key: string, params?: Record<string, string | number>): string => {
 		const langData = translations[lang.value] || translations.es;
-		
+
 		// Support for nested keys like "lists_mgmt.title"
-		const keys = key.split('.');
+		const keys = key.split(".");
 		let result = langData;
-		
+
 		for (const k of keys) {
 			if (result && result[k] !== undefined) {
 				result = result[k];
@@ -33,12 +33,13 @@ export const useI18n = () => {
 				break;
 			}
 		}
-		
-		let text = typeof result === 'string' ? result : key;
+
+		let text = typeof result === "string" ? result : key;
 
 		if (params) {
 			Object.entries(params).forEach(([k, v]) => {
-				text = text.replace(`{${k}}`, String(unref(v)));
+				const val = unref(v);
+				text = text.replace(`{${k}}`, val !== null && val !== undefined ? String(val) : "");
 			});
 		}
 

@@ -1,3 +1,236 @@
+<script setup lang="ts">
+import { ref, onMounted, watch, computed } from "vue";
+import {
+	XMarkIcon,
+	TrashIcon,
+	PlusIcon,
+	MagnifyingGlassIcon,
+	ClipboardDocumentListIcon,
+	ArrowsUpDownIcon,
+} from "@heroicons/vue/24/outline";
+import { useDatabase } from "@/composables/useDatabase";
+
+// Definición de tipos
+interface ComponentItem {
+	id: string;
+	name: string;
+	part_number?: string;
+	lcsc_part?: string;
+	unit: string;
+	quantity: number;
+}
+
+interface List {
+	id: string;
+	name: string;
+	description?: string;
+	items: ComponentItem[];
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+// Props y Emits
+interface Props {
+	modelValue: boolean;
+	items?: ComponentItem[];
+}
+
+interface Emits {
+	(e: "update:modelValue", value: boolean): void;
+	(e: "saved", list: List): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+	items: () => [],
+});
+const emit = defineEmits<Emits>();
+
+const db = useDatabase();
+
+// Estado
+const isOpen = defineModel<boolean>("modelValue", { required: true });
+const editingList = ref<List | null>(null);
+const listForm = ref({
+	name: "",
+	description: "",
+	items: [] as ComponentItem[],
+});
+
+// Selection State
+const projects = ref<any[]>([]);
+const selectedProjectId = ref("");
+const projectItemsResults = ref<any[]>([]);
+const inventorySearchQuery = ref("");
+const allInventoryItems = ref<any[]>([]);
+
+// Computed Search Results
+const searchResults = computed(() => {
+	if (!inventorySearchQuery.value.trim()) return [];
+	const q = inventorySearchQuery.value.toLowerCase();
+	return allInventoryItems.value
+		.filter(
+			(item: any) =>
+				(item.name || "").toLowerCase().includes(q) ||
+				(item.part_number || "").toLowerCase().includes(q) ||
+				(item.lcsc_part || "").toLowerCase().includes(q) ||
+				(item.category || "").toLowerCase().includes(q) ||
+				(item.description || "").toLowerCase().includes(q),
+		)
+		.slice(0, 15);
+});
+
+// Métodos
+const closeModal = () => {
+	isOpen.value = false;
+	resetForm();
+};
+
+const resetForm = () => {
+	editingList.value = null;
+	listForm.value = {
+		name: "",
+		description: "",
+		items: [],
+	};
+	selectedProjectId.value = "";
+	inventorySearchQuery.value = "";
+};
+
+const openModal = (list?: List) => {
+	if (list) {
+		editingList.value = list;
+		listForm.value = {
+			name: list.name,
+			description: list.description || "",
+			items: [...list.items],
+		};
+	} else {
+		resetForm();
+	}
+	isOpen.value = true;
+};
+
+const saveList = () => {
+	if (!listForm.value.name.trim()) {
+		alert("Por favor, ingresa un nombre para la lista");
+		return;
+	}
+
+	if (listForm.value.items.length === 0) {
+		alert("La lista debe contener al menos un componente");
+		return;
+	}
+
+	const list: List = {
+		id: editingList.value?.id || crypto.randomUUID(),
+		name: listForm.value.name,
+		description: listForm.value.description,
+		items: listForm.value.items,
+		createdAt: editingList.value?.createdAt || new Date(),
+		updatedAt: new Date(),
+	};
+
+	emit("saved", list);
+	closeModal();
+};
+
+const addItemToList = (item: any) => {
+	const existing = listForm.value.items.find((i: ComponentItem) => i.id === item.id);
+	if (!existing) {
+		listForm.value.items.push({
+			id: item.id,
+			name: item.name,
+			part_number: item.part_number,
+			lcsc_part: item.lcsc_part,
+			unit: item.unit || "pcs",
+			quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
+		});
+	}
+};
+
+const addItems = (items: ComponentItem[]) => {
+	items.forEach((item: ComponentItem) => {
+		const existingIndex = listForm.value.items.findIndex((i: ComponentItem) => i.id === item.id);
+		if (existingIndex === -1) {
+			listForm.value.items.push({
+				...item,
+				quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
+			});
+		}
+	});
+};
+
+const loadProjectItems = async () => {
+	if (!selectedProjectId.value) {
+		projectItemsResults.value = [];
+		return;
+	}
+	try {
+		const projectItems = await db.getProjectItems(selectedProjectId.value);
+		projectItemsResults.value = projectItems.map((item: any) => ({
+			id: item.id,
+			name: item.name,
+			part_number: item.part_number,
+			lcsc_part: item.lcsc_part,
+			unit: item.unit || "pcs",
+			quantity: item.project_quantity || item.quantity || 1,
+		}));
+	} catch (error) {
+		console.error("Error loading project items:", error);
+		projectItemsResults.value = [];
+	}
+};
+
+const addAllProjectItems = () => {
+	addItems(projectItemsResults.value);
+	projectItemsResults.value = [];
+	selectedProjectId.value = "";
+};
+
+const removeItem = (index: number) => {
+	listForm.value.items.splice(index, 1);
+};
+
+const sortItemsByName = () => {
+	listForm.value.items.sort((a: ComponentItem, b: ComponentItem) => a.name.localeCompare(b.name));
+};
+
+const sortItemsByQuantity = () => {
+	listForm.value.items.sort((a: ComponentItem, b: ComponentItem) => b.quantity - a.quantity);
+};
+
+// Exponer métodos
+defineExpose({
+	openModal,
+	addItems,
+});
+
+// Cargar datos iniciales
+onMounted(async () => {
+	if (props.items && props.items.length > 0) {
+		addItems(props.items);
+	}
+
+	try {
+		projects.value = await db.getAllProjects();
+		allInventoryItems.value = await db.getAllItems();
+	} catch (error) {
+		console.error("Error loading initial data for ListManager:", error);
+	}
+});
+
+// Watch for props items changes (if modal is already open)
+watch(
+	() => props.items,
+	(newItems: ComponentItem[]) => {
+		if (newItems && newItems.length > 0) {
+			addItems(newItems);
+		}
+	},
+	{ deep: true },
+);
+</script>
+
 <template>
 	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 		<div class="bg-card-light rounded-2xl shadow-xl w-full h-full flex flex-col overflow-hidden">
@@ -236,239 +469,6 @@
 		</div>
 	</div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
-import {
-	XMarkIcon,
-	TrashIcon,
-	PlusIcon,
-	MagnifyingGlassIcon,
-	ClipboardDocumentListIcon,
-	ArrowsUpDownIcon,
-} from "@heroicons/vue/24/outline";
-import { useDatabase } from "@/composables/useDatabase";
-
-// Definición de tipos
-interface ComponentItem {
-	id: string;
-	name: string;
-	part_number?: string;
-	lcsc_part?: string;
-	unit: string;
-	quantity: number;
-}
-
-interface List {
-	id: string;
-	name: string;
-	description?: string;
-	items: ComponentItem[];
-	createdAt: Date;
-	updatedAt: Date;
-}
-
-// Props y Emits
-interface Props {
-	modelValue: boolean;
-	items?: ComponentItem[];
-}
-
-interface Emits {
-	(e: "update:modelValue", value: boolean): void;
-	(e: "saved", list: List): void;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-	items: () => [],
-});
-const emit = defineEmits<Emits>();
-
-const db = useDatabase();
-
-// Estado
-const isOpen = defineModel<boolean>("modelValue", { required: true });
-const editingList = ref<List | null>(null);
-const listForm = ref({
-	name: "",
-	description: "",
-	items: [] as ComponentItem[],
-});
-
-// Selection State
-const projects = ref<any[]>([]);
-const selectedProjectId = ref("");
-const projectItemsResults = ref<any[]>([]);
-const inventorySearchQuery = ref("");
-const allInventoryItems = ref<any[]>([]);
-
-// Computed Search Results
-const searchResults = computed(() => {
-	if (!inventorySearchQuery.value.trim()) return [];
-	const q = inventorySearchQuery.value.toLowerCase();
-	return allInventoryItems.value
-		.filter(
-			(item) =>
-				(item.name || "").toLowerCase().includes(q) ||
-				(item.part_number || "").toLowerCase().includes(q) ||
-				(item.lcsc_part || "").toLowerCase().includes(q) ||
-				(item.category || "").toLowerCase().includes(q) ||
-				(item.description || "").toLowerCase().includes(q),
-		)
-		.slice(0, 15);
-});
-
-// Métodos
-const closeModal = () => {
-	isOpen.value = false;
-	resetForm();
-};
-
-const resetForm = () => {
-	editingList.value = null;
-	listForm.value = {
-		name: "",
-		description: "",
-		items: [],
-	};
-	selectedProjectId.value = "";
-	inventorySearchQuery.value = "";
-};
-
-const openModal = (list?: List) => {
-	if (list) {
-		editingList.value = list;
-		listForm.value = {
-			name: list.name,
-			description: list.description || "",
-			items: [...list.items],
-		};
-	} else {
-		resetForm();
-	}
-	isOpen.value = true;
-};
-
-const saveList = () => {
-	if (!listForm.value.name.trim()) {
-		alert("Por favor, ingresa un nombre para la lista");
-		return;
-	}
-
-	if (listForm.value.items.length === 0) {
-		alert("La lista debe contener al menos un componente");
-		return;
-	}
-
-	const list: List = {
-		id: editingList.value?.id || crypto.randomUUID(),
-		name: listForm.value.name,
-		description: listForm.value.description,
-		items: listForm.value.items,
-		createdAt: editingList.value?.createdAt || new Date(),
-		updatedAt: new Date(),
-	};
-
-	emit("saved", list);
-	closeModal();
-};
-
-const addItemToList = (item: any) => {
-	const existing = listForm.value.items.find((i) => i.id === item.id);
-	if (!existing) {
-		listForm.value.items.push({
-			id: item.id,
-			name: item.name,
-			part_number: item.part_number,
-			lcsc_part: item.lcsc_part,
-			unit: item.unit || "pcs",
-			quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
-		});
-	}
-};
-
-const addItems = (items: ComponentItem[]) => {
-	items.forEach((item) => {
-		const existingIndex = listForm.value.items.findIndex((i) => i.id === item.id);
-		if (existingIndex === -1) {
-			listForm.value.items.push({
-				...item,
-				quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
-			});
-		}
-	});
-};
-
-const loadProjectItems = async () => {
-	if (!selectedProjectId.value) {
-		projectItemsResults.value = [];
-		return;
-	}
-	try {
-		const projectItems = await db.getProjectItems(selectedProjectId.value);
-		projectItemsResults.value = projectItems.map((item: any) => ({
-			id: item.id,
-			name: item.name,
-			part_number: item.part_number,
-			lcsc_part: item.lcsc_part,
-			unit: item.unit || "pcs",
-			quantity: item.project_quantity || item.quantity || 1,
-		}));
-	} catch (error) {
-		console.error("Error loading project items:", error);
-		projectItemsResults.value = [];
-	}
-};
-
-const addAllProjectItems = () => {
-	addItems(projectItemsResults.value);
-	projectItemsResults.value = [];
-	selectedProjectId.value = "";
-};
-
-const removeItem = (index: number) => {
-	listForm.value.items.splice(index, 1);
-};
-
-const sortItemsByName = () => {
-	listForm.value.items.sort((a, b) => a.name.localeCompare(b.name));
-};
-
-const sortItemsByQuantity = () => {
-	listForm.value.items.sort((a, b) => b.quantity - a.quantity);
-};
-
-// Exponer métodos
-defineExpose({
-	openModal,
-	addItems,
-});
-
-// Cargar datos iniciales
-onMounted(async () => {
-	if (props.items && props.items.length > 0) {
-		addItems(props.items);
-	}
-
-	try {
-		projects.value = await db.getAllProjects();
-		allInventoryItems.value = await db.getAllItems();
-	} catch (error) {
-		console.error("Error loading initial data for ListManager:", error);
-	}
-});
-
-// Watch for props items changes (if modal is already open)
-watch(
-	() => props.items,
-	(newItems) => {
-		if (newItems && newItems.length > 0) {
-			addItems(newItems);
-		}
-	},
-	{ deep: true },
-);
-</script>
 
 <style scoped>
 .bg-card-light {
