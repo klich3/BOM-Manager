@@ -17,6 +17,10 @@ export default defineNuxtConfig({
     },
   },
 
+  devServer: {
+    port: 8211
+  },
+
   vite: {
     clearScreen: false,
     envPrefix: ["VITE_", "TAURI_"],

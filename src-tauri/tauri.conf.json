@@ -5,7 +5,7 @@
 	"identifier": "com.sychev.bommanager",
 	"build": {
 		"frontendDist": "../.output",
-		"devUrl": "http://localhost:3000",
+		"devUrl": "http://localhost:8211",
 		"beforeDevCommand": "npm run dev",
 		"beforeBuildCommand": "npm run build"
 	},
