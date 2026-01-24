@@ -4,10 +4,10 @@
 	"version": "0.1.0",
 	"identifier": "com.sychev.bommanager",
 	"build": {
-		"frontendDist": "../.output",
+		"frontendDist": "../.output/public",
 		"devUrl": "http://localhost:8211",
 		"beforeDevCommand": "npm run dev",
-		"beforeBuildCommand": "npm run build"
+		"beforeBuildCommand": "npm run generate"
 	},
 	"app": {
 		"windows": [

@@ -50,6 +50,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    preset: "static",
     routeRules: {
       '**': {
         headers: {
